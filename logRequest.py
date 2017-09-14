@@ -3,7 +3,6 @@
 
 import watchtower, logging
 import datetime
-from linksData import *
 import os, socket
 
 def sendLog(bibcode, linkType, linkURL, referrerURL):
@@ -21,7 +20,8 @@ def sendLog(bibcode, linkType, linkURL, referrerURL):
         host=str(socket.gethostbyname(hostname)),
         user="",
         db="",
-        link=getLinkTag(linkType),
+        link=linkType,
         bibcode=bibcode,
         service=linkURL,
         referer=referrerURL))
+

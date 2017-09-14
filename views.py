@@ -4,8 +4,7 @@
 from flask import request, Blueprint, Response
 from flask_discoverer import advertise
 
-from linksData import *
-from logRequest import *
+from linksRequest import *
 
 bp = Blueprint('resolver_service', __name__)
 
@@ -29,9 +28,5 @@ def bibTexFormatExport():
     if (len(bibcode) == 0) or (len(linkType) == 0):
         return __returnResponse('error: not all the needed information received', 400)
 
-    linkURL = getURL(bibcode, linkType)
-    if (len(linkURL) > 0):
-        sendLog(bibcode, linkType, linkURL, request.referrer)
-        return __returnResponse(linkURL, 200)
-
-    return __returnResponse("error: no records found for Bibcode:'{}' and linkType:'{}'".format(bibcode, linkType), 503)
+    [response, status] = processRequest(bibcode, linkType, request.referrer)
+    return __returnResponse(response, status)

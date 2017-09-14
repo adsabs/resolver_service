@@ -38,4 +38,5 @@ RESOLVER_SERVICE_LOGGING = {
     },
 }
 
-SQLALCHEMY_URL = 'postgresql://dbo:gs@localhost/mydb'
+#SQLALCHEMY_URL = 'postgresql://dbo:gs@localhost/mydb'
+SQLALCHEMY_URL = 'postgresql://postgres:postgres@localhost:15432/postgres'

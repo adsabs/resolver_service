@@ -6,14 +6,22 @@ from sqlalchemy import create_engine
 import sqlalchemy.exc
 
 def getURL(bibcode, linkType):
-    query = "SELECT linkURL FROM linkInfo as I INNER JOIN linkTypes as T ON I.linkTypeId = T.linkTypeID WHERE I.bibcode = '{}' AND T.linkTypeName = '{}'".format(bibcode, linkType)
-    errorMsg = "Exception Error while fetching linkURL for bibcode = '{}' and link type = '{}': ".format(bibcode, linkType)
+    query = "SELECT url FROM nonbib.datalinks WHERE bibcode = '{}' AND " \
+            "(link_type = '{}' OR link_sub_type = '{}')".format(bibcode, linkType, linkType)
+    errorMsg = "Exception Error while fetching url for bibcode = '{}' and link type = '{}': ".format(bibcode, linkType)
     return executeQuery(query, errorMsg)
 
-def getLinkTag(linkTypeName):
-    query = "SELECT linkTypeTag FROM linkTypes WHERE linkTypeName = '{}'".format(linkTypeName)
-    errorMsg = "Exception Error while fetching the tag for link type name = '{}'".format(linkTypeName)
-    return executeQuery(query, errorMsg)
+def getURLandTitle(bibcode, linkType):
+    query = "SELECT url,title FROM nonbib.datalinks WHERE bibcode = '{}' AND link_type = '{}'".format(bibcode, linkType)
+    errorMsg = "Exception Error while fetching url, title for bibcode = '{}' and link type = '{}': ".format(bibcode, linkType)
+    print executeQuery(query, errorMsg)
+
+# data = {}
+#         data['id'] = 'ITEM-{0}'.format(index + 1)
+#         data['author'] = self.__getCSLAuthorList(aDoc)
+#         data['type'] = self.__getDocType(aDoc.get('doctype', ''))
+#         return data
+
 
 def executeQuery(query,errorMsg):
     result = ""
