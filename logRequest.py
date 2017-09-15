@@ -3,23 +3,25 @@
 
 import watchtower, logging
 import datetime
-import os, socket
+import os
+
+loggers = {}
 
 def sendLog(bibcode, linkType, linkURL, referrerURL):
 
-    hostname = socket.gethostname()
-    logging.basicConfig(level=logging.INFO)
+    global loggers
     logger = logging.getLogger(__name__)
-    handler = watchtower.CloudWatchLogHandler(stream_name=str(hostname) + "-" + str(os.getpid()) + "-app",
-                                              log_group="production-resolver-app")
-    logger.addHandler(handler)
-    logger.info('"{dateUTC}" "{mirror}" "{server}" "{host}" "{user}" "{db}" "{link}" "{bibcode}" "{service}" "{referer}"'.format(
+    if not len(logger.handlers):
+        logging.basicConfig(level=logging.INFO)
+        handler = watchtower.CloudWatchLogHandler(stream_name=str(os.uname()[1]) + "-" + str(os.getpid()) + "-app",
+                                                  log_group="production-resolver-app")
+        logger.addHandler(handler)
+
+    logger.info('"{dateUTC}" "{server}" "{host}" "{user}" "{link}" "{bibcode}" "{service}" "{referer}"'.format(
         dateUTC=datetime.datetime.utcnow().isoformat(),
-        mirror="",
-        server=str(hostname),
-        host=str(socket.gethostbyname(hostname)),
+        server=str(os.uname()[1]),
+        host=str(os.uname()[1]),
         user="",
-        db="",
         link=linkType,
         bibcode=bibcode,
         service=linkURL,

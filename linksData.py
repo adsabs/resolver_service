@@ -14,14 +14,8 @@ def getURL(bibcode, linkType):
 def getURLandTitle(bibcode, linkType):
     query = "SELECT url,title FROM nonbib.datalinks WHERE bibcode = '{}' AND link_type = '{}'".format(bibcode, linkType)
     errorMsg = "Exception Error while fetching url, title for bibcode = '{}' and link type = '{}': ".format(bibcode, linkType)
-    print executeQuery(query, errorMsg)
-
-# data = {}
-#         data['id'] = 'ITEM-{0}'.format(index + 1)
-#         data['author'] = self.__getCSLAuthorList(aDoc)
-#         data['type'] = self.__getDocType(aDoc.get('doctype', ''))
-#         return data
-
+    result = executeQuery(query, errorMsg)
+    return result
 
 def executeQuery(query,errorMsg):
     result = ""
@@ -31,9 +25,14 @@ def executeQuery(query,errorMsg):
 
         # submit the query to get the link URL
         rows = conn.execute(query).fetchall()
-        print '-------------', rows
-        if len(rows) > 0:
-            result = rows[0][0]
+        result = []
+        if len(rows) == 1:
+            if (len(rows[0]) == 1):
+                return ''.join(rows[0][0])
+            elif len(rows[0]) > 1:
+                for row in rows[0]:
+                    result.append(row)
+                return zip(*result)
 
     except (Exception, sqlalchemy.exc.DatabaseError) as error:
         current_app.logger.error(errorMsg, error)

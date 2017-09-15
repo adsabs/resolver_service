@@ -23,7 +23,7 @@ def bibTexFormatExport():
         return __returnResponse('error: no link_type found in request (parameter name is "link_type")', 400)
 
     bibcode = request.args.get("bibcode")
-    linkType = request.args.get("link_type")
+    linkType = request.args.get("link_type").upper()
 
     if (len(bibcode) == 0) or (len(linkType) == 0):
         return __returnResponse('error: not all the needed information received', 400)
