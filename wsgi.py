@@ -8,7 +8,7 @@
 """
 
 from werkzeug.serving import run_simple
-import app
+from service import app
 
 application = app.create_app()
 
