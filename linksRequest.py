@@ -35,7 +35,9 @@ def processRequest(bibcode, linkType, referreredURL):
         'AUTHOR_HTML' : '',
         'AUTHOR_PDF' : ''
     }
-    data = ['NED', 'SIMBAD', 'CD', 'CXO', 'ESA', 'HST', 'MAST', 'VIZIER', 'HEP', 'PDS']
+    data = ['ARI','SIMBAD','NED','CDS','Vizier','GCPD','Author','PDG','MAST','HEASARC','INES','IBVS','Astroverse',
+            'ESA','NExScI','PDS','AcA','ISO','ESO','CXO','NOAO','XMM','Spitzer','PASA','ATNF','KOA','Herschel','GTC',
+            'BICEP2','ALMA','CADC','Zenodo','TNS']
 
     # we have 7 link types that can be created on the fly and do not need to go to db
     # we just need to log the request

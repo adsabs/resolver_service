@@ -14,8 +14,8 @@ def __returnResponse(response, status):
     return r
 
 @advertise(scopes=[], rate_limit=[1000, 3600 * 24])
-@bp.route('/linkURL', methods=['GET'])
-def bibTexFormatExport():
+@bp.route('/resolver', methods=['GET'])
+def resolver():
 
     if 'bibcode' not in request.args:
         return __returnResponse('error: no bibcode found in request (parameter name is "bibcode")', 400)
