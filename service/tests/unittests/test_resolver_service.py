@@ -51,7 +51,7 @@ class TestResolver(TestCase):
 
     def test_route(self):
         """
-        Tests for the existence of a /linkURL route, and that it returns
+        Tests for the existence of a /v1/resolver route, and that it returns
         properly formatted JSON data
         """
         r = self.client.get('/v1/resolver/1987gady.book.....B/ABSTRACT')

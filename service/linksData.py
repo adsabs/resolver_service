@@ -71,6 +71,6 @@ def executeQuery(query,errorMsg):
         return results
 
     except (Exception, sqlalchemy.exc.DatabaseError) as error:
-        logger.info(errorMsg + error)
+        logger.info(errorMsg + str(error))
 
     return ""
