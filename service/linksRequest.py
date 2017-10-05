@@ -1,11 +1,17 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 
-import json
+import sys
+import os
+
+PROJECT_HOME = os.path.abspath(os.path.join(os.path.dirname(__file__), '.'))
+sys.path.append(PROJECT_HOME)
 
 from flask import Response
 from flask import current_app
 from requests.utils import quote
+
+import json
 
 from linksData import *
 from adsputils import load_config, setup_logging
@@ -52,8 +58,8 @@ class LinkRequest():
     config = {}
 
     def __init__(self, bibcode, linkType, referreredURL=''):
-        self.config.update(load_config())
-        self.logger = setup_logging('resolver_service', config.get('LOG_LEVEL', 'INFO'))
+        self.config.update(load_config(proj_home=PROJECT_HOME))
+        self.logger = setup_logging('resolver_service', self.config.get('LOG_LEVEL', 'INFO'))
 
         self.bibcode = bibcode
         self.__setMajorMinorLinkTypes(linkType)
@@ -250,7 +256,7 @@ class LinkRequest():
         # for the following link type the return value is a JSON code
         if (self.linkType == 'ASSOCIATED'):
             return self.returnResponseLinkTypeAssociated(getURLandTitle(bibcode=self.bibcode, linkType=self.linkType),
-                                                         current_app.config['RESOLVER_GATEWAY_URL'])
+                                                         self.config['RESOLVER_GATEWAY_URL'])
 
         # for BBB we have defined more specifically the source of full text resources and
         # have divided them into 7 sub types, defined in Solr field eSource
@@ -261,7 +267,7 @@ class LinkRequest():
         # have divided them into 30+ sub types, defined in Solr field data
         if (self.linkType == 'DATA'):
             return self.returnResponseLinkTypeData(getURLandTitle(bibcode=self.bibcode, linkType=self.linkType, linkSubType=self.linkSubType),
-                                                   current_app.config['RESOLVER_GATEWAY_URL'])
+                                                   self.config['RESOLVER_GATEWAY_URL'])
 
         # we did not recognize the linkType, so return an error
         return self.__returnResponseError("error: unrecognizable linkType:'{linkType}'!".format(linkType=self.linkType), 400)
