@@ -3,108 +3,266 @@
 
 import json
 
+from flask import Response
+from flask import current_app
+from requests.utils import quote
+
 from linksData import *
-from logRequest import *
+from adsputils import load_config, setup_logging
 
-def processRequest(bibcode, linkType, referreredURL=''):
+logger = None
+config = {}
 
+class LinkRequest():
+
+    # we have 8 link types that are created on the fly and do not need to go to db
+    # as of now, 8/27/2017, we are to eliminate the COMMENTS and CUSTOM links
     onTheFly = {
-        'ABSTRACT' : 'https://ui.adsabs.harvard.edu/#abs/{bibcode}/{linkType}',
-        'CITATIONS': 'https://ui.adsabs.harvard.edu/#abs/{bibcode}/{linkType}',
-        'REFERENCES': 'https://ui.adsabs.harvard.edu/#abs/{bibcode}/{linkType}',
-        'COREADS': 'https://ui.adsabs.harvard.edu/#abs/{bibcode}/{linkType}',
-        'ADS_SCAN': 'http://articles.adsabs.harvard.edu/full/{bibcode}',
-        'COMMENTS': 'http://adsabs.harvard.edu/NOTES/{bibcode}.html',
-        'TOC': '???'
+        'ABSTRACT' : 'https://ui.adsabs.harvard.edu/#abs/{bibcode}/abstract',
+        'CITATIONS': 'https://ui.adsabs.harvard.edu/#abs/{bibcode}/citations',
+        'REFERENCES': 'https://ui.adsabs.harvard.edu/#abs/{bibcode}/references',
+        'COREADS': 'https://ui.adsabs.harvard.edu/#abs/{bibcode}/coreads',
+        #'COMMENTS': '???',
+        'TOC': 'http://ui.adsabs.harvard.edu/#abs/{bibcode}/toc',
+        'OPENURL': 'http://ui.adsabs.harvard.edu/#abs/{bibcode}/openurl',
+        #'CUSTOM': '???'
     }
-    # toc/all.links is the list of bibcodes which should have this link activated,
-    # but as with references, citations, etc. the list of articles which should be
-    # generated is computed on the fly via a SOLR search. All we have to do is add
-    # TOC to the list of properties in the solr document
 
-    eSource = {
-        'ARTICLE' : '{linkURL}',
-        'PUB_HTML' : '{linkURL}',
-        'PUB_PDF' : '{linkURL}',
-        'ADS_PDF' : '{linkURL}',
-        'ADS_SCAN' : '{linkURL}',
-        'ARXIV_HTML' : 'https://arxiv.org/abs/{linkURL}',
-        'ARXIV_PDF' : '{linkURL}',
-        'AUTHOR_HTML' : '{linkURL}',
-        'AUTHOR_PDF' : '{linkURL}'
-    }
-    data = ['ARI','SIMBAD','NED','CDS','Vizier','GCPD','Author','PDG','MAST','HEASARC','INES','IBVS','Astroverse',
-            'ESA','NExScI','PDS','AcA','ISO','ESO','CXO','NOAO','XMM','Spitzer','PASA','ATNF','KOA','Herschel','GTC',
-            'BICEP2','ALMA','CADC','Zenodo','TNS']
+    # electronic journal sub types
+    eSource = [
+        'PUB_PDF', 'EPRINT_PDF', 'AUTHOR_PDF', 'ADS_PDF',
+        'PUB_HTML', 'EPRINT_HTML', 'AUTHOR_HTML', 'ADS_SCAN'
+    ]
 
-    # backward compatibility conversation
-    linkType = linkType.replace('GIF','ADS_SCAN').replace('PREPRINT','ARXIV_HTML').replace('EJOURNAL', 'PUB_HTML')
+    # data sub types
+    data =  [
+        'ARI', 'SIMBAD', 'NED', 'CDS', 'Vizier', 'GCPD', 'Author', 'PDG', 'MAST', 'HEASARC', 'INES', 'IBVS', 'Astroverse',
+        'ESA', 'NExScI', 'PDS', 'AcA', 'ISO', 'ESO', 'CXO', 'NOAO', 'XMM', 'Spitzer', 'PASA', 'ATNF', 'KOA', 'Herschel',
+        'GTC', 'BICEP2', 'ALMA', 'CADC', 'Zenodo', 'TNS', ''
+    ]
 
-    # we have 7 link types that can be created on the fly and do not need to go to db
-    # we just need to log the request
-    if (linkType in onTheFly):
-        if (linkType == 'COMMENTS'):
-            bibcode = bibcode.replace('A&A', 'A+A')
-        linkURL = onTheFly[linkType].format(bibcode=bibcode, linkType=linkType)
-        return returnResponse(bibcode, linkType, linkURL, referreredURL, linkURL)
+    linkTypes = onTheFly.keys() + ['ARTICLE', 'DATA', 'INSPIRE', 'LIBRARYCATALOG', 'PRESENTATION', 'ASSOCIATED']
 
-    # for the following two types also we only needs to log the request
-    elif (linkType == 'LIBRARYENTRIES') or (linkType == 'CUSTOM'):
-        return ['', 200]
+    bibcode = ''
+    linkType = ''
+    linkSubType = ''
+    referreredURL = ''
 
-    # the rest of the link types query the db, some return just a url, and some JSON code of pair values url and title
+    logger = None
+    config = {}
 
-    # the following four link types have been defined in Solr field property:
-    # INSPIRE, LIBRARYCATALOG, PRESENTATION, and ASSOCIATED
-    # the first three return a url, the last type returns a JSON code
-    elif (linkType == 'INSPIRE') or (linkType == 'LIBRARYCATALOG') or (linkType == 'PRESENTATION'):
-        linkURL = getURL(bibcode, linkType)
-        return returnResponse(bibcode, linkType, linkURL, referreredURL, linkURL)
+    def __init__(self, bibcode, linkType, referreredURL=''):
+        self.config.update(load_config())
+        self.logger = setup_logging('resolver_service', config.get('LOG_LEVEL', 'INFO'))
 
-    elif (linkType == 'ASSOCIATED'):
-        # we are logging the link that send us here
-        pageURL= 'https://ui.adsabs.harvard.edu/#abs/{}/associated'.format(bibcode)
-        linkFormat = 'https://ui.adsabs.harvard.edu/resolver/{}/abstract'
-        jsonCode = rowsToJSON(getURLandTitle(bibcode, linkType), linkFormat)
-        return returnResponse(bibcode, linkType, pageURL, referreredURL, jsonCode)
-
-    # EJOURNAL, ARTICLE, and PREPRINT are classics' link types
-    # for BBB we have defined more specifically the source of full text resources and have divided them into 8
-    # types, defined in Solr field eSource
-    # note that for backward compatibility we are recognizing the classic types
-    # they return a url
-    elif (linkType in eSource):
-        linkURL = getURL(bibcode, linkType)
-        if (len(linkURL) > 0):
-            linkURL = eSource[linkType].format(linkURL=''.join(linkURL))
-        return returnResponse(bibcode, linkType, linkURL, referreredURL, linkURL)
-
-    # the following link types have been defined in Solr field data
-    # they return a url
-    elif (linkType in data):
-        linkURL = getURL(bibcode, linkType)
-        return returnResponse(bibcode, linkType, linkURL, referreredURL, linkURL)
-
-    # we did not recognize the linkType, so return an error
-    else:
-        return ["error: unrecognizable linkType:'{linkType}'".format(linkType=linkType), 400]
-
-def rowsToJSON(rows, formatStr):
-
-    data = []
-    if (len(rows) > 0):
-        data.append({'count':len(rows)})
-        for i, row in enumerate(rows):
-            item = {}
-            item['bibcode'] = row[0]
-            item['title'] = row[1]
-            item['link'] = formatStr.format(row[0])
-            data.append(item)
-        return json.dumps(data)
-    return data
+        self.bibcode = bibcode
+        self.__setMajorMinorLinkTypes(linkType)
+        self.referreredURL = referreredURL
+        self.__backwardCompatibility(linkType)
 
 
-def returnResponse(bibcode, linkType, linkURL, referreredURL, response):
-    if (len(response) != 0):
-        sendLog(bibcode, linkType, linkURL, referreredURL)
-        return [response, 200]
+    def __backwardCompatibility(self, linkType):
+        # GIF, EJOURNAL, and PREPRINT are classics' types
+        # for backward compatibility we are recognizing them
+        if (linkType == 'GIF'):
+            self.linkType = 'ARTICLE'
+            self.linkSubType = 'ADS_SCAN'
+        elif (linkType == 'PREPRINT'):
+            self.linkType = 'ARTICLE'
+            self.linkSubType = 'EPRINT_HTML'
+        elif (linkType == 'EJOURNAL'):
+            self.linkType = 'ARTICLE'
+            self.linkSubType = 'PUB_HTML'
+
+
+    def __setMajorMinorLinkTypes(self, linkType):
+        # figure out what are the linkType and subLinkType
+        # from one input param
+        if (linkType in self.linkTypes):
+            self.linkType = linkType
+            self.linkSubType = ''
+        else:
+            # we have two sets of sub link type, figure out which one it is
+            if (linkType in self.eSource):
+                self.linkType = 'ARTICLE'
+                self.linkSubType = linkType
+            elif (linkType in self.data) :
+                self.linkType = 'DATA'
+                self.linkSubType = linkType
+            else:
+                self.linkType = '?'
+                self.linkSubType = '?'
+
+
+    def __returnResponseError(self, response, status):
+        self.logger.info('sending response status={status}'.format(status=status))
+        self.logger.debug('sending response text={response}'.format(response=response))
+
+        r = Response(response=response, status=status)
+        r.headers['content-type'] = 'text/html; charset=UTF-8'
+        return r
+
+
+    def __returnResponse(self, contentType, response):
+        self.logger.info('sending response status={status}'.format(status=200 if (len(response) > 0) else 404))
+        self.logger.debug('sending response text={response}'.format(response=response))
+
+        if (len(response) != 0):
+            r = Response(response=response, status=200)
+            r.headers['content-type'] = contentType
+            return r
+        r = Response(response='', status=404)
+        r.headers['content-type'] = contentType
+        return r
+
+
+    # for these link types, we only need to format the deterministic link and return it
+    def __processRequestOnTheFlyLinks(self):
+        linkURL = self.onTheFly[self.linkType].format(bibcode=self.bibcode)
+        return self.__returnResponse('text/html; charset=UTF-8', linkURL)
+
+    # for link type = article, we can have one or many urls
+    # if there is only one url we return it, otherwise, we return a json code
+    def returnResponseLinkTypeArticle(self, result):
+        if (len(result) > 0):
+            if (len(result) == 1):
+                return self.__returnResponse('text/html; charset=UTF-8', result[0])
+            else:
+                links = {}
+                links['count'] = len(result)
+                links['bibcode'] = self.bibcode
+                links['linkType'] = self.linkType
+                records = []
+                for url in result:
+                    record = {}
+                    record['title'] = url
+                    record['url'] = url
+                    records.append(record)
+                links['records'] = records
+                response = {}
+                # when we have multiple sources of electronic journal, there is no url to log
+                response['service'] = ''
+                response['action'] = 'display'
+                response['links'] = links
+                return self.__returnResponse('application/json', json.dumps(response))
+        return self.__returnResponseError("error: did not find any records for bibcode:'{bibcode}' with "
+                                          "link type: '{link_type}' and link sub type: '{link_sub_type}'!"
+                                          .format(bibcode=self.bibcode, link_type=self.linkType,
+                                                  link_sub_type=self.linkSubType if (len(self.linkSubType) > 0) else 'any value'), 404)
+
+
+    # for link type = associated, we return a JSON code
+    def returnResponseLinkTypeAssociated(self, result, redirectFormatStr):
+
+        if (len(result) > 0):
+            links = {}
+            links['count'] = len(result)
+            links['linkType'] = self.linkType
+            records = []
+            linkFormatStr = self.onTheFly['ABSTRACT']
+            for row in result:
+                encodeURL = quote(linkFormatStr.format(bibcode=row[0]), safe='')
+                redirectURL = redirectFormatStr.format(bibcode=row[0], linkType=self.linkType.lower(), URL=encodeURL)
+                record = {}
+                record['bibcode'] = row[0]
+                record['title'] = row[1]
+                record['url'] = redirectURL
+                records.append(record)
+            records = sorted(records, key=lambda k: k['title'])
+            links['records'] = records
+            response = {}
+            response['service'] = 'https://ui.adsabs.harvard.edu/#abs/{}/associated'.format(self.bibcode)
+            response['action'] = 'display'
+            response['links'] = links
+            return self.__returnResponse('application/json', json.dumps(response))
+        return self.__returnResponseError("error: did not find any records for bibcode:'{bibcode}' with link type: '{link_type}'!"
+                                          .format(bibcode=self.bibcode, link_type=self.linkType), 404)
+
+
+    def __getURLBaseName(self, URL):
+        slashparts = URL.split('/')
+        # Now join back the first three sections 'http:', '' and 'example.com'
+        return '/'.join(slashparts[:3]) + '/'
+
+    # for link type = data, we can have one or many urls
+    # if there is only one url we return it, otherwise, we return a json code
+    def returnResponseLinkTypeData(self, result, redirectFormatStr):
+        if (len(result) > 0):
+            if (len(result) == 1):
+                return self.__returnResponse('text/html; charset=UTF-8', result[0])
+            else:
+                rows = zip(*result)
+                url = ''
+                domain = {}
+                data = []
+                count = 0
+                records = []
+                for i in range(len(result)):
+                    if (url != rows[0][i]):
+                        count += 1
+                        if (domain):
+                            domain['data'] = data
+                            records.append(domain)
+                            data = []
+                        url = rows[0][i]
+                        domain = {}
+                        baseName = self.__getURLBaseName(url)
+                        domain['title'] = 'Resource at ' + baseName
+                        domain['url'] = baseName
+                    encodeURL = quote(rows[0][i], safe='')
+                    redirectURL = redirectFormatStr.format(bibcode=self.bibcode, linkType=self.linkType.lower(), URL=encodeURL)
+                    record = {}
+                    record['title'] = rows[1][i] if len(rows[1][i]) > 0 else rows[0][i]
+                    record['url'] = redirectURL
+                    data.append(record)
+                domain['data'] = data
+                records.append(domain)
+                links = {}
+                links['count'] = count
+                links['bibcode'] = self.bibcode
+                links['records'] = records
+                response = {}
+                # when we have multiple sources of links elements there is no url to log
+                response['service'] = ''
+                response['action'] = 'display'
+                response['links'] = links
+                return self.__returnResponse('application/json', json.dumps(response))
+        return self.__returnResponseError("error: did not find any records for bibcode:'{bibcode}' with "
+                                          "link type: '{link_type}' and link sub type: '{link_sub_type}'!"
+                                          .format(bibcode=self.bibcode, link_type=self.linkType,
+                                                  link_sub_type=self.linkSubType if (len(self.linkSubType) > 0) else 'any value'), 404)
+
+
+    def processRequest(self):
+        if (len(self.bibcode) == 0) or (len(self.linkType) == 0):
+            return self.__returnResponseError('error: not all the needed information received', 400)
+
+        # for these link types, we only need to format the deterministic link and return it
+        if (self.linkType in self.onTheFly.keys()):
+            return self.__processRequestOnTheFlyLinks()
+
+        # the rest of the link types query the db
+
+        # for the following link types the return value is a url
+        if (self.linkType == 'INSPIRE') or (self.linkType == 'LIBRARYCATALOG') or (self.linkType == 'PRESENTATION'):
+            return self.__returnResponse('text/html; charset=UTF-8', getURL(bibcode=self.bibcode, linkType=self.linkType))
+
+        # for the following link type the return value is a JSON code
+        if (self.linkType == 'ASSOCIATED'):
+            return self.returnResponseLinkTypeAssociated(getURLandTitle(bibcode=self.bibcode, linkType=self.linkType),
+                                                         current_app.config['RESOLVER_GATEWAY_URL'])
+
+        # for BBB we have defined more specifically the source of full text resources and
+        # have divided them into 7 sub types, defined in Solr field eSource
+        if (self.linkType == 'ARTICLE'):
+            return self.returnResponseLinkTypeArticle(getURL(bibcode=self.bibcode, linkType=self.linkType, linkSubType=self.linkSubType))
+
+        # for BBB we have defined more specifically the type of data and
+        # have divided them into 30+ sub types, defined in Solr field data
+        if (self.linkType == 'DATA'):
+            return self.returnResponseLinkTypeData(getURLandTitle(bibcode=self.bibcode, linkType=self.linkType, linkSubType=self.linkSubType),
+                                                   current_app.config['RESOLVER_GATEWAY_URL'])
+
+        # we did not recognize the linkType, so return an error
+        return self.__returnResponseError("error: unrecognizable linkType:'{linkType}'!".format(linkType=self.linkType), 400)
+

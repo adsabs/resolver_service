@@ -1,23 +1,30 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 
-from flask import request, Blueprint, Response
+from flask import request, Blueprint
 from flask_discoverer import advertise
 
-from linksRequest import *
+from adsputils import load_config, setup_logging
+
+from linksRequest import LinkRequest
 
 bp = Blueprint('resolver_service', __name__)
 
-def __returnResponse(response, status):
-    r = Response(response=response, status=status)
-    r.headers['content-type'] = 'application/json'
-    return r
+logger = None
+config = {}
 
 @advertise(scopes=[], rate_limit=[1000, 3600 * 24])
-@bp.route('/resolver/<bibcode>/<linkType>', methods=['GET'])
+@bp.route('/v1/resolver/<bibcode>/<linkType>', methods=['GET'])
 def resolver(bibcode, linkType):
-    if (len(bibcode) == 0) or (len(linkType) == 0):
-        return __returnResponse('error: not all the needed information received', 400)
 
-    [response, status] = processRequest(bibcode, linkType.upper(), request.referrer)
-    return __returnResponse(response, status)
+    global logger
+    global config
+
+    if logger == None:
+        config.update(load_config())
+        logger = setup_logging('resolver_service', config.get('LOG_LEVEL', 'INFO'))
+
+    logger.info('received request with bibcode={bibcode} and linkType={linkType}'.format(bibcode=bibcode, linkType=linkType))
+
+    return LinkRequest(bibcode, linkType.upper(), request.referrer).processRequest()
+
