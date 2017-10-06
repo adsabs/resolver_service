@@ -1,33 +1,33 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 
-import sys
-import os
-
-PROJECT_HOME = os.path.abspath(os.path.join(os.path.dirname(__file__), '.'))
-sys.path.append(PROJECT_HOME)
-
-from flask import Response
+from flask import request, Blueprint
 from flask import current_app
 from requests.utils import quote
 
-import json
 
-from linksData import *
-from adsputils import load_config, setup_logging
+bp = Blueprint('resolver_service', __name__)
 
-logger = None
-config = {}
+        
+@advertise(scopes=[], rate_limit=[1000, 3600 * 24])
+@bp.route('/<bibcode>/<linkType>', methods=['GET'])
+def resolver(bibcode, link_type):
+    current_app.logger.info('received request with bibcode={bibcode} and link_type={link_type}'.format(bibcode=bibcode, link_type=link_type))
+    # this must always return JSON
+    # linktype should be optional - to request everytihng we have/know about the bibcode
+    return LinkRequest(bibcode, link_type.upper()).processRequest()
 
+
+        
 class LinkRequest():
 
     # we have 8 link types that are created on the fly and do not need to go to db
     # as of now, 8/27/2017, we are to eliminate the COMMENTS and CUSTOM links
     onTheFly = {
-        'ABSTRACT' : 'https://ui.adsabs.harvard.edu/#abs/{bibcode}/abstract',
-        'CITATIONS': 'https://ui.adsabs.harvard.edu/#abs/{bibcode}/citations',
-        'REFERENCES': 'https://ui.adsabs.harvard.edu/#abs/{bibcode}/references',
-        'COREADS': 'https://ui.adsabs.harvard.edu/#abs/{bibcode}/coreads',
+        'ABSTRACT' : '{baseurl}/#abs/{bibcode}/abstract',
+        'CITATIONS': '{baseurl}/#abs/{bibcode}/citations',
+        'REFERENCES': '{baseurl}/#abs/{bibcode}/references',
+        'COREADS': '{baseurl}/#abs/{bibcode}/coreads',
         #'COMMENTS': '???',
         'TOC': 'http://ui.adsabs.harvard.edu/#abs/{bibcode}/toc',
         'OPENURL': 'http://ui.adsabs.harvard.edu/#abs/{bibcode}/openurl',
@@ -52,18 +52,14 @@ class LinkRequest():
     bibcode = ''
     linkType = ''
     linkSubType = ''
-    referreredURL = ''
 
-    logger = None
-    config = {}
-
-    def __init__(self, bibcode, linkType, referreredURL=''):
-        self.config.update(load_config(proj_home=PROJECT_HOME))
-        self.logger = setup_logging('resolver_service', self.config.get('LOG_LEVEL', 'INFO'))
-
+    def __init__(self, bibcode, linkType):
+        
+        self.config = current_app.config
+        self.baseurl = self.config.get('ADS_BASEURL', 'https://ui.adsabs.harvard.edu') # configurable because it may change (for debugging/sandbox)
+        self.logger = current_app.logger
         self.bibcode = bibcode
         self.__setMajorMinorLinkTypes(linkType)
-        self.referreredURL = referreredURL
         self.__backwardCompatibility(linkType)
 
 
@@ -100,32 +96,12 @@ class LinkRequest():
                 self.linkSubType = '?'
 
 
-    def __returnResponseError(self, response, status):
-        self.logger.info('sending response status={status}'.format(status=status))
-        self.logger.debug('sending response text={response}'.format(response=response))
-
-        r = Response(response=response, status=status)
-        r.headers['content-type'] = 'text/html; charset=UTF-8'
-        return r
-
-
-    def __returnResponse(self, contentType, response):
-        self.logger.info('sending response status={status}'.format(status=200 if (len(response) > 0) else 404))
-        self.logger.debug('sending response text={response}'.format(response=response))
-
-        if (len(response) != 0):
-            r = Response(response=response, status=200)
-            r.headers['content-type'] = contentType
-            return r
-        r = Response(response='', status=404)
-        r.headers['content-type'] = contentType
-        return r
 
 
     # for these link types, we only need to format the deterministic link and return it
     def __processRequestOnTheFlyLinks(self):
-        linkURL = self.onTheFly[self.linkType].format(bibcode=self.bibcode)
-        return self.__returnResponse('text/html; charset=UTF-8', linkURL)
+        return self.onTheFly[self.linkType].format(bibcode=self.bibcode)
+
 
     # for link type = article, we can have one or many urls
     # if there is only one url we return it, otherwise, we return a json code
@@ -177,7 +153,7 @@ class LinkRequest():
             records = sorted(records, key=lambda k: k['title'])
             links['records'] = records
             response = {}
-            response['service'] = 'https://ui.adsabs.harvard.edu/#abs/{}/associated'.format(self.bibcode)
+            response['service'] = '{baseurl}/#abs/{}/associated'.format(self.bibcode)
             response['action'] = 'display'
             response['links'] = links
             return self.__returnResponse('application/json', json.dumps(response))
@@ -239,11 +215,11 @@ class LinkRequest():
                                                   link_sub_type=self.linkSubType if (len(self.linkSubType) > 0) else 'any value'), 404)
 
 
-    def processRequest(self):
-        if (len(self.bibcode) == 0) or (len(self.linkType) == 0):
-            return self.__returnResponseError('error: not all the needed information received', 400)
-
-        # for these link types, we only need to format the deterministic link and return it
+    def _get_url(self, data):
+        """Finds the destination for the bibcode and the data we know about it."""
+        pass # TODO - modify the logic
+    
+                # for these link types, we only need to format the deterministic link and return it
         if (self.linkType in self.onTheFly.keys()):
             return self.__processRequestOnTheFlyLinks()
 
@@ -269,6 +245,34 @@ class LinkRequest():
             return self.returnResponseLinkTypeData(getURLandTitle(bibcode=self.bibcode, linkType=self.linkType, linkSubType=self.linkSubType),
                                                    self.config['RESOLVER_GATEWAY_URL'])
 
-        # we did not recognize the linkType, so return an error
-        return self.__returnResponseError("error: unrecognizable linkType:'{linkType}'!".format(linkType=self.linkType), 400)
 
+    
+    def processRequest(self):
+        
+        # the logic should be as follows:
+        
+        # load information about the bibcode/subtype combination
+            # return 404 if no record exists
+            # return 404 if no record&subtype exists
+        
+        # format all links
+        
+        # return JSON with 200 status
+        
+        try:
+            data = self._load_record()
+        except BibcodeNotFound, e:
+            return 404, {"msg": 'Bibcode {bibcode} cannot be resolved (not exists)'.format(bibcode=self.bibcode)}
+        except SutypeNotFound, e:
+            return 404, {"msg": 'Bibcode {bibcode} found, but the {link_type} cannot be resolved'.format(
+                                                           bibcode=self.bibcode, link_type=self.link_type)}
+        
+        out = {'bibcode': self.bibcode, 'links': []}
+        pointer = out['links']
+        
+        for row in data:
+            row['url'] = self._get_url(row)
+            pointer.append(row)
+            
+        return 200, out
+        
