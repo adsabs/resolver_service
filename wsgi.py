@@ -8,7 +8,7 @@
 """
 
 from werkzeug.serving import run_simple
-from service import app
+from resolversrv import app
 
 application = app.create_app()
 
