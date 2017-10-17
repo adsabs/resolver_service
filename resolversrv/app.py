@@ -4,13 +4,13 @@
 import os
 import inspect
 
-from views import bp
 from flask_restful import Api
 from flask_discoverer import Discoverer
 
 from adsmutils import ADSFlask, load_module
 
 import resolversrv
+from resolversrv.views import bp
 
 def create_app(config=None):
     """

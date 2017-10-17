@@ -162,12 +162,23 @@ class test_resolver(unittest.TestCase):
         self.assertEqual(response._status_code, 404)
 
 
-    #returning a url of link type ARTICLE
+    # returning a url of link type ARTICLE
     def test_link_article_sub_type(self):
         result = self.execute_query(self.query_with_link_sub_type.format(bibcode='2013MNRAS.435.1904M', link_type='ARTICLE', link_sub_type='PUB_PDF'))
         response = LinkRequest(bibcode='2013MNRAS.435.1904', link_type='PUB_PDF').response_link_type_article(result)
         self.assertEqual(response._status_code, 200)
         self.assertEqual(response.response[0], 'http://mnras.oxfordjournals.org/content/435/3/1904.full.pdf')
+
+
+    # test DataLinks class
+    def test_link_article_parts(self):
+        results = self.execute_query(self.query_with_link_sub_type.format(bibcode='2013MNRAS.435.1904M', link_type='ARTICLE', link_sub_type='PUB_PDF'))
+        self.assertEqual(len(results), 1)
+        result = results[0]
+        self.assertEqual(result.get_count(), 1)
+        self.assertEqual(result.get_bibcode(), '2013MNRAS.435.1904M')
+        self.assertEqual(result.get_url(), 'http://mnras.oxfordjournals.org/content/435/3/1904.full.pdf')
+        self.assertEqual(result.get_title(), '')
 
 
     # returning list of url, title pairs

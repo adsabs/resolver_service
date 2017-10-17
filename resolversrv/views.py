@@ -285,6 +285,10 @@ class LinkRequest():
 
 
     def process_request(self):
+        """
+
+        :return:
+        """
         self.logger.info('received request with bibcode={bibcode} and link_type={link_type}'.format(
                 bibcode=self.bibcode,
                 link_type=self.link_type))
