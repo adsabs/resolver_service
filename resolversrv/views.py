@@ -141,7 +141,8 @@ class LinkRequest():
         return r
 
 
-    def return_response_single_url(self, response):
+    def return_response_single_url(self, url):
+        response = self.config['RESOLVER_GATEWAY_URL_TEST'].format(bibcode=self.bibcode, link_type=self.link_type, url=url)
         return self.__return_response(response, 'text/plain; charset=UTF-8')
 
 
@@ -170,6 +171,7 @@ class LinkRequest():
 
         :param results: result from the query
         """
+
         if (len(results) > 0):
             if (len(results) == 1):
                 return self.return_response_single_url(results[0].get_url())
@@ -330,4 +332,10 @@ class LinkRequest():
 @advertise(scopes=[], rate_limit=[1000, 3600 * 24])
 @bp.route('/v1/resolver/<bibcode>/<link_type>', methods=['GET'])
 def resolver(bibcode, link_type):
+    """
+
+    :param bibcode:
+    :param link_type: 
+    :return:
+    """
     return LinkRequest(bibcode, link_type.upper()).process_request()

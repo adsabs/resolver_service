@@ -97,14 +97,16 @@ def get_records(bibcode, link_type, link_sub_type=None):
             rows = db_session.query(DataLinks).filter(and_(DataLinks.bibcode == bibcode, DataLinks.link_type == link_type)).all()
             msg = "Fetched records for bibcode = '{bibcode}' and link type = '{link_type}'."
         else:
-            rows = db_session.query(DataLinks).filter(DataLinks.link_type == link_type, DataLinks.link_sub_type == link_sub_type).all()
+            rows = db_session.query(DataLinks).filter(and_(DataLinks.bibcode == bibcode, DataLinks.link_type == link_type, DataLinks.link_sub_type == link_sub_type)).all()
             msg = "Fetched records for bibcode = '{bibcode}', link type = '{link_type}' and link sub type = '{link_sub_type}'."
         logger.debug(msg.format(bibcode=bibcode, link_type=link_type, link_sub_type=link_sub_type))
         return rows
-    except NoResultFound:
+    except NoResultFound, e:
         if not link_sub_type:
             msg = "No records found for bibcode = '{bibcode}' and link type = '{link_type}'."
         else:
             msg = "No records found for bibcode = '{bibcode}', link type = '{link_type}' and link sub type = '{link_sub_type}'."
         logger.error(msg.format(bibcode=bibcode, link_type=link_type, link_sub_type=link_sub_type))
+        logger.error('Error: ' + e)
         return None
+
