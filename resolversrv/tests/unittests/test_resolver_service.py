@@ -8,44 +8,44 @@ sys.path.append(PROJECT_HOME)
 from flask_testing import TestCase
 import unittest
 
-from resolversrv.views import LinkRequest
 import resolversrv.app as app
+from resolversrv.views import LinkRequest
 
 class TestResolver(TestCase):
     def create_app(self):
-        #Start the wsgi application
-        return app.create_app()
+        self.current_app = app.create_app()
+        return self.current_app
 
     # the following four types' links are created on the fly
     def test_fetchingAbstract(self):
-        response = LinkRequest('1987gady.book.....B', 'ABSTRACT').process_request()
+        response = LinkRequest('1987gady.book.....B', 'ABSTRACT', self.current_app.config['RESOLVER_GATEWAY_URL_TEST']).process_request()
         self.assertEqual(response._status_code, 200)
-        self.assertEqual(response.response[0], 'https://ui.adsabs.harvard.edu/#abs/1987gady.book.....B/abstract')
+        self.assertEqual(response.response[0], '/resolver/1987gady.book.....B/ABSTRACT/https://ui.adsabs.harvard.edu/#abs/1987gady.book.....B/abstract')
     def test_fetchingCitations(self):
-        response = LinkRequest('1987gady.book.....B', 'CITATIONS').process_request()
+        response = LinkRequest('1987gady.book.....B', 'CITATIONS', self.current_app.config['RESOLVER_GATEWAY_URL_TEST']).process_request()
         self.assertEqual(response._status_code, 200)
-        self.assertEqual(response.response[0], 'https://ui.adsabs.harvard.edu/#abs/1987gady.book.....B/citations')
+        self.assertEqual(response.response[0], '/resolver/1987gady.book.....B/CITATIONS/https://ui.adsabs.harvard.edu/#abs/1987gady.book.....B/citations')
     def test_fetchingCoRead(self):
-        response = LinkRequest('1987gady.book.....B', 'COREADS').process_request()
+        response = LinkRequest('1987gady.book.....B', 'COREADS', self.current_app.config['RESOLVER_GATEWAY_URL_TEST']).process_request()
         self.assertEqual(response._status_code, 200)
-        self.assertEqual(response.response[0], 'https://ui.adsabs.harvard.edu/#abs/1987gady.book.....B/coreads')
+        self.assertEqual(response.response[0], '/resolver/1987gady.book.....B/COREADS/https://ui.adsabs.harvard.edu/#abs/1987gady.book.....B/coreads')
     def test_fetchingReferences(self):
-        response = LinkRequest('1998ARA&A..36..189K', 'REFERENCES').process_request()
+        response = LinkRequest('1998ARA&A..36..189K', 'REFERENCES', self.current_app.config['RESOLVER_GATEWAY_URL_TEST']).process_request()
         self.assertEqual(response._status_code, 200)
-        self.assertEqual(response.response[0], 'https://ui.adsabs.harvard.edu/#abs/1998ARA&A..36..189K/references')
+        self.assertEqual(response.response[0], '/resolver/1998ARA&A..36..189K/REFERENCES/https://ui.adsabs.harvard.edu/#abs/1998ARA&A..36..189K/references')
 
 
     # the following three tests support of legacy type EJOURNAL
     def test_fetchingEJOURNAL(self):
-        link_request = LinkRequest('1668RSPT....3..863M', 'EJOURNAL')
+        link_request = LinkRequest('1668RSPT....3..863M', 'EJOURNAL', self.current_app.config['RESOLVER_GATEWAY_URL_TEST'])
         self.assertEqual(link_request.link_type, 'ARTICLE')
         self.assertEqual(link_request.link_sub_type, 'PUB_HTML')
     def test_fetchingPreprint(self):
-        link_request = LinkRequest('1991hep.th...10030D', 'PREPRINT')
+        link_request = LinkRequest('1991hep.th...10030D', 'PREPRINT', self.current_app.config['RESOLVER_GATEWAY_URL_TEST'])
         self.assertEqual(link_request.link_type, 'ARTICLE')
         self.assertEqual(link_request.link_sub_type, 'EPRINT_HTML')
     def test_fetchingGIF(self):
-        link_request = LinkRequest('1990ARA&A..28..215D', 'GIF')
+        link_request = LinkRequest('1990ARA&A..28..215D', 'GIF', self.current_app.config['RESOLVER_GATEWAY_URL_TEST'])
         self.assertEqual(link_request.link_type, 'ARTICLE')
         self.assertEqual(link_request.link_sub_type, 'ADS_SCAN')
 

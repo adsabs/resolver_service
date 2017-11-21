@@ -5,15 +5,12 @@ import os
 import inspect
 import json
 
-from flask import request, Blueprint
+from flask import current_app, request, Blueprint
 from flask_discoverer import advertise
 from flask import Response
 from requests.utils import quote
 
-from adsmutils import load_config, setup_logging
-
-import resolversrv
-from resolversrv.models import *
+from resolversrv.utils import get_records
 
 
 bp = Blueprint('resolver_service', __name__)
@@ -50,22 +47,18 @@ class LinkRequest():
 
     link_types = on_the_fly.keys() + ['ARTICLE', 'DATA', 'INSPIRE', 'LIBRARYCATALOG', 'PRESENTATION', 'ASSOCIATED']
 
-    bibcode = ''
-    link_type = ''
-    link_sub_type = ''
 
-    logger = None
-    config = {}
+    def __init__(self, bibcode, link_type, redirect_format_str):
+        """
 
-    def __init__(self, bibcode, link_type):
-        self.config = {}
-        self.config.update(load_config(proj_home=os.path.dirname(inspect.getsourcefile(resolversrv))))
-
-        self.logger = setup_logging('resolver_service', self.config.get('LOG_LEVEL', 'INFO'))
-
+        :param bibcode:
+        :param link_type:
+        :param redirect_format_str:
+        """
         self.bibcode = bibcode
         self.__set_major_minor_link_types(link_type)
         self.__backward_compatibility(link_type)
+        self.redirect_format_str = redirect_format_str
 
 
     def __backward_compatibility(self, link_type):
@@ -124,8 +117,8 @@ class LinkRequest():
 
 
     def __return_response_error(self, response, status):
-        self.logger.info('sending response status={status}'.format(status=status))
-        self.logger.debug('sending response text={response}'.format(response=response))
+        current_app.logger.info('sending response status={status}'.format(status=status))
+        current_app.logger.debug('sending response text={response}'.format(response=response))
 
         r = Response(response=response, status=status)
         r.headers['content-type'] = 'text/plain; charset=UTF-8'
@@ -133,8 +126,8 @@ class LinkRequest():
 
 
     def __return_response(self, response, content_type):
-        self.logger.info('sending response status={status}'.format(status=200))
-        self.logger.debug('sending response text={response}'.format(response=response))
+        current_app.logger.info('sending response status={status}'.format(status=200))
+        current_app.logger.debug('sending response text={response}'.format(response=response))
 
         r = Response(response=response, status=200)
         r.headers['content-type'] = content_type
@@ -142,7 +135,7 @@ class LinkRequest():
 
 
     def return_response_single_url(self, url):
-        response = self.config['RESOLVER_GATEWAY_URL_TEST'].format(bibcode=self.bibcode, link_type=self.link_type, url=url)
+        response = self.redirect_format_str.format(bibcode=self.bibcode, link_type=self.link_type, url=url)
         return self.__return_response(response, 'text/plain; charset=UTF-8')
 
 
@@ -199,12 +192,11 @@ class LinkRequest():
                                                   link_sub_type=self.link_sub_type if (len(self.link_sub_type) > 0) else 'any value'), 404)
 
 
-    def response_link_type_associated(self, results, redirect_format_str):
+    def response_link_type_associated(self, results,):
         """
         for link type = associated, we return a JSON code
 
         :param results: result from the query
-        :param redirect_format_str:
         """
         if (len(results) > 0):
             link_format_str = self.on_the_fly['ABSTRACT']
@@ -216,7 +208,7 @@ class LinkRequest():
                 for idx in range(result.get_count()):
                     bibcode = result.get_url_elem(idx)
                     encodeURL = quote(link_format_str.format(baseurl=self.baseurl, bibcode=bibcode), safe='')
-                    redirectURL = redirect_format_str.format(bibcode=bibcode, link_type=self.link_type.lower(),
+                    redirectURL = self.redirect_format_str.format(bibcode=bibcode, link_type=self.link_type.lower(),
                                                              url=encodeURL)
                     record = {}
                     record['bibcode'] = bibcode
@@ -234,13 +226,12 @@ class LinkRequest():
                                           .format(bibcode=self.bibcode, link_type=self.link_type), 404)
 
 
-    def response_link_type_data(self, results, redirect_format_str):
+    def response_link_type_data(self, results):
         """
         for link type = data, we can have one or many urls
         if there is only one url we return it, otherwise, we return a json code
 
         :param results: result from the query
-        :param redirect_format_str:
         """
         if (len(results) > 0):
             if (len(results) == 1):
@@ -263,7 +254,7 @@ class LinkRequest():
                             domain['title'] = 'Resource at ' + baseName
                             domain['url'] = baseName
                         encodeURL = quote(result.get_url_elem(idx), safe='')
-                        redirectURL = redirect_format_str.format(bibcode=self.bibcode, link_type=self.link_type.lower(), url=encodeURL)
+                        redirectURL = self.redirect_format_str.format(bibcode=self.bibcode, link_type=self.link_type.lower(), url=encodeURL)
                         record = {}
                         record['title'] = result.get_title_elem(idx) if result.get_title_elem(idx) else result.get_url_elem(idx)
                         record['url'] = redirectURL
@@ -291,7 +282,7 @@ class LinkRequest():
 
         :return:
         """
-        self.logger.info('received request with bibcode={bibcode} and link_type={link_type}'.format(
+        current_app.logger.info('received request with bibcode={bibcode} and link_type={link_type}'.format(
                 bibcode=self.bibcode,
                 link_type=self.link_type))
 
@@ -310,8 +301,7 @@ class LinkRequest():
 
         # for the following link type the return value is a JSON code
         if (self.link_type == 'ASSOCIATED'):
-            return self.response_link_type_associated(get_records(bibcode=self.bibcode, link_type=self.link_type),
-                                                      self.config['RESOLVER_GATEWAY_URL'])
+            return self.response_link_type_associated(get_records(bibcode=self.bibcode, link_type=self.link_type))
 
         # for BBB we have defined more specifically the source of full text resources and
         # have divided them into 7 sub types, defined in Solr field esource
@@ -321,8 +311,7 @@ class LinkRequest():
         # for BBB we have defined more specifically the type of data and
         # have divided them into 30+ sub types, defined in Solr field data
         if (self.link_type == 'DATA'):
-            return self.response_link_type_data(get_records(bibcode=self.bibcode, link_type=self.link_type, link_sub_type=self.link_sub_type),
-                                                self.config['RESOLVER_GATEWAY_URL'])
+            return self.response_link_type_data(get_records(bibcode=self.bibcode, link_type=self.link_type, link_sub_type=self.link_sub_type))
 
         # we did not recognize the link_type, so return an error
         return self.__return_response_error("error: unrecognizable link type:'{link_type}'!".format(link_type=self.link_type), 400)
@@ -338,4 +327,4 @@ def resolver(bibcode, link_type):
     :param link_type: 
     :return:
     """
-    return LinkRequest(bibcode, link_type.upper()).process_request()
+    return LinkRequest(bibcode, link_type.upper(), current_app.config['RESOLVER_GATEWAY_URL']).process_request()

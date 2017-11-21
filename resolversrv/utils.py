@@ -4,20 +4,19 @@
 import os
 import inspect
 
+from flask import current_app
 from sqlalchemy import create_engine, Integer, String, Column, and_
 from sqlalchemy.dialects.postgresql import ARRAY
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker, scoped_session
 from sqlalchemy.orm.exc import NoResultFound
 
-from adsmutils import load_config, setup_logging
-
+from adsmutils import load_config
 import resolversrv
 
+# at this point can not access config from current_app, so have to load it manually
 config = {}
 config.update(load_config(proj_home = os.path.dirname(inspect.getsourcefile(resolversrv))))
-logger = setup_logging('resolver_service')
-
 engine = create_engine(config['SQLALCHEMY_DATABASE_URI'])
 Base = declarative_base(engine)
 
@@ -99,14 +98,14 @@ def get_records(bibcode, link_type, link_sub_type=None):
         else:
             rows = db_session.query(DataLinks).filter(and_(DataLinks.bibcode == bibcode, DataLinks.link_type == link_type, DataLinks.link_sub_type == link_sub_type)).all()
             msg = "Fetched records for bibcode = '{bibcode}', link type = '{link_type}' and link sub type = '{link_sub_type}'."
-        logger.debug(msg.format(bibcode=bibcode, link_type=link_type, link_sub_type=link_sub_type))
+        current_app.logger.debug(msg.format(bibcode=bibcode, link_type=link_type, link_sub_type=link_sub_type))
         return rows
     except NoResultFound, e:
         if not link_sub_type:
             msg = "No records found for bibcode = '{bibcode}' and link type = '{link_type}'."
         else:
             msg = "No records found for bibcode = '{bibcode}', link type = '{link_type}' and link sub type = '{link_sub_type}'."
-        logger.error(msg.format(bibcode=bibcode, link_type=link_type, link_sub_type=link_sub_type))
-        logger.error('Error: ' + e)
+        current_app.logger.error(msg.format(bibcode=bibcode, link_type=link_type, link_sub_type=link_sub_type))
+        current_app.logger.error('Error: ' + e)
         return None
 

@@ -4,16 +4,18 @@ import os
 PROJECT_HOME = os.path.abspath(os.path.join(os.path.dirname(__file__), '../../../'))
 sys.path.append(PROJECT_HOME)
 
+from flask_testing import TestCase
 import unittest
+
 import psycopg2
 import testing.postgresql
 import json
 
-from resolversrv.views import LinkRequest
-from resolversrv.models import DataLinks
 import resolversrv.app as app
+from resolversrv.views import LinkRequest
+from resolversrv.utils import DataLinks
 
-class test_resolver(unittest.TestCase):
+class test_resolver(TestCase):
     """tests for generation of resolver"""
 
 
@@ -32,9 +34,11 @@ class test_resolver(unittest.TestCase):
     query_link_type = "SELECT * FROM public.datalinks WHERE bibcode = '{bibcode}' AND (link_type = '{link_type}')"
     query_with_link_sub_type = "SELECT * FROM public.datalinks WHERE bibcode = '{bibcode}' AND (link_type = '{link_type}' AND link_sub_type = '{link_sub_type}')"
 
-    def setUp(self):
+    def create_app(self):
         self.current_app = app.create_app()
+        return self.current_app
 
+    def setUp(self):
         """ Module level set-up called once before any tests in this file are
         executed.  Creates a temporary database and sets it up """
         self.db = testing.postgresql.Postgresql()
@@ -90,28 +94,32 @@ class test_resolver(unittest.TestCase):
     # returning a link
     def test_link_presentation(self):
         result = self.execute_query(self.query_link_type.format(bibcode='2017MNRAS.467.3556B', link_type='PRESENTATION'))
-        response = LinkRequest(bibcode='2017MNRAS.467.3556B', link_type='PRESENTATION').response_single_url(result)
+        response = LinkRequest(bibcode='2017MNRAS.467.3556B', link_type='PRESENTATION',
+                    redirect_format_str = self.current_app.config['RESOLVER_GATEWAY_URL_TEST']).response_single_url(result)
         self.assertEqual(response._status_code, 200)
-        self.assertEqual(response.response[0], 'http://www.astro.lu.se/~alexey/animations.html')
+        self.assertEqual(response.response[0], '/resolver/2017MNRAS.467.3556B/PRESENTATION/http://www.astro.lu.se/~alexey/animations.html')
 
 
     # return 404 for not finding any records
     def test_link_presentation_error_bibcode(self):
         result = self.execute_query(self.query_link_type.format(bibcode='errorbibcode', link_type='PRESENTATION'))
-        response = LinkRequest(bibcode='errorbibcode', link_type='PRESENTATION').response_single_url(result)
+        response = LinkRequest(bibcode='errorbibcode', link_type='PRESENTATION',
+                    redirect_format_str = self.current_app.config['RESOLVER_GATEWAY_URL_TEST']).response_single_url(result)
         self.assertEqual(response._status_code, 404)
 
 
     # return 400 for unrecognizable link type
     def test_link_presentation_error_link_type(self):
-        response = LinkRequest(bibcode='2017MNRAS.467.3556B', link_type='errorlinktype').process_request()
+        response = LinkRequest(bibcode='2017MNRAS.467.3556B', link_type='errorlinktype',
+                    redirect_format_str = self.current_app.config['RESOLVER_GATEWAY_URL_TEST']).process_request()
         self.assertEqual(response._status_code, 400)
 
 
     # returning list of url, title pairs
     def test_link_associated(self):
         result = self.execute_query(self.query_link_type.format(bibcode='1971ATsir.615....4D', link_type='ASSOCIATED'))
-        response = LinkRequest(bibcode='1971ATsir.615....4D', link_type='ASSOCIATED').response_link_type_associated(result, self.current_app.config['RESOLVER_GATEWAY_URL_TEST'])
+        response = LinkRequest(bibcode='1971ATsir.615....4D', link_type='ASSOCIATED',
+                    redirect_format_str = self.current_app.config['RESOLVER_GATEWAY_URL_TEST']).response_link_type_associated(result)
         self.assertEqual(response._status_code, 200)
         self.assertEqual(json.loads(response.response[0]),
                          {'action': 'display',
@@ -136,14 +144,16 @@ class test_resolver(unittest.TestCase):
     # return 404 for not finding any records
     def test_link_associated_error_bibcode(self):
         result = self.execute_query(self.query_link_type.format(bibcode='errorbibcode', link_type='ASSOCIATED'))
-        response = LinkRequest(bibcode='errorbibcode', link_type='ASSOCIATED').response_link_type_associated(result, self.current_app.config['RESOLVER_GATEWAY_URL_TEST'])
+        response = LinkRequest(bibcode='errorbibcode', link_type='ASSOCIATED',
+                    redirect_format_str = self.current_app.config['RESOLVER_GATEWAY_URL_TEST']).response_link_type_associated(result)
         self.assertEqual(response._status_code, 404)
 
 
     # returning list of urls
     def test_link_article(self):
         result = self.execute_query(self.query_link_type.format(bibcode='2013MNRAS.435.1904M', link_type='ARTICLE'))
-        response = LinkRequest(bibcode='2013MNRAS.435.1904', link_type='ARTICLE').response_link_type_article(result)
+        response = LinkRequest(bibcode='2013MNRAS.435.1904', link_type='ARTICLE',
+                    redirect_format_str = self.current_app.config['RESOLVER_GATEWAY_URL_TEST']).response_link_type_article(result)
         self.assertEqual(response._status_code, 200)
         self.assertEqual(json.loads(response.response[0]),
                          {"action": "display",
@@ -158,16 +168,18 @@ class test_resolver(unittest.TestCase):
     # return 404 for not finding any records
     def test_link_article_error_bibcode(self):
         result = self.execute_query(self.query_link_type.format(bibcode='errorbibcode', link_type='ARTICLE'))
-        response = LinkRequest(bibcode='errorbibcode', link_type='ARTICLE').response_link_type_article(result)
+        response = LinkRequest(bibcode='errorbibcode', link_type='ARTICLE',
+                    redirect_format_str = self.current_app.config['RESOLVER_GATEWAY_URL_TEST']).response_link_type_article(result)
         self.assertEqual(response._status_code, 404)
 
 
     # returning a url of link type ARTICLE
     def test_link_article_sub_type(self):
         result = self.execute_query(self.query_with_link_sub_type.format(bibcode='2013MNRAS.435.1904M', link_type='ARTICLE', link_sub_type='PUB_PDF'))
-        response = LinkRequest(bibcode='2013MNRAS.435.1904', link_type='PUB_PDF').response_link_type_article(result)
+        response = LinkRequest(bibcode='2013MNRAS.435.1904', link_type='PUB_PDF',
+                    redirect_format_str = self.current_app.config['RESOLVER_GATEWAY_URL_TEST']).response_link_type_article(result)
         self.assertEqual(response._status_code, 200)
-        self.assertEqual(response.response[0], 'http://mnras.oxfordjournals.org/content/435/3/1904.full.pdf')
+        self.assertEqual(response.response[0], '/resolver/2013MNRAS.435.1904/ARTICLE/http://mnras.oxfordjournals.org/content/435/3/1904.full.pdf')
 
 
     # test DataLinks class
@@ -184,7 +196,8 @@ class test_resolver(unittest.TestCase):
     # returning list of url, title pairs
     def test_link_data(self):
         result = self.execute_query(self.query_link_type.format(bibcode='2013MNRAS.435.1904M', link_type='DATA'))
-        response = LinkRequest(bibcode='2013MNRAS.435.1904', link_type='DATA').response_link_type_data(result, self.current_app.config['RESOLVER_GATEWAY_URL_TEST'])
+        response = LinkRequest(bibcode='2013MNRAS.435.1904', link_type='DATA',
+                    redirect_format_str = self.current_app.config['RESOLVER_GATEWAY_URL_TEST']).response_link_type_data(result)
         self.assertEqual(response._status_code, 200)
         self.assertEqual(json.loads(response.response[0]),
                          {
@@ -283,16 +296,18 @@ class test_resolver(unittest.TestCase):
     # return 404 for not finding any records
     def test_link_data_error_bibcode(self):
         result = self.execute_query(self.query_link_type.format(bibcode='errorbibcode', link_type='DATA'))
-        response = LinkRequest(bibcode='errorbibcode', link_type='DATA').response_link_type_data(result, self.current_app.config['RESOLVER_GATEWAY_URL_TEST'])
+        response = LinkRequest(bibcode='errorbibcode', link_type='DATA',
+                    redirect_format_str = self.current_app.config['RESOLVER_GATEWAY_URL_TEST']).response_link_type_data(result)
         self.assertEqual(response._status_code, 404)
 
 
     # returning a url of link type DATA
     def test_link_data_sub_type(self):
         result = self.execute_query(self.query_with_link_sub_type.format(bibcode='2013MNRAS.435.1904M', link_type='DATA', link_sub_type='MAST'))
-        response = LinkRequest(bibcode='2013MNRAS.435.1904', link_type='PUB_PDF').response_link_type_data(result, self.current_app.config['RESOLVER_GATEWAY_URL_TEST'])
+        response = LinkRequest(bibcode='2013MNRAS.435.1904', link_type='PUB_PDF',
+                    redirect_format_str = self.current_app.config['RESOLVER_GATEWAY_URL_TEST']).response_link_type_data(result)
         self.assertEqual(response._status_code, 200)
-        self.assertEqual(response.response[0], 'http://archive.stsci.edu/mastbibref.php?bibcode=2013MNRAS.435.1904M')
+        self.assertEqual(response.response[0], '/resolver/2013MNRAS.435.1904/ARTICLE/http://archive.stsci.edu/mastbibref.php?bibcode=2013MNRAS.435.1904M')
 
 
 if __name__ == '__main__':
