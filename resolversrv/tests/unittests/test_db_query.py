@@ -13,7 +13,7 @@ import json
 
 import resolversrv.app as app
 from resolversrv.views import LinkRequest
-from resolversrv.utils import DataLinks
+from resolversrv.models import DataLinks
 
 class test_resolver(TestCase):
     """tests for generation of resolver"""
@@ -69,10 +69,10 @@ class test_resolver(TestCase):
             return f.read()
 
     def convert(self, element):
-        result = []
+        results = []
         for parts in element.lstrip('{').rstrip('}').replace('"', '').split(','):
-            result.append(parts)
-        return result
+            results.append(parts)
+        return results
 
     def execute_query(self, query):
         with self.db_con.cursor() as cur:
@@ -86,78 +86,72 @@ class test_resolver(TestCase):
                 url = self.convert(row[3])
                 title = self.convert(row[4])
                 item_count = int(row[5])
-                results.append(DataLinks(bibcode, link_type, link_sub_type, url, title, item_count))
+                results.append(DataLinks(bibcode, link_type, link_sub_type, url, title, item_count).toJSON())
             return results
         return ""
 
 
     # returning a link
     def test_link_presentation(self):
-        result = self.execute_query(self.query_link_type.format(bibcode='2017MNRAS.467.3556B', link_type='PRESENTATION'))
-        response = LinkRequest(bibcode='2017MNRAS.467.3556B', link_type='PRESENTATION',
-                    redirect_format_str = self.current_app.config['RESOLVER_GATEWAY_URL_TEST']).response_single_url(result)
+        results = self.execute_query(self.query_link_type.format(bibcode='2017MNRAS.467.3556B', link_type='PRESENTATION'))
+        response = LinkRequest(bibcode='2017MNRAS.467.3556B', link_type='PRESENTATION').request_link_type_single_url(results[0]['url'][0])
         self.assertEqual(response._status_code, 200)
-        self.assertEqual(response.response[0], '/resolver/2017MNRAS.467.3556B/PRESENTATION/http://www.astro.lu.se/~alexey/animations.html')
+        self.assertEqual(response.response[0], '{"action": "redirect", "link": "http://www.astro.lu.se/~alexey/animations.html", "service": "https://ui.adsabs.harvard.edu/#abs/2017MNRAS.467.3556B/PRESENTATION"}')
 
 
     # return 404 for not finding any records
     def test_link_presentation_error_bibcode(self):
-        result = self.execute_query(self.query_link_type.format(bibcode='errorbibcode', link_type='PRESENTATION'))
-        response = LinkRequest(bibcode='errorbibcode', link_type='PRESENTATION',
-                    redirect_format_str = self.current_app.config['RESOLVER_GATEWAY_URL_TEST']).response_single_url(result)
+        response = LinkRequest(bibcode='errorbibcode', link_type='PRESENTATION').request_link_type_single_url('')
         self.assertEqual(response._status_code, 404)
 
 
     # return 400 for unrecognizable link type
     def test_link_presentation_error_link_type(self):
-        response = LinkRequest(bibcode='2017MNRAS.467.3556B', link_type='errorlinktype',
-                    redirect_format_str = self.current_app.config['RESOLVER_GATEWAY_URL_TEST']).process_request()
+        response = LinkRequest(bibcode='2017MNRAS.467.3556B', link_type='errorlinktype').process_request()
         self.assertEqual(response._status_code, 400)
 
 
     # returning list of url, title pairs
     def test_link_associated(self):
-        result = self.execute_query(self.query_link_type.format(bibcode='1971ATsir.615....4D', link_type='ASSOCIATED'))
+        results = self.execute_query(self.query_link_type.format(bibcode='1971ATsir.615....4D', link_type='ASSOCIATED'))
         response = LinkRequest(bibcode='1971ATsir.615....4D', link_type='ASSOCIATED',
-                    redirect_format_str = self.current_app.config['RESOLVER_GATEWAY_URL_TEST']).response_link_type_associated(result)
+                    gateway_redirect_url = self.current_app.config['RESOLVER_GATEWAY_URL_TEST']).request_link_type_associated(results)
         self.assertEqual(response._status_code, 200)
         self.assertEqual(json.loads(response.response[0]),
                          {'action': 'display',
                           'service': 'https://ui.adsabs.harvard.edu/#abs/1971ATsir.615....4D/associated',
                           'links': {'count': 13, 'link_type': 'ASSOCIATED', 'records': [
-                                {"url": "/resolver/1971ATsir.615....4D/associated/https%3A%2F%2Fui.adsabs.harvard.edu%2F%23abs%2F1971ATsir.615....4D%2Fabstract", "bibcode": "1971ATsir.615....4D", "title": "Part  1"},
-                                {"url": "/resolver/1974Afz....10..315D/associated/https%3A%2F%2Fui.adsabs.harvard.edu%2F%23abs%2F1974Afz....10..315D%2Fabstract", "bibcode": "1974Afz....10..315D", "title": "Part  2"},
-                                {"url": "/resolver/1971ATsir.621....7D/associated/https%3A%2F%2Fui.adsabs.harvard.edu%2F%23abs%2F1971ATsir.621....7D%2Fabstract", "bibcode": "1971ATsir.621....7D", "title": "Part  3"},
-                                {"url": "/resolver/1976Afz....12..665D/associated/https%3A%2F%2Fui.adsabs.harvard.edu%2F%23abs%2F1976Afz....12..665D%2Fabstract", "bibcode": "1976Afz....12..665D", "title": "Part  4"},
-                                {"url": "/resolver/1971ATsir.624....1D/associated/https%3A%2F%2Fui.adsabs.harvard.edu%2F%23abs%2F1971ATsir.624....1D%2Fabstract", "bibcode": "1971ATsir.624....1D", "title": "Part  5"},
-                                {"url": "/resolver/1983Afz....19..229D/associated/https%3A%2F%2Fui.adsabs.harvard.edu%2F%23abs%2F1983Afz....19..229D%2Fabstract", "bibcode": "1983Afz....19..229D", "title": "Part  6"},
-                                {"url": "/resolver/1983Ap.....19..134D/associated/https%3A%2F%2Fui.adsabs.harvard.edu%2F%23abs%2F1983Ap.....19..134D%2Fabstract", "bibcode": "1983Ap.....19..134D", "title": "Part  7"},
-                                {"url": "/resolver/1973ATsir.759....6D/associated/https%3A%2F%2Fui.adsabs.harvard.edu%2F%23abs%2F1973ATsir.759....6D%2Fabstract", "bibcode": "1973ATsir.759....6D", "title": "Part  8"},
-                                {"url": "/resolver/1984Afz....20..525D/associated/https%3A%2F%2Fui.adsabs.harvard.edu%2F%23abs%2F1984Afz....20..525D%2Fabstract", "bibcode": "1984Afz....20..525D", "title": "Part  9"},
-                                {"url": "/resolver/1984Ap.....20..290D/associated/https%3A%2F%2Fui.adsabs.harvard.edu%2F%23abs%2F1984Ap.....20..290D%2Fabstract", "bibcode": "1984Ap.....20..290D", "title": "Part 10"},
-                                {"url": "/resolver/1974ATsir.809....1D/associated/https%3A%2F%2Fui.adsabs.harvard.edu%2F%23abs%2F1974ATsir.809....1D%2Fabstract", "bibcode": "1974ATsir.809....1D", "title": "Part 11"},
-                                {"url": "/resolver/1974ATsir.809....2D/associated/https%3A%2F%2Fui.adsabs.harvard.edu%2F%23abs%2F1974ATsir.809....2D%2Fabstract", "bibcode": "1974ATsir.809....2D", "title": "Part 12"},
-                                {"url": "/resolver/1974ATsir.837....2D/associated/https%3A%2F%2Fui.adsabs.harvard.edu%2F%23abs%2F1974ATsir.837....2D%2Fabstract", "bibcode": "1974ATsir.837....2D", "title": "Part 13"}
+                                {"url": "/1971ATsir.615....4D/associated/https%3A%2F%2Fui.adsabs.harvard.edu%2F%23abs%2F1971ATsir.615....4D%2Fabstract", "bibcode": "1971ATsir.615....4D", "title": "Part  1"},
+                                {"url": "/1974Afz....10..315D/associated/https%3A%2F%2Fui.adsabs.harvard.edu%2F%23abs%2F1974Afz....10..315D%2Fabstract", "bibcode": "1974Afz....10..315D", "title": "Part  2"},
+                                {"url": "/1971ATsir.621....7D/associated/https%3A%2F%2Fui.adsabs.harvard.edu%2F%23abs%2F1971ATsir.621....7D%2Fabstract", "bibcode": "1971ATsir.621....7D", "title": "Part  3"},
+                                {"url": "/1976Afz....12..665D/associated/https%3A%2F%2Fui.adsabs.harvard.edu%2F%23abs%2F1976Afz....12..665D%2Fabstract", "bibcode": "1976Afz....12..665D", "title": "Part  4"},
+                                {"url": "/1971ATsir.624....1D/associated/https%3A%2F%2Fui.adsabs.harvard.edu%2F%23abs%2F1971ATsir.624....1D%2Fabstract", "bibcode": "1971ATsir.624....1D", "title": "Part  5"},
+                                {"url": "/1983Afz....19..229D/associated/https%3A%2F%2Fui.adsabs.harvard.edu%2F%23abs%2F1983Afz....19..229D%2Fabstract", "bibcode": "1983Afz....19..229D", "title": "Part  6"},
+                                {"url": "/1983Ap.....19..134D/associated/https%3A%2F%2Fui.adsabs.harvard.edu%2F%23abs%2F1983Ap.....19..134D%2Fabstract", "bibcode": "1983Ap.....19..134D", "title": "Part  7"},
+                                {"url": "/1973ATsir.759....6D/associated/https%3A%2F%2Fui.adsabs.harvard.edu%2F%23abs%2F1973ATsir.759....6D%2Fabstract", "bibcode": "1973ATsir.759....6D", "title": "Part  8"},
+                                {"url": "/1984Afz....20..525D/associated/https%3A%2F%2Fui.adsabs.harvard.edu%2F%23abs%2F1984Afz....20..525D%2Fabstract", "bibcode": "1984Afz....20..525D", "title": "Part  9"},
+                                {"url": "/1984Ap.....20..290D/associated/https%3A%2F%2Fui.adsabs.harvard.edu%2F%23abs%2F1984Ap.....20..290D%2Fabstract", "bibcode": "1984Ap.....20..290D", "title": "Part 10"},
+                                {"url": "/1974ATsir.809....1D/associated/https%3A%2F%2Fui.adsabs.harvard.edu%2F%23abs%2F1974ATsir.809....1D%2Fabstract", "bibcode": "1974ATsir.809....1D", "title": "Part 11"},
+                                {"url": "/1974ATsir.809....2D/associated/https%3A%2F%2Fui.adsabs.harvard.edu%2F%23abs%2F1974ATsir.809....2D%2Fabstract", "bibcode": "1974ATsir.809....2D", "title": "Part 12"},
+                                {"url": "/1974ATsir.837....2D/associated/https%3A%2F%2Fui.adsabs.harvard.edu%2F%23abs%2F1974ATsir.837....2D%2Fabstract", "bibcode": "1974ATsir.837....2D", "title": "Part 13"}
                           ]}})
 
 
     # return 404 for not finding any records
     def test_link_associated_error_bibcode(self):
-        result = self.execute_query(self.query_link_type.format(bibcode='errorbibcode', link_type='ASSOCIATED'))
-        response = LinkRequest(bibcode='errorbibcode', link_type='ASSOCIATED',
-                    redirect_format_str = self.current_app.config['RESOLVER_GATEWAY_URL_TEST']).response_link_type_associated(result)
+        results = self.execute_query(self.query_link_type.format(bibcode='errorbibcode', link_type='ASSOCIATED'))
+        response = LinkRequest(bibcode='errorbibcode', link_type='ASSOCIATED').request_link_type_associated(results)
         self.assertEqual(response._status_code, 404)
 
 
     # returning list of urls
     def test_link_article(self):
-        result = self.execute_query(self.query_link_type.format(bibcode='2013MNRAS.435.1904M', link_type='ARTICLE'))
-        response = LinkRequest(bibcode='2013MNRAS.435.1904', link_type='ARTICLE',
-                    redirect_format_str = self.current_app.config['RESOLVER_GATEWAY_URL_TEST']).response_link_type_article(result)
+        results = self.execute_query(self.query_link_type.format(bibcode='2013MNRAS.435.1904M', link_type='ESOURCE'))
+        response = LinkRequest(bibcode='2013MNRAS.435.1904', link_type='ESOURCE').request_link_type_article(results)
         self.assertEqual(response._status_code, 200)
         self.assertEqual(json.loads(response.response[0]),
                          {"action": "display",
-                          "links": {"count": 4, "link_type": "ARTICLE", "bibcode": "2013MNRAS.435.1904", "records": [
+                          "links": {"count": 4, "link_type": "ESOURCE", "bibcode": "2013MNRAS.435.1904", "records": [
                              {"url": "http://arxiv.org/abs/1307.6556", "title": "http://arxiv.org/abs/1307.6556"},
                              {"url": "http://arxiv.org/pdf/1307.6556", "title": "http://arxiv.org/pdf/1307.6556"},
                              {"url": "http://dx.doi.org/10.1093%2Fmnras%2Fstt1379", "title": "http://dx.doi.org/10.1093%2Fmnras%2Fstt1379"},
@@ -167,147 +161,143 @@ class test_resolver(TestCase):
 
     # return 404 for not finding any records
     def test_link_article_error_bibcode(self):
-        result = self.execute_query(self.query_link_type.format(bibcode='errorbibcode', link_type='ARTICLE'))
-        response = LinkRequest(bibcode='errorbibcode', link_type='ARTICLE',
-                    redirect_format_str = self.current_app.config['RESOLVER_GATEWAY_URL_TEST']).response_link_type_article(result)
+        results = self.execute_query(self.query_link_type.format(bibcode='errorbibcode', link_type='ESOURCE'))
+        response = LinkRequest(bibcode='errorbibcode', link_type='ESOURCE').request_link_type_article(results)
         self.assertEqual(response._status_code, 404)
 
 
-    # returning a url of link type ARTICLE
+    # returning a url of link type ESOURCE
     def test_link_article_sub_type(self):
-        result = self.execute_query(self.query_with_link_sub_type.format(bibcode='2013MNRAS.435.1904M', link_type='ARTICLE', link_sub_type='PUB_PDF'))
-        response = LinkRequest(bibcode='2013MNRAS.435.1904', link_type='PUB_PDF',
-                    redirect_format_str = self.current_app.config['RESOLVER_GATEWAY_URL_TEST']).response_link_type_article(result)
+        results = self.execute_query(self.query_with_link_sub_type.format(bibcode='2013MNRAS.435.1904M', link_type='ESOURCE', link_sub_type='PUB_PDF'))
+        response = LinkRequest(bibcode='2013MNRAS.435.1904', link_type='PUB_PDF').request_link_type_article(results)
         self.assertEqual(response._status_code, 200)
-        self.assertEqual(response.response[0], '/resolver/2013MNRAS.435.1904/ARTICLE/http://mnras.oxfordjournals.org/content/435/3/1904.full.pdf')
+        self.assertEqual(response.response[0], '{"action": "redirect", "link": "http://mnras.oxfordjournals.org/content/435/3/1904.full.pdf", "service": "https://ui.adsabs.harvard.edu/#abs/2013MNRAS.435.1904/ESOURCE"}')
 
 
     # test DataLinks class
     def test_link_article_parts(self):
-        results = self.execute_query(self.query_with_link_sub_type.format(bibcode='2013MNRAS.435.1904M', link_type='ARTICLE', link_sub_type='PUB_PDF'))
+        results = self.execute_query(self.query_with_link_sub_type.format(bibcode='2013MNRAS.435.1904M', link_type='ESOURCE', link_sub_type='PUB_PDF'))
         self.assertEqual(len(results), 1)
-        result = results[0]
-        self.assertEqual(result.get_count(), 1)
-        self.assertEqual(result.get_bibcode(), '2013MNRAS.435.1904M')
-        self.assertEqual(result.get_url(), 'http://mnras.oxfordjournals.org/content/435/3/1904.full.pdf')
-        self.assertEqual(result.get_title(), '')
+        results = results[0]
+        self.assertEqual(len(results), 6)
+        self.assertEqual(results['bibcode'], '2013MNRAS.435.1904M')
+        self.assertEqual(results['url'][0], 'http://mnras.oxfordjournals.org/content/435/3/1904.full.pdf')
+        self.assertEqual(results['title'][0], '')
 
 
     # returning list of url, title pairs
     def test_link_data(self):
-        result = self.execute_query(self.query_link_type.format(bibcode='2013MNRAS.435.1904M', link_type='DATA'))
+        results = self.execute_query(self.query_link_type.format(bibcode='2013MNRAS.435.1904M', link_type='DATA'))
         response = LinkRequest(bibcode='2013MNRAS.435.1904', link_type='DATA',
-                    redirect_format_str = self.current_app.config['RESOLVER_GATEWAY_URL_TEST']).response_link_type_data(result)
+                    gateway_redirect_url = self.current_app.config['RESOLVER_GATEWAY_URL_TEST']).request_link_type_data(results)
         self.assertEqual(response._status_code, 200)
         self.assertEqual(json.loads(response.response[0]),
                          {
                              "action": "display",
+                             "service": "",
                              "links": {
                                  "count": 8,
                                  "records": [
                                      {
-                                         "url": "http://cda.harvard.edu/",
+                                         "url": "http://cxc.harvard.edu/cda",
                                          "data": [
                                              {
-                                                 "url": "/resolver/2013MNRAS.435.1904/data/http%3A%2F%2Fcda.harvard.edu%2Fchaser%3Fobsid%3D494",
+                                                 "url": "/2013MNRAS.435.1904/data/http%3A%2F%2Fcda.harvard.edu%2Fchaser%3Fobsid%3D494",
                                                  "title": "Chandra Data Archive ObsIds 494"
                                              }
                                          ],
-                                         "title": "Resource at http://cda.harvard.edu/"
+                                         "title": "Chandra X-Ray Observatory"
                                      },
                                      {
-                                         "url": "http://archives.esac.esa.int/",
+                                         "url": "http://archives.esac.esa.int",
                                          "data": [
                                              {
-                                                 "url": "/resolver/2013MNRAS.435.1904/data/http%3A%2F%2Farchives.esac.esa.int%2Fehst%2F%23bibcode%3D2013MNRAS.435.1904M",
+                                                 "url": "/2013MNRAS.435.1904/data/http%3A%2F%2Farchives.esac.esa.int%2Fehst%2F%23bibcode%3D2013MNRAS.435.1904M",
                                                  "title": "European HST References (EHST)"
                                              }
                                          ],
-                                         "title": "Resource at http://archives.esac.esa.int/"
+                                         "title": "ESAC Science Data Center"
                                      },
                                      {
-                                         "url": "http://heasarc.gsfc.nasa.gov/",
+                                         "url": "https://heasarc.gsfc.nasa.gov/",
                                          "data": [
                                              {
-                                                 "url": "/resolver/2013MNRAS.435.1904/data/http%3A%2F%2Fheasarc.gsfc.nasa.gov%2Fcgi-bin%2FW3Browse%2Fbiblink.pl%3Fcode%3D2013MNRAS.435.1904M",
+                                                 "url": "/2013MNRAS.435.1904/data/http%3A%2F%2Fheasarc.gsfc.nasa.gov%2Fcgi-bin%2FW3Browse%2Fbiblink.pl%3Fcode%3D2013MNRAS.435.1904M",
                                                  "title": "http://heasarc.gsfc.nasa.gov/cgi-bin/W3Browse/biblink.pl?code=2013MNRAS.435.1904M"
                                              }
                                          ],
-                                         "title": "Resource at http://heasarc.gsfc.nasa.gov/"
+                                         "title": "NASA's High Energy Astrophysics Science Archive Research Center"
                                      },
                                      {
-                                         "url": "http://herschel.esac.esa.int/",
+                                         "url": "https://www.cosmos.esa.int/web/herschel/home",
                                          "data": [
                                              {
-                                                 "url": "/resolver/2013MNRAS.435.1904/data/http%3A%2F%2Fherschel.esac.esa.int%2Fhpt%2Fpublicationdetailsview.do%3Fbibcode%3D2013MNRAS.435.1904M",
+                                                 "url": "/2013MNRAS.435.1904/data/http%3A%2F%2Fherschel.esac.esa.int%2Fhpt%2Fpublicationdetailsview.do%3Fbibcode%3D2013MNRAS.435.1904M",
                                                  "title": "http://herschel.esac.esa.int/hpt/publicationdetailsview.do?bibcode=2013MNRAS.435.1904M"
                                              }
                                          ],
-                                         "title": "Resource at http://herschel.esac.esa.int/"
+                                         "title": "Herschel Science Center"
                                      },
                                      {
-                                         "url": "http://archive.stsci.edu/",
+                                         "url": "http://archive.stsci.edu",
                                          "data": [
                                              {
-                                                 "url": "/resolver/2013MNRAS.435.1904/data/http%3A%2F%2Farchive.stsci.edu%2Fmastbibref.php%3Fbibcode%3D2013MNRAS.435.1904M",
+                                                 "url": "/2013MNRAS.435.1904/data/http%3A%2F%2Farchive.stsci.edu%2Fmastbibref.php%3Fbibcode%3D2013MNRAS.435.1904M",
                                                  "title": "MAST References (GALEX EUVE HST)"
                                              }
                                          ],
-                                         "title": "Resource at http://archive.stsci.edu/"
+                                         "title": "Mikulski Archive for Space Telescopes"
                                      },
                                      {
-                                         "url": "http://$NED$/",
+                                         "url": "https://ned.ipac.caltech.edu",
                                          "data": [
                                              {
-                                                 "url": "/resolver/2013MNRAS.435.1904/data/http%3A%2F%2F%24NED%24%2Fcgi-bin%2Fnph-objsearch%3Fsearch_type%3DSearch%26refcode%3D2013MNRAS.435.1904M",
+                                                 "url": "/2013MNRAS.435.1904/data/http%3A%2F%2Fned.ipac.caltech.edu%2Fcgi-bin%2Fnph-objsearch%3Fsearch_type%3DSearch%26refcode%3D2013MNRAS.435.1904M",
                                                  "title": "NED Objects (1)"
                                              }
                                          ],
-                                         "title": "Resource at http://$NED$/"
+                                         "title": "NASA/IPAC Extragalactic Database"
                                      },
                                      {
-                                         "url": "http://$SIMBAD$/",
+                                         "url": "http://simbad.u-strasbg.fr",
                                          "data": [
                                              {
-                                                 "url": "/resolver/2013MNRAS.435.1904/data/http%3A%2F%2F%24SIMBAD%24%2Fsimbo.pl%3Fbibcode%3D2013MNRAS.435.1904M",
+                                                 "url": "/2013MNRAS.435.1904/data/http%3A%2F%2Fsimbad.u-strasbg.fr%2Fsimbo.pl%3Fbibcode%3D2013MNRAS.435.1904M",
                                                  "title": "SIMBAD Objects (30)"
                                              }
                                          ],
-                                         "title": "Resource at http://$SIMBAD$/"
+                                         "title": "SIMBAD Database at the CDS"
                                      },
                                      {
-                                         "url": "http://nxsa.esac.esa.int/",
+                                         "url": "http://nxsa.esac.esa.int",
                                          "data": [
                                              {
-                                                 "url": "/resolver/2013MNRAS.435.1904/data/http%3A%2F%2Fnxsa.esac.esa.int%2Fnxsa-web%2F%23obsid%3D0097820101",
+                                                 "url": "/2013MNRAS.435.1904/data/http%3A%2F%2Fnxsa.esac.esa.int%2Fnxsa-web%2F%23obsid%3D0097820101",
                                                  "title": "XMM-Newton Observation Number 0097820101"
                                              }
                                          ],
-                                         "title": "Resource at http://nxsa.esac.esa.int/"
+                                         "title": "XMM Newton Science Archive"
                                      }
                                  ],
                                  "bibcode": "2013MNRAS.435.1904"
-                             },
-                             "service": ""
+                             }
                          }
         )
 
 
     # return 404 for not finding any records
     def test_link_data_error_bibcode(self):
-        result = self.execute_query(self.query_link_type.format(bibcode='errorbibcode', link_type='DATA'))
-        response = LinkRequest(bibcode='errorbibcode', link_type='DATA',
-                    redirect_format_str = self.current_app.config['RESOLVER_GATEWAY_URL_TEST']).response_link_type_data(result)
+        results = self.execute_query(self.query_link_type.format(bibcode='errorbibcode', link_type='DATA'))
+        response = LinkRequest(bibcode='errorbibcode', link_type='DATA').request_link_type_data(results)
         self.assertEqual(response._status_code, 404)
 
 
     # returning a url of link type DATA
     def test_link_data_sub_type(self):
-        result = self.execute_query(self.query_with_link_sub_type.format(bibcode='2013MNRAS.435.1904M', link_type='DATA', link_sub_type='MAST'))
-        response = LinkRequest(bibcode='2013MNRAS.435.1904', link_type='PUB_PDF',
-                    redirect_format_str = self.current_app.config['RESOLVER_GATEWAY_URL_TEST']).response_link_type_data(result)
+        results = self.execute_query(self.query_with_link_sub_type.format(bibcode='2013MNRAS.435.1904M', link_type='DATA', link_sub_type='MAST'))
+        response = LinkRequest(bibcode='2013MNRAS.435.1904', link_type='PUB_PDF').request_link_type_data(results)
         self.assertEqual(response._status_code, 200)
-        self.assertEqual(response.response[0], '/resolver/2013MNRAS.435.1904/ARTICLE/http://archive.stsci.edu/mastbibref.php?bibcode=2013MNRAS.435.1904M')
+        self.assertEqual(response.response[0], '{"action": "redirect", "link": "http://archive.stsci.edu/mastbibref.php?bibcode=2013MNRAS.435.1904M", "service": "https://ui.adsabs.harvard.edu/#abs/2013MNRAS.435.1904/ESOURCE"}')
 
 
 if __name__ == '__main__':

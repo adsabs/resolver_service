@@ -1,8 +1,7 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 
-import os
-import inspect
+import traceback
 import json
 
 from flask import current_app, request, Blueprint
@@ -42,23 +41,25 @@ class LinkRequest():
     data =  [
         'ARI', 'SIMBAD', 'NED', 'CDS', 'Vizier', 'GCPD', 'Author', 'PDG', 'MAST', 'HEASARC', 'INES', 'IBVS', 'Astroverse',
         'ESA', 'NExScI', 'PDS', 'AcA', 'ISO', 'ESO', 'CXO', 'NOAO', 'XMM', 'Spitzer', 'PASA', 'ATNF', 'KOA', 'Herschel',
-        'GTC', 'BICEP2', 'ALMA', 'CADC', 'Zenodo', 'TNS', ''
+        'GTC', 'BICEP2', 'ALMA', 'CADC', 'Zenodo', 'TNS'
     ]
 
-    link_types = on_the_fly.keys() + ['ARTICLE', 'DATA', 'INSPIRE', 'LIBRARYCATALOG', 'PRESENTATION', 'ASSOCIATED']
+    link_types = on_the_fly.keys() + ['ESOURCE', 'DATA', 'INSPIRE', 'LIBRARYCATALOG', 'PRESENTATION', 'ASSOCIATED']
 
 
-    def __init__(self, bibcode, link_type, redirect_format_str):
+    def __init__(self, bibcode, link_type='', gateway_redirect_url=''):
         """
 
         :param bibcode:
-        :param link_type:
-        :param redirect_format_str:
+        :param link_type: this can be either link_type or link_sub_type
+        :param gateway_redirect_url: for link types that have more than one link, we create this link so that
+                                    when user clicks on it, it would go to the gateway so that the click can be logged
+        :return:
         """
         self.bibcode = bibcode
         self.__set_major_minor_link_types(link_type)
         self.__backward_compatibility(link_type)
-        self.redirect_format_str = redirect_format_str
+        self.gateway_redirect_url = gateway_redirect_url
 
 
     def __backward_compatibility(self, link_type):
@@ -67,15 +68,16 @@ class LinkRequest():
         for backward compatibility we are recognizing them
 
         :param link_type:
+        :return:
         """
         if (link_type == 'GIF'):
-            self.link_type = 'ARTICLE'
+            self.link_type = 'ESOURCE'
             self.link_sub_type = 'ADS_SCAN'
         elif (link_type == 'PREPRINT'):
-            self.link_type = 'ARTICLE'
+            self.link_type = 'ESOURCE'
             self.link_sub_type = 'EPRINT_HTML'
         elif (link_type == 'EJOURNAL'):
-            self.link_type = 'ARTICLE'
+            self.link_type = 'ESOURCE'
             self.link_sub_type = 'PUB_HTML'
 
 
@@ -85,244 +87,382 @@ class LinkRequest():
         from one input param
 
         :param link_type:
+        :return:
         """
+        # if link_type has been specified
         if (link_type in self.link_types):
             self.link_type = link_type
-            self.link_sub_type = ''
+            self.link_sub_type = None
+        # see if link_sub_type has been passed in,
+        # we have two sets of link sub types, so figure out which one, if any, it belongs to
+        elif (link_type in self.esource):
+            self.link_type = 'ESOURCE'
+            self.link_sub_type = link_type
+        elif (link_type in self.data):
+            self.link_type = 'DATA'
+            self.link_sub_type = link_type
+        # if link_type is empty treated as we are having only a bibcode and shall return all records for
+        # for the bibcode
+        elif len(link_type) == 0:
+            self.link_type = None
+            self.link_sub_type = None
+        # but if non empty and we could not resolve the type then it is error
         else:
-            # we have two sets of sub link type, figure out which one it is
-            if (link_type in self.esource):
-                self.link_type = 'ARTICLE'
-                self.link_sub_type = link_type
-            elif (link_type in self.data) :
-                self.link_type = 'DATA'
-                self.link_sub_type = link_type
-            else:
-                self.link_type = '?'
-                self.link_sub_type = '?'
+            self.link_type = '?'
+            self.link_sub_type = '?'
 
 
-    def __process_request_on_the_fly_links(self):
+
+    def __get_url_hostname_with_protocol(self, url):
         """
-        for these link types, we only need to format the deterministic link and return it
+        
+        :param url:
+        :return: the hostname from the url, it includes protocol
         """
-        linkURL = self.on_the_fly[self.link_type].format(baseurl=self.baseurl, bibcode=self.bibcode)
-        return self.return_response_single_url(linkURL)
-
-
-    def __get_url_basename(self, url):
         slashparts = url.split('/')
         # Now join back the first three sections 'http:', '' and 'example.com'
         return '/'.join(slashparts[:3]) + '/'
 
 
-    def __return_response_error(self, response, status):
+    def __get_url_hostname(self, url):
+        """
+
+        :param url:
+        :return: the hostname only, which is used to update some of the urls from db
+        """
+        return self.__get_url_hostname_with_protocol(url).split('://', 1)[-1].rstrip('/')
+
+
+    def __get_data_source_title_url(self, link_sub_type, default_url):
+        """
+        for link type DATA we include the source url and title first and under it list the resources for requested bibcode
+        this would get the list from config and returns the info if found, otherwise builds a generic title
+
+        :param link_sub_type:
+        :param default_url:
+        :return:
+        """
+        data_resources = current_app.config['RESOLVER_DATA_SOURCES']
+        if link_sub_type in data_resources:
+            title = data_resources[link_sub_type].get('name','')
+            url = data_resources[link_sub_type].get('url','')
+        else:
+            title = 'Resource at ' + default_url
+            url = default_url
+        return [title,url]
+
+
+    def __update_data_type_hostname(self, data_source_url, link_sub_type, link_url):
+        """
+        update link_url with hostname from data source url for particular links sub types
+
+        :param data_source_url: data source url for the link sub type
+        :param link_sub_type:
+        :param link_url:
+        :return:
+        """
+        hostname = self.__get_url_hostname(data_source_url)
+        if (link_sub_type == 'NED'):
+            return link_url.replace('$NED$', hostname)
+        if (link_sub_type == 'SIMBAD'):
+            return link_url.replace('$SIMBAD$', hostname)
+        if (link_sub_type == 'Vizier') or (link_sub_type == 'CDS'):
+            return link_url.replace('$VIZIER$', hostname)
+        return link_url
+
+
+    def __return_response(self, results, status):
+        """
+        
+        :param results: results in a dict
+        :param status: status code
+        :return: 
+        """
+        response = json.dumps(results)
+
         current_app.logger.info('sending response status={status}'.format(status=status))
         current_app.logger.debug('sending response text={response}'.format(response=response))
 
         r = Response(response=response, status=status)
-        r.headers['content-type'] = 'text/plain; charset=UTF-8'
+        r.headers['content-type'] = 'application/json'
         return r
 
 
-    def __return_response(self, response, content_type):
-        current_app.logger.info('sending response status={status}'.format(status=200))
-        current_app.logger.debug('sending response text={response}'.format(response=response))
-
-        r = Response(response=response, status=200)
-        r.headers['content-type'] = content_type
-        return r
-
-
-    def return_response_single_url(self, url):
-        response = self.redirect_format_str.format(bibcode=self.bibcode, link_type=self.link_type, url=url)
-        return self.__return_response(response, 'text/plain; charset=UTF-8')
-
-
-    def __return_response_JSON(self, response):
-        return self.__return_response(response, 'application/json')
-
-
-    def response_single_url(self, results):
+    def __get_link_type_count(self, link_type):
         """
-        for link types = INSPIRE or  LIBRARYCATALOG or PRESENTATION return a url
 
-        :param result: result from the query
+        :param link_type:
+        :return:
         """
-        if (len(results) == 1):
-            return self.return_response_single_url(results[0].get_url())
-        return self.__return_response_error("error: did not find any records for bibcode:'{bibcode}' with "
-                                          "link type: '{link_type}' and link sub type: '{link_sub_type}'!"
-                                          .format(bibcode=self.bibcode, link_type=self.link_type,
-                                                  link_sub_type=self.link_sub_type if (len(self.link_sub_type) > 0) else 'any value'), 404)
+        # on the fly links are only 1
+        if link_type in self.on_the_fly.keys():
+            return 1
+        # query db
+        results = get_records(bibcode=self.bibcode, link_type=link_type)
+        if len(results) == 0:
+            return 0
+        try:
+            count = 0
+            for result in results:
+                for idx in range(len(result['url'])):
+                    count += max(1, len(result['url']))
+            return count
+        except Exception as e:
+            current_app.logger.debug(traceback.format_exc())
+        return 0
 
 
-    def response_link_type_article(self, results):
+    def request_link_type_single_url_toJSON(self, url):
+        """
+        single url to JSON code transormation
+
+        :param url:
+        :return:
+        """
+        if (len(url) > 0):
+            response = {}
+            response['service'] = '{baseurl}/{bibcode}/{link_type}'.format(baseurl=self.baseurl,
+                                                                           bibcode=self.bibcode, link_type=self.link_type)
+            response['action'] = 'redirect'
+            response['link'] = url
+            return self.__return_response(response, 200)
+        return self.__return_response({'error': 'did not find any records'}, 404)
+
+
+    def request_link_type_single_url(self, results):
+        """
+        for link types = INSPIRE or  LIBRARYCATALOG or PRESENTATION we have a single url
+        which shall be wrapped in a JSON code before returning
+
+        :param results: result from the query
+        :return:
+        """
+        try:
+            return self.request_link_type_single_url_toJSON(results[0]['url'][0])
+        except Exception as e:
+            current_app.logger.debug(traceback.format_exc())
+            return self.__return_response({'error': 'unable to read records'}, 400)
+
+
+    def request_link_type_all(self):
+        """
+        
+        :return: all the link types for the requested bibcode
+        """
+        links = {}
+        links['count'] = len(self.link_types)
+        links['link_type'] = 'all'
+        records = []
+        for link_type in self.link_types:
+            bibcode = self.bibcode
+            redirectURL = self.gateway_redirect_url.format(bibcode=bibcode, link_type=link_type, url='')
+            redirectURL = redirectURL[:-1]
+            record = {}
+            count = self.__get_link_type_count(link_type)
+            if count > 0:
+                record['bibcode'] = bibcode
+                record['title'] = link_type + ' (' + str(count) + ')'
+                record['url'] = redirectURL
+                record['type'] = link_type.lower()
+                record['count'] = count
+                records.append(record)
+        links['records'] = records
+        response = {}
+        # when we have multiple sources of links elements there is no url to log (no service)
+        response['service'] = ''
+        response['action'] = 'display'
+        response['links'] = links
+        return self.__return_response(response, 200)
+
+
+    def request_link_type_on_the_fly(self):
+        """
+        for these link types, we only need to format the deterministic link and return it
+
+        :return:
+        """
+        url = self.on_the_fly[self.link_type].format(baseurl=self.baseurl, bibcode=self.bibcode)
+        return self.request_link_type_single_url_toJSON(url)
+
+
+    def request_link_type_article(self, results):
         """
         for link type = article, we can have one or many urls
-        if there is only one url we return it, otherwise, we return a json code
 
         :param results: result from the query
+        :return:
         """
+        try:
+            if (len(results) > 0):
+                if (len(results) == 1):
+                    return self.request_link_type_single_url_toJSON(results[0]['url'][0])
+                else:
+                    links = {}
+                    links['count'] = len(results)
+                    links['bibcode'] = self.bibcode
+                    links['link_type'] = self.link_type
+                    records = []
+                    for result in results:
+                        record = {}
+                        record['title'] = result['url'][0]
+                        record['url'] = result['url'][0]
+                        records.append(record)
+                    links['records'] = records
+                    response = {}
+                    # when we have multiple sources of electronic journal, there is no url to log (no service)
+                    response['service'] = ''
+                    response['action'] = 'display'
+                    response['links'] = links
+                    return self.__return_response(response, 200)
+            return self.__return_response({'error': 'did not find any records'}, 404)
+        except Exception as e:
+            current_app.logger.debug(traceback.format_exc())
+            return self.__return_response({'error': 'unable to read records'}, 400)
 
-        if (len(results) > 0):
-            if (len(results) == 1):
-                return self.return_response_single_url(results[0].get_url())
-            else:
-                links = {}
-                links['count'] = len(results)
-                links['bibcode'] = self.bibcode
-                links['link_type'] = self.link_type
-                records = []
+
+    def request_link_type_associated(self, results,):
+        """
+        for link type = associated
+
+        :param results: result from the query
+        :return:
+        """
+        try:
+            if (len(results) > 0):
+                link_format_str = self.on_the_fly['ABSTRACT']
                 for result in results:
-                    record = {}
-                    record['title'] = result.get_url()
-                    record['url'] = result.get_url()
-                    records.append(record)
+                    links = {}
+                    links['count'] = len(result['url'])
+                    links['link_type'] = self.link_type
+                    records = []
+                    for idx in range(len(result['url'])):
+                        bibcode = result['url'][idx]
+                        encodeURL = quote(link_format_str.format(baseurl=self.baseurl, bibcode=bibcode), safe='')
+                        redirectURL = self.gateway_redirect_url.format(bibcode=bibcode, link_type=self.link_type.lower(),
+                                                                 url=encodeURL)
+                        record = {}
+                        record['bibcode'] = bibcode
+                        record['title'] = result['title'][idx]
+                        record['url'] = redirectURL
+                        records.append(record)
+                    records = sorted(records, key=lambda k: k['title'])
                 links['records'] = records
                 response = {}
-                # when we have multiple sources of electronic journal, there is no url to log
-                response['service'] = ''
+                response['service'] = '{baseurl}/{bibcode}/associated'.format(baseurl=self.baseurl, bibcode=self.bibcode)
                 response['action'] = 'display'
                 response['links'] = links
-                return self.__return_response_JSON(json.dumps(response))
-        return self.__return_response_error("error: did not find any records for bibcode:'{bibcode}' with "
-                                          "link type: '{link_type}' and link sub type: '{link_sub_type}'!"
-                                          .format(bibcode=self.bibcode, link_type=self.link_type,
-                                                  link_sub_type=self.link_sub_type if (len(self.link_sub_type) > 0) else 'any value'), 404)
+                return self.__return_response(response, 200)
+            return self.__return_response({'error': 'did not find any records'}, 404)
+        except Exception as e:
+            current_app.logger.debug(traceback.format_exc())
+            return self.__return_response({'error': 'unable to read records'}, 400)
 
 
-    def response_link_type_associated(self, results,):
-        """
-        for link type = associated, we return a JSON code
-
-        :param results: result from the query
-        """
-        if (len(results) > 0):
-            link_format_str = self.on_the_fly['ABSTRACT']
-            for result in results:
-                links = {}
-                links['count'] = result.get_count()
-                links['link_type'] = self.link_type
-                records = []
-                for idx in range(result.get_count()):
-                    bibcode = result.get_url_elem(idx)
-                    encodeURL = quote(link_format_str.format(baseurl=self.baseurl, bibcode=bibcode), safe='')
-                    redirectURL = self.redirect_format_str.format(bibcode=bibcode, link_type=self.link_type.lower(),
-                                                             url=encodeURL)
-                    record = {}
-                    record['bibcode'] = bibcode
-                    record['title'] = result.get_title_elem(idx)
-                    record['url'] = redirectURL
-                    records.append(record)
-                records = sorted(records, key=lambda k: k['title'])
-            links['records'] = records
-            response = {}
-            response['service'] = '{baseurl}/{bibcode}/associated'.format(baseurl=self.baseurl, bibcode=self.bibcode)
-            response['action'] = 'display'
-            response['links'] = links
-            return self.__return_response_JSON(json.dumps(response))
-        return self.__return_response_error("error: did not find any records for bibcode:'{bibcode}' with link type: '{link_type}'!"
-                                          .format(bibcode=self.bibcode, link_type=self.link_type), 404)
-
-
-    def response_link_type_data(self, results):
+    def request_link_type_data(self, results):
         """
         for link type = data, we can have one or many urls
-        if there is only one url we return it, otherwise, we return a json code
 
         :param results: result from the query
         """
-        if (len(results) > 0):
-            if (len(results) == 1):
-                return self.return_response_single_url(results[0].get_url())
-            else:
-                domain = {}
-                records = []
-                url = ''
-                data = []
-                for result in results:
-                    for idx in range(result.get_count()):
-                        if (url != result.get_url_elem(idx)):
-                            if (domain):
-                                domain['data'] = data
-                                records.append(domain)
-                                data = []
-                            url = result.get_url_elem(idx)
-                            domain = {}
-                            baseName = self.__get_url_basename(url)
-                            domain['title'] = 'Resource at ' + baseName
-                            domain['url'] = baseName
-                        encodeURL = quote(result.get_url_elem(idx), safe='')
-                        redirectURL = self.redirect_format_str.format(bibcode=self.bibcode, link_type=self.link_type.lower(), url=encodeURL)
-                        record = {}
-                        record['title'] = result.get_title_elem(idx) if result.get_title_elem(idx) else result.get_url_elem(idx)
-                        record['url'] = redirectURL
-                        data.append(record)
-                domain['data'] = data
-                records.append(domain)
-                links = {}
-                links['count'] = len(results)
-                links['bibcode'] = self.bibcode
-                links['records'] = records
-                response = {}
-                # when we have multiple sources of links elements there is no url to log
-                response['service'] = ''
-                response['action'] = 'display'
-                response['links'] = links
-                return self.__return_response_JSON(json.dumps(response))
-        return self.__return_response_error("error: did not find any records for bibcode:'{bibcode}' with "
-                                          "link type: '{link_type}' and link sub type: '{link_sub_type}'!"
-                                          .format(bibcode=self.bibcode, link_type=self.link_type,
-                                                  link_sub_type=self.link_sub_type if (len(self.link_sub_type) > 0) else 'any value'), 404)
+        try:
+            if (len(results) > 0):
+                if (len(results) == 1):
+                    return self.request_link_type_single_url_toJSON(results[0]['url'][0])
+                else:
+                    domain = {}
+                    records = []
+                    url = ''
+                    data = []
+                    for result in results:
+                        for idx in range(len(result['url'])):
+                            if (url != result['url'][idx]):
+                                if (domain):
+                                    domain['data'] = data
+                                    records.append(domain)
+                                    data = []
+                                url = result['url'][idx]
+                                domain = {}
+                                domain_title,domain_url = self.__get_data_source_title_url(result['link_sub_type'],
+                                                                                           self.__get_url_hostname_with_protocol(url))
+                                domain['title'] = domain_title
+                                domain['url'] = domain_url
+                            complete_url = self.__update_data_type_hostname(domain_url, result['link_sub_type'], result['url'][idx])
+                            encodeURL = quote(complete_url, safe='')
+                            redirectURL = self.gateway_redirect_url.format(bibcode=self.bibcode, link_type=self.link_type.lower(), url=encodeURL)
+                            record = {}
+                            record['title'] = result['title'][idx] if result['title'][idx] else complete_url
+                            record['url'] = redirectURL
+                            data.append(record)
+                    domain['data'] = data
+                    records.append(domain)
+                    links = {}
+                    links['count'] = len(results)
+                    links['bibcode'] = self.bibcode
+                    links['records'] = records
+                    response = {}
+                    # when we have multiple sources of links elements there is no url to log (no service)
+                    response['service'] = ''
+                    response['action'] = 'display'
+                    response['links'] = links
+                    return self.__return_response(response, 200)
+            return self.__return_response({'error': 'did not find any records'}, 404)
+        except Exception as e:
+            current_app.logger.debug(traceback.format_exc())
+            return self.__return_response({'error': 'unable to read records'}, 400)
 
 
     def process_request(self):
         """
+        process the request
 
-        :return:
+        :return: json code of the result or error
         """
-        current_app.logger.info('received request with bibcode={bibcode} and link_type={link_type}'.format(
+        current_app.logger.info('received request with bibcode={bibcode}, link_type={link_type} and link_sub_type={link_sub_type}'.format(
                 bibcode=self.bibcode,
-                link_type=self.link_type))
+                link_type=self.link_type if self.link_type is not None else '*',
+                link_sub_type=self.link_sub_type if self.link_sub_type is not None else '*'))
 
-        if (len(self.bibcode) == 0) or (len(self.link_type) == 0):
-            return self.__return_response_error('error: not all the needed information received', 400)
+        if (len(self.bibcode) == 0):
+            return self.__return_response({'error': 'no bibcode received'}, 400)
+
+        # return all the link types
+        if self.link_type is None:
+            return self.request_link_type_all()
 
         # for these link types, we only need to format the deterministic link and return it
         if (self.link_type in self.on_the_fly.keys()):
-            return self.__process_request_on_the_fly_links()
+            return self.request_link_type_on_the_fly()
 
         # the rest of the link types query the db
 
-        # for the following link types the return value is a url
+        # for the following link types we have a single url, and shall be wrapped in a JSON code as well
         if (self.link_type == 'INSPIRE') or (self.link_type == 'LIBRARYCATALOG') or (self.link_type == 'PRESENTATION'):
-            return self.response_single_url(get_records(bibcode=self.bibcode, link_type=self.link_type))
+            return self.request_link_type_single_url(get_records(bibcode=self.bibcode, link_type=self.link_type))
 
-        # for the following link type the return value is a JSON code
+        # for the following link type the return value is specific to the type
         if (self.link_type == 'ASSOCIATED'):
-            return self.response_link_type_associated(get_records(bibcode=self.bibcode, link_type=self.link_type))
+            return self.request_link_type_associated(get_records(bibcode=self.bibcode, link_type=self.link_type))
 
         # for BBB we have defined more specifically the source of full text resources and
         # have divided them into 7 sub types, defined in Solr field esource
-        if (self.link_type == 'ARTICLE'):
-            return self.response_link_type_article(get_records(bibcode=self.bibcode, link_type=self.link_type, link_sub_type=self.link_sub_type))
+        if (self.link_type == 'ESOURCE'):
+            return self.request_link_type_article(get_records(bibcode=self.bibcode, link_type=self.link_type, link_sub_type=self.link_sub_type))
 
         # for BBB we have defined more specifically the type of data and
         # have divided them into 30+ sub types, defined in Solr field data
         if (self.link_type == 'DATA'):
-            return self.response_link_type_data(get_records(bibcode=self.bibcode, link_type=self.link_type, link_sub_type=self.link_sub_type))
+            return self.request_link_type_data(get_records(bibcode=self.bibcode, link_type=self.link_type, link_sub_type=self.link_sub_type))
 
         # we did not recognize the link_type, so return an error
-        return self.__return_response_error("error: unrecognizable link type:'{link_type}'!".format(link_type=self.link_type), 400)
-
+        return self.__return_response({'error': 'unrecognizable link type:`{link_type}`'.format(link_type=self.link_type)}, 400)
 
 
 @advertise(scopes=[], rate_limit=[1000, 3600 * 24])
-@bp.route('/v1/resolver/<bibcode>/<link_type>', methods=['GET'])
+@bp.route('/<bibcode>', defaults={'link_type': ''}, methods=['GET'])
+@bp.route('/<bibcode>/<link_type>', methods=['GET'])
 def resolver(bibcode, link_type):
     """
-
+    endpoint, with required param bibcode and optional param link type, that could contain one of the link sub type values
     :param bibcode:
     :param link_type: 
     :return:

@@ -18,44 +18,43 @@ class TestResolver(TestCase):
 
     # the following four types' links are created on the fly
     def test_fetchingAbstract(self):
-        response = LinkRequest('1987gady.book.....B', 'ABSTRACT', self.current_app.config['RESOLVER_GATEWAY_URL_TEST']).process_request()
+        response = LinkRequest('1987gady.book.....B', 'ABSTRACT').process_request()
         self.assertEqual(response._status_code, 200)
-        self.assertEqual(response.response[0], '/resolver/1987gady.book.....B/ABSTRACT/https://ui.adsabs.harvard.edu/#abs/1987gady.book.....B/abstract')
+        self.assertEqual(response.response[0], '{"action": "redirect", "link": "https://ui.adsabs.harvard.edu/#abs/1987gady.book.....B/abstract", "service": "https://ui.adsabs.harvard.edu/#abs/1987gady.book.....B/ABSTRACT"}')
     def test_fetchingCitations(self):
-        response = LinkRequest('1987gady.book.....B', 'CITATIONS', self.current_app.config['RESOLVER_GATEWAY_URL_TEST']).process_request()
+        response = LinkRequest('1987gady.book.....B', 'CITATIONS').process_request()
         self.assertEqual(response._status_code, 200)
-        self.assertEqual(response.response[0], '/resolver/1987gady.book.....B/CITATIONS/https://ui.adsabs.harvard.edu/#abs/1987gady.book.....B/citations')
+        self.assertEqual(response.response[0], '{"action": "redirect", "link": "https://ui.adsabs.harvard.edu/#abs/1987gady.book.....B/citations", "service": "https://ui.adsabs.harvard.edu/#abs/1987gady.book.....B/CITATIONS"}')
     def test_fetchingCoRead(self):
-        response = LinkRequest('1987gady.book.....B', 'COREADS', self.current_app.config['RESOLVER_GATEWAY_URL_TEST']).process_request()
+        response = LinkRequest('1987gady.book.....B', 'COREADS').process_request()
         self.assertEqual(response._status_code, 200)
-        self.assertEqual(response.response[0], '/resolver/1987gady.book.....B/COREADS/https://ui.adsabs.harvard.edu/#abs/1987gady.book.....B/coreads')
+        self.assertEqual(response.response[0], '{"action": "redirect", "link": "https://ui.adsabs.harvard.edu/#abs/1987gady.book.....B/coreads", "service": "https://ui.adsabs.harvard.edu/#abs/1987gady.book.....B/COREADS"}')
     def test_fetchingReferences(self):
-        response = LinkRequest('1998ARA&A..36..189K', 'REFERENCES', self.current_app.config['RESOLVER_GATEWAY_URL_TEST']).process_request()
+        response = LinkRequest('1998ARA&A..36..189K', 'REFERENCES').process_request()
         self.assertEqual(response._status_code, 200)
-        self.assertEqual(response.response[0], '/resolver/1998ARA&A..36..189K/REFERENCES/https://ui.adsabs.harvard.edu/#abs/1998ARA&A..36..189K/references')
+        self.assertEqual(response.response[0], '{"action": "redirect", "link": "https://ui.adsabs.harvard.edu/#abs/1998ARA&A..36..189K/references", "service": "https://ui.adsabs.harvard.edu/#abs/1998ARA&A..36..189K/REFERENCES"}')
 
 
     # the following three tests support of legacy type EJOURNAL
     def test_fetchingEJOURNAL(self):
         link_request = LinkRequest('1668RSPT....3..863M', 'EJOURNAL', self.current_app.config['RESOLVER_GATEWAY_URL_TEST'])
-        self.assertEqual(link_request.link_type, 'ARTICLE')
+        self.assertEqual(link_request.link_type, 'ESOURCE')
         self.assertEqual(link_request.link_sub_type, 'PUB_HTML')
     def test_fetchingPreprint(self):
         link_request = LinkRequest('1991hep.th...10030D', 'PREPRINT', self.current_app.config['RESOLVER_GATEWAY_URL_TEST'])
-        self.assertEqual(link_request.link_type, 'ARTICLE')
+        self.assertEqual(link_request.link_type, 'ESOURCE')
         self.assertEqual(link_request.link_sub_type, 'EPRINT_HTML')
     def test_fetchingGIF(self):
         link_request = LinkRequest('1990ARA&A..28..215D', 'GIF', self.current_app.config['RESOLVER_GATEWAY_URL_TEST'])
-        self.assertEqual(link_request.link_type, 'ARTICLE')
+        self.assertEqual(link_request.link_type, 'ESOURCE')
         self.assertEqual(link_request.link_sub_type, 'ADS_SCAN')
 
 
     def test_route(self):
         """
-        Tests for the existence of a /v1/resolver route, and that it returns
-        properly formatted JSON data
+        Tests for the existence of a the endpoint route
         """
-        r = self.client.get('/v1/resolver/1987gady.book.....B/ABSTRACT')
+        r = self.client.get('/1987gady.book.....B/ABSTRACT')
         self.assertEqual(r.status_code, 200)
 
 if __name__ == '__main__':
