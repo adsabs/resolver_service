@@ -1,7 +1,6 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 
-import traceback
 import json
 
 from flask import current_app, request, Blueprint
@@ -16,37 +15,6 @@ bp = Blueprint('resolver_service', __name__)
 
 class LinkRequest():
 
-    baseurl = 'https://ui.adsabs.harvard.edu/#abs'
-
-    # we have 8 link types that are created on the fly and do not need to go to db
-    # as of now, 8/27/2017, we are to eliminate the COMMENTS and CUSTOM links
-    on_the_fly = {
-        'ABSTRACT' : '{baseurl}/{bibcode}/abstract',
-        'CITATIONS': '{baseurl}/{bibcode}/citations',
-        'REFERENCES': '{baseurl}/{bibcode}/references',
-        'COREADS': '{baseurl}/{bibcode}/coreads',
-        #'COMMENTS': '???',
-        'TOC': '{baseurl}/{bibcode}/toc',
-        'OPENURL': '{baseurl}/{bibcode}/openurl',
-        #'CUSTOM': '???'
-    }
-
-    # electronic journal sub types
-    esource = [
-        'PUB_PDF', 'EPRINT_PDF', 'AUTHOR_PDF', 'ADS_PDF',
-        'PUB_HTML', 'EPRINT_HTML', 'AUTHOR_HTML', 'ADS_SCAN'
-    ]
-
-    # data sub types
-    data =  [
-        'ARI', 'SIMBAD', 'NED', 'CDS', 'Vizier', 'GCPD', 'Author', 'PDG', 'MAST', 'HEASARC', 'INES', 'IBVS', 'Astroverse',
-        'ESA', 'NExScI', 'PDS', 'AcA', 'ISO', 'ESO', 'CXO', 'NOAO', 'XMM', 'Spitzer', 'PASA', 'ATNF', 'KOA', 'Herschel',
-        'GTC', 'BICEP2', 'ALMA', 'CADC', 'Zenodo', 'TNS'
-    ]
-
-    link_types = on_the_fly.keys() + ['ESOURCE', 'DATA', 'INSPIRE', 'LIBRARYCATALOG', 'PRESENTATION', 'ASSOCIATED']
-
-
     def __init__(self, bibcode, link_type='', gateway_redirect_url=''):
         """
 
@@ -56,10 +24,49 @@ class LinkRequest():
                                     when user clicks on it, it would go to the gateway so that the click can be logged
         :return:
         """
+        self.__init_default()
         self.bibcode = bibcode
         self.__set_major_minor_link_types(link_type)
         self.__backward_compatibility(link_type)
         self.gateway_redirect_url = gateway_redirect_url
+
+
+    def __init_default(self):
+        """
+
+        :return:
+        """
+        self.baseurl = current_app.config['RESOLVER_DETERMINISTIC_LINKS_BASEURL']
+
+        # we have 8 link types that are created on the fly and do not need to go to db
+        # as of now, 8/27/2017, we are to eliminate the COMMENTS and CUSTOM links
+        self.on_the_fly = {
+            'ABSTRACT': '{baseurl}/{bibcode}/abstract',
+            'CITATIONS': '{baseurl}/{bibcode}/citations',
+            'REFERENCES': '{baseurl}/{bibcode}/references',
+            'COREADS': '{baseurl}/{bibcode}/coreads',
+            # 'COMMENTS': '???',
+            'TOC': '{baseurl}/{bibcode}/toc',
+            'OPENURL': '{baseurl}/{bibcode}/openurl',
+            # 'CUSTOM': '???'
+        }
+
+        # electronic journal sub types
+        self.esource = [
+            'PUB_PDF', 'EPRINT_PDF', 'AUTHOR_PDF', 'ADS_PDF',
+            'PUB_HTML', 'EPRINT_HTML', 'AUTHOR_HTML', 'ADS_SCAN'
+        ]
+
+        # data sub types
+        self.data = [
+            'ARI', 'SIMBAD', 'NED', 'CDS', 'Vizier', 'GCPD', 'Author', 'PDG', 'MAST', 'HEASARC', 'INES', 'IBVS',
+            'Astroverse',
+            'ESA', 'NExScI', 'PDS', 'AcA', 'ISO', 'ESO', 'CXO', 'NOAO', 'XMM', 'Spitzer', 'PASA', 'ATNF', 'KOA',
+            'Herschel',
+            'GTC', 'BICEP2', 'ALMA', 'CADC', 'Zenodo', 'TNS'
+        ]
+
+        self.link_types = self.on_the_fly.keys() + ['ESOURCE', 'DATA', 'INSPIRE', 'LIBRARYCATALOG', 'PRESENTATION', 'ASSOCIATED']
 
 
     def __backward_compatibility(self, link_type):
@@ -180,8 +187,8 @@ class LinkRequest():
         """
         response = json.dumps(results)
 
-        current_app.logger.info('sending response status={status}'.format(status=status))
-        current_app.logger.debug('sending response text={response}'.format(response=response))
+        current_app.logger.info('sending response status=%s'.format(status))
+        current_app.logger.debug('sending response text=%s'.format(response))
 
         r = Response(response=response, status=status)
         r.headers['content-type'] = 'application/json'
@@ -201,15 +208,10 @@ class LinkRequest():
         results = get_records(bibcode=self.bibcode, link_type=link_type)
         if len(results) == 0:
             return 0
-        try:
-            count = 0
-            for result in results:
-                for idx in range(len(result['url'])):
-                    count += max(1, len(result['url']))
-            return count
-        except Exception as e:
-            current_app.logger.debug(traceback.format_exc())
-        return 0
+        count = 0
+        for result in results:
+            count += max(1, result['itemCount'] if 'itemCount' in result else 0)
+        return count
 
 
     def request_link_type_single_url_toJSON(self, url):
@@ -237,12 +239,15 @@ class LinkRequest():
         :param results: result from the query
         :return:
         """
+        if (len(results) == 0):
+            return self.__return_response({'error': 'did not find any records'}, 404)
+
         try:
             return self.request_link_type_single_url_toJSON(results[0]['url'][0])
-        except Exception as e:
-            current_app.logger.debug(traceback.format_exc())
-            return self.__return_response({'error': 'unable to read records'}, 400)
-
+        except KeyError:
+            return self.__return_response({'KeyError': 'key not in dictionary'}, 400)
+        except IndexError:
+            return self.__return_response({'IndexError': 'list index out of range'}, 400)
 
     def request_link_type_all(self):
         """
@@ -285,7 +290,7 @@ class LinkRequest():
         return self.request_link_type_single_url_toJSON(url)
 
 
-    def request_link_type_article(self, results):
+    def request_link_type_esource(self, results):
         """
         for link type = article, we can have one or many urls
 
@@ -315,9 +320,10 @@ class LinkRequest():
                     response['links'] = links
                     return self.__return_response(response, 200)
             return self.__return_response({'error': 'did not find any records'}, 404)
-        except Exception as e:
-            current_app.logger.debug(traceback.format_exc())
-            return self.__return_response({'error': 'unable to read records'}, 400)
+        except KeyError:
+            return self.__return_response({'KeyError': 'key not in dictionary'}, 400)
+        except IndexError:
+            return self.__return_response({'IndexError': 'list index out of range'}, 400)
 
 
     def request_link_type_associated(self, results,):
@@ -353,10 +359,10 @@ class LinkRequest():
                 response['links'] = links
                 return self.__return_response(response, 200)
             return self.__return_response({'error': 'did not find any records'}, 404)
-        except Exception as e:
-            current_app.logger.debug(traceback.format_exc())
-            return self.__return_response({'error': 'unable to read records'}, 400)
-
+        except KeyError:
+            return self.__return_response({'KeyError': 'key not in dictionary'}, 400)
+        except IndexError:
+            return self.__return_response({'IndexError': 'list index out of range'}, 400)
 
     def request_link_type_data(self, results):
         """
@@ -406,10 +412,10 @@ class LinkRequest():
                     response['links'] = links
                     return self.__return_response(response, 200)
             return self.__return_response({'error': 'did not find any records'}, 404)
-        except Exception as e:
-            current_app.logger.debug(traceback.format_exc())
-            return self.__return_response({'error': 'unable to read records'}, 400)
-
+        except KeyError:
+            return self.__return_response({'KeyError': 'key not in dictionary'}, 400)
+        except IndexError:
+            return self.__return_response({'IndexError': 'list index out of range'}, 400)
 
     def process_request(self):
         """
@@ -417,10 +423,10 @@ class LinkRequest():
 
         :return: json code of the result or error
         """
-        current_app.logger.info('received request with bibcode={bibcode}, link_type={link_type} and link_sub_type={link_sub_type}'.format(
-                bibcode=self.bibcode,
-                link_type=self.link_type if self.link_type is not None else '*',
-                link_sub_type=self.link_sub_type if self.link_sub_type is not None else '*'))
+        current_app.logger.info('received request with bibcode=%s, link_type=%s and link_sub_type=%s'.format(
+                self.bibcode,
+                self.link_type if self.link_type is not None else '*',
+                self.link_sub_type if self.link_sub_type is not None else '*'))
 
         if (len(self.bibcode) == 0):
             return self.__return_response({'error': 'no bibcode received'}, 400)
@@ -446,7 +452,7 @@ class LinkRequest():
         # for BBB we have defined more specifically the source of full text resources and
         # have divided them into 7 sub types, defined in Solr field esource
         if (self.link_type == 'ESOURCE'):
-            return self.request_link_type_article(get_records(bibcode=self.bibcode, link_type=self.link_type, link_sub_type=self.link_sub_type))
+            return self.request_link_type_esource(get_records(bibcode=self.bibcode, link_type=self.link_type, link_sub_type=self.link_sub_type))
 
         # for BBB we have defined more specifically the type of data and
         # have divided them into 30+ sub types, defined in Solr field data

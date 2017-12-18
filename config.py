@@ -9,6 +9,10 @@ SQLALCHEMY_TRACK_MODIFICATIONS = False
 RESOLVER_GATEWAY_URL = 'http://localhost:5000/{bibcode}/{link_type}/{url}'
 RESOLVER_GATEWAY_URL_TEST = '/{bibcode}/{link_type}/{url}'
 
+# This is the URL for deterministic links, needs to go to local-config, once deployed, if need to
+RESOLVER_DETERMINISTIC_LINKS_BASEURL = 'https://ui.adsabs.harvard.edu/#abs'
+
+
 RESOLVER_DATA_SOURCES = {
     "SIMBAD": {
         "name": "SIMBAD Database at the CDS",
