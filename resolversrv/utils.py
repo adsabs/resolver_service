@@ -1,8 +1,10 @@
-#!/usr/bin/python
-# -*- coding: utf-8 -*-
+
 from flask import current_app
-from sqlalchemy.orm.exc import NoResultFound
+from sqlalchemy.exc import SQLAlchemyError, DBAPIError
 from sqlalchemy import and_
+from sqlalchemy.dialects.postgresql import insert
+
+from adsmsg import DataLinksRecord, DataLinksRecordList
 
 from resolversrv.models import DataLinks
 
@@ -15,32 +17,76 @@ def get_records(bibcode, link_type=None, link_sub_type=None):
     :param link_sub_type:
     :return: list of json records or None
     """
-    try:
-        with current_app.session_scope() as session:
-            if link_type is None:
-                rows = session.query(DataLinks).filter(and_(DataLinks.bibcode == bibcode)).all()
-                msg = "Fetched records for bibcode = %s."
-            elif link_sub_type is None:
-                rows = session.query(DataLinks).filter(and_(DataLinks.bibcode == bibcode, DataLinks.link_type == link_type)).all()
-                msg = "Fetched records for bibcode = %s and link type = %s."
-            else:
-                rows = session.query(DataLinks).filter(
-                    and_(DataLinks.bibcode == bibcode, DataLinks.link_type == link_type,
-                         DataLinks.link_sub_type == link_sub_type)).all()
-                msg = "Fetched records for bibcode = %s, link type = %s and link sub type = %s."
-            current_app.logger.debug(msg.format(bibcode, link_type, link_sub_type))
-            results = []
-            for row in rows:
-                results.append(row.toJSON())
-            return results
-    except NoResultFound, e:
+    with current_app.session_scope() as session:
         if link_type is None:
-            msg = "No records found for bibcode = %s."
+            rows = session.query(DataLinks).filter(and_(DataLinks.bibcode == bibcode)).all()
+            current_app.logger.info("Fetched records for bibcode = %s."  % (bibcode))
         elif link_sub_type is None:
-            msg = "No records found for bibcode = %s and link type = %s."
+            rows = session.query(DataLinks).filter(and_(DataLinks.bibcode == bibcode, DataLinks.link_type == link_type)).all()
+            current_app.logger.info("Fetched records for bibcode = %s and link type = %s." % (bibcode, link_type))
         else:
-            msg = "No records found for bibcode = %s, link type = %s and link sub type = %s."
-        current_app.logger.error(msg.format(bibcode, link_type, link_sub_type))
-        current_app.logger.error('Error: ' + e)
-        return None
+            rows = session.query(DataLinks).filter(and_(DataLinks.bibcode == bibcode, DataLinks.link_type == link_type,
+                                                        DataLinks.link_sub_type == link_sub_type)).all()
+            current_app.logger.info("Fetched records for bibcode = %s, link type = %s and link sub type = %s." %
+                                    (bibcode, link_type, link_sub_type))
 
+        if len(rows) == 0:
+            if link_type is None:
+                current_app.logger.error("No records found for bibcode = %s." % (bibcode))
+            elif link_sub_type is None:
+                current_app.logger.error("No records found for bibcode = %s and link type = %s." % (bibcode, link_type))
+            else:
+                current_app.logger.error("No records found for bibcode = %s, link type = %s and link sub type = %s." %
+                                         (bibcode, link_type, link_sub_type))
+            return None
+
+        results = []
+        for row in rows:
+            results.append(row.toJSON())
+        return results
+
+
+def add_records(datalinks_records_list):
+    """
+    upserts records into db
+
+    :param datalinks_records_list:
+    :return: success boolean, plus a status text for retuning error message, if any, to the calling program
+    """
+    if isinstance(datalinks_records_list, DataLinksRecordList):
+        rows = []
+        for i in range(len(datalinks_records_list.datalinks_records)):
+            for j in range(len(datalinks_records_list.datalinks_records[i].data_links_rows)):
+                rows.append([
+                    datalinks_records_list.datalinks_records[i].bibcode,
+                    datalinks_records_list.datalinks_records[i].data_links_rows[j].link_type,
+                    datalinks_records_list.datalinks_records[i].data_links_rows[j].link_sub_type,
+                    datalinks_records_list.datalinks_records[i].data_links_rows[j].url,
+                    datalinks_records_list.datalinks_records[i].data_links_rows[j].title,
+                    datalinks_records_list.datalinks_records[i].data_links_rows[j].item_count
+                ])
+
+        if len(rows) > 0:
+            table = DataLinks.__table__
+            stmt = insert(table).values(rows)
+
+            no_update_cols = []
+            update_cols = [c.name for c in table.c
+                           if c not in list(table.primary_key.columns)
+                           and c.name not in no_update_cols]
+
+            on_conflict_stmt = stmt.on_conflict_do_update(
+                index_elements=table.primary_key.columns,
+                set_={k: getattr(stmt.excluded, k) for k in update_cols}
+            )
+
+            try:
+                with current_app.session_scope() as session:
+                    session.execute(on_conflict_stmt)
+                current_app.logger.info('updated db with new data successfully')
+                return True, 'updated db with new data successfully'
+            except (SQLAlchemyError, DBAPIError) as e:
+                current_app.logger.error('SQLAlchemy: ' + str(e))
+                return False, 'SQLAlchemy: ' + str(e)
+        return False, 'unable to extract data from protobuf structure'
+    return False, 'unrecognizable protobuf structure'
