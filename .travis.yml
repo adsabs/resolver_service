@@ -22,4 +22,4 @@ notifications:
 sudo: false
 
 addons:
-  postgresql: "9.6.5"
+  postgresql: "9.6"
