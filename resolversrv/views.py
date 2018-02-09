@@ -51,7 +51,9 @@ class LinkRequest():
             # 'COMMENTS': '???',
             'TOC': '{baseurl}/{bibcode}/toc',
             'OPENURL': '{baseurl}/{bibcode}/openurl',
-            # 'CUSTOM': '???'
+            # 'CUSTOM': '???',
+            'GRAPHICS':  '{baseurl}/{bibcode}/graphics',
+            'METRICS': '{baseurl}/{bibcode}/metrics',
         }
 
         # electronic journal sub types

@@ -147,17 +147,19 @@ class test_database(TestCase):
         """
         response = LinkRequest(bibcode='2013MNRAS.435.1904M').process_request()
         self.assertEqual(response._status_code, 200)
-        self.assertEqual(response.response[0], '{"action": "display", "links": {"count": 12, '
+        self.assertEqual(response.response[0], '{"action": "display", "links": {"count": 14, '
                                                '"records": ['
-                                               '{"url": "", "count": 1, "bibcode": "2013MNRAS.435.1904M", "type": "openurl", "title": "OPENURL (1)"}, '
-                                               '{"url": "", "count": 1, "bibcode": "2013MNRAS.435.1904M", "type": "abstract", "title": "ABSTRACT (1)"}, '
+                                               '{"url": "", "count": 1, "bibcode": "2013MNRAS.435.1904M", "type": "metrics", "title": "METRICS (1)"}, '
                                                '{"url": "", "count": 1, "bibcode": "2013MNRAS.435.1904M", "type": "citations", "title": "CITATIONS (1)"}, '
                                                '{"url": "", "count": 1, "bibcode": "2013MNRAS.435.1904M", "type": "references", "title": "REFERENCES (1)"}, '
+                                               '{"url": "", "count": 1, "bibcode": "2013MNRAS.435.1904M", "type": "graphics", "title": "GRAPHICS (1)"}, '
                                                '{"url": "", "count": 1, "bibcode": "2013MNRAS.435.1904M", "type": "toc", "title": "TOC (1)"}, '
+                                               '{"url": "", "count": 1, "bibcode": "2013MNRAS.435.1904M", "type": "abstract", "title": "ABSTRACT (1)"}, '
+                                               '{"url": "", "count": 1, "bibcode": "2013MNRAS.435.1904M", "type": "openurl", "title": "OPENURL (1)"}, '
                                                '{"url": "", "count": 1, "bibcode": "2013MNRAS.435.1904M", "type": "coreads", "title": "COREADS (1)"}, '
                                                '{"url": "", "count": 4, "bibcode": "2013MNRAS.435.1904M", "type": "esource", "title": "ESOURCE (4)"}, '
-                                               '{"url": "", "count": 65, "bibcode": "2013MNRAS.435.1904M", "type": "data", "title": "DATA (65)"}], "link_type": "all"}, '
-                                               '"service": ""}')
+                                               '{"url": "", "count": 65, "bibcode": "2013MNRAS.435.1904M", "type": "data", "title": "DATA (65)"}], '
+                                               '"link_type": "all"}, "service": ""}')
 
 
     def test_process_request_link_inspire(self):

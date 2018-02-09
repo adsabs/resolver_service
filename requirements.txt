@@ -1,5 +1,5 @@
-git+https://github.com/adsabs/ADSMicroserviceUtils.git@master
-git+https://github.com/adsabs/ADSPipelineMsg.git@master
+git+https://github.com/adsabs/ADSMicroserviceUtils.git@v1.0.2
+git+https://github.com/adsabs/ADSPipelineMsg.git@v1.0.0
 Werkzeug==0.11.15
 Flask==0.12.2
 flask-discoverer==0.0.2
