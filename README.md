@@ -17,7 +17,7 @@ This microservice provides links to external resources such as publisher's full 
     $ pip install -r requirements.txt
     $ pip install -r dev-requirements.txt
     $ vim local_config.py # edit, edit
-    $ alembic upgrade head` # initialize database
+    $ alembic upgrade head # initialize database
 
     
 #### Make a GET request with a bibcode to return all links associated with that bibcode:
