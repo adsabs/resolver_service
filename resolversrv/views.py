@@ -492,39 +492,28 @@ class PopulateRequest():
         return r
 
 
-    def process_request(self, payload):
+    def process_request(self, records):
         """
         process the request
 
         :param payload:
         :return: json code of the result or error
         """
-        if not payload:
+        if not records:
             return self.__return_response({'error': 'no data received'}, 400)
-        if 'msg-type' not in payload:
-            return self.__return_response({'error': 'content type not specified in payload (parameter name is `msg-type`)'}, 400)
-        if 'msg' not in payload:
-            return self.__return_response({'error': 'no data in payload (parameter name is `msg`)'}, 400)
 
-        msg_type = payload['msg-type']
-        msg_json = json.dumps(payload['msg'])
+        if len(records) == 0:
+            return self.__return_response({'error': 'no records received'}, 400)
+
+        if len(records) > current_app.config['RESOLVER_MAX_RECORDS_ADD']:
+            return self.__return_response({'error': 'too many records to add to db at one time'}, 400)
+
+        current_app.logger.info('received request to populate db with %d records' % (len(records)))
 
         try:
-            if msg_type == 'datalinks_record':
-                data = DataLinksRecordList()
-                data.status = 2     # default is new
-                data.datalinks_records = Parse(msg_json, DataLinksRecord())
-            elif msg_type == 'datalinks_record_list':
-                data = Parse(msg_json, DataLinksRecordList())
-            else:
-                return self.__return_response({'error': 'unrecognizable msg-type in payload'}, 400)
+            data = Parse(json.dumps({"status": 2, "datalinks_records": records}), DataLinksRecordList())
         except ParseError as e:
-            return self.__return_response({'error': 'unrecognizable msg in payload'}, 400)
-
-        count = len(data.datalinks_records)
-        if count > current_app.config['RESOLVER_MAX_RECORDS_ADD']:
-            return self.__return_response({'error': 'too many records to add to db at one time'}, 400)
-        current_app.logger.info('received request to populate db with %d records' % (count))
+            return self.__return_response({'error': 'unable to extract data from protobuf structure'}, 400)
 
         status, text = add_records(data)
         if status == True:
@@ -545,8 +534,8 @@ def resolver(bibcode, link_type):
     return LinkRequest(bibcode, link_type.upper(), current_app.config['RESOLVER_GATEWAY_URL']).process_request()
 
 @advertise(scopes=[], rate_limit=[1000, 3600 * 24])
-@bp.route('/populate', methods=['POST'])
-def populate():
+@bp.route('/update', methods=['POST'])
+def update():
     """
     """
     try:
@@ -554,4 +543,6 @@ def populate():
     except:
         payload = dict(request.form)  # post data in form encoding
 
+    print '............'
+    print payload
     return PopulateRequest().process_request(payload)

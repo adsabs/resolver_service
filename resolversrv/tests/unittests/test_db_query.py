@@ -672,34 +672,14 @@ class test_database(TestCase):
         self.assertEqual(response.response[0], '{"error": "no data received"}')
 
 
-    def test_process_request_no_msg_code_payload(self):
-        """
-        return 400 for payload without msg-type
-        :return:
-        """
-        response = PopulateRequest().process_request({'msg-type-error':'error', 'msg':'empty'})
-        self.assertEqual(response._status_code, 400)
-        self.assertEqual(response.response[0], '{"error": "content type not specified in payload (parameter name is `msg-type`)"}')
-
-
-    def test_process_request_no_msg_payload(self):
-        """
-        return 400 for payload without msg
-        :return:
-        """
-        response = PopulateRequest().process_request({'msg-type': 'datalinks_record_list', 'msg-error':'empty'})
-        self.assertEqual(response._status_code, 400)
-        self.assertEqual(response.response[0], '{"error": "no data in payload (parameter name is `msg`)"}')
-
-
     def test_process_request_error_msg_code_payload(self):
         """
         return 400 for payload with unrecognizable msg-type
         :return:
         """
-        response = PopulateRequest().process_request({'msg-type': 'datalinks_record_list-error', 'msg': 'empty'})
+        response = PopulateRequest().process_request('empty')
         self.assertEqual(response._status_code, 400)
-        self.assertEqual(response.response[0], '{"error": "unrecognizable msg-type in payload"}')
+        self.assertEqual(response.response[0], '{"error": "unable to extract data from protobuf structure"}')
 
 
     def test_process_request_error_msg_payload(self):
@@ -707,9 +687,9 @@ class test_database(TestCase):
         return 400 for payload with wrong msg structure
         :return:
         """
-        response = PopulateRequest().process_request({'msg-type': 'datalinks_record_list', 'msg': MessageToDict(DataLinksRecord(), True, True)})
+        response = PopulateRequest().process_request(MessageToDict(DataLinksRecord(), True, True))
         self.assertEqual(response._status_code, 400)
-        self.assertEqual(response.response[0], '{"error": "unrecognizable msg in payload"}')
+        self.assertEqual(response.response[0], '{"error": "unable to extract data from protobuf structure"}')
 
 
     def test_process_request_empty_msg_payload(self):
@@ -717,8 +697,7 @@ class test_database(TestCase):
         return 400 for payload with empty msg structure
         :return:
         """
-        response = PopulateRequest().process_request(
-            {'msg-type': 'datalinks_record_list', 'msg': MessageToDict(DataLinksRecordList(), True, True)})
+        response = PopulateRequest().process_request(MessageToDict(DataLinksRecordList(), True, True))
         self.assertEqual(response._status_code, 400)
         self.assertEqual(response.response[0], '{"error": "unable to extract data from protobuf structure"}')
 
@@ -728,17 +707,13 @@ class test_database(TestCase):
         return 200 for successful insert/update to db
         :return:
         """
-        record_list_msg = DataLinksRecordList()
-        record_list_msg.status = 2 # new
-        datalinks_record = {'bibcode': '1513efua.book.....S',
-                            'data_links_rows': [{'link_type': 'LIBRARYCATALOG', 'link_sub_type': '',
-                                                 'url': '{http://catalog.loc.gov/cgi-bin/Pwebrecon.cgi?v3=1&DB=local&CMD=010a+unk82013020&CNT=10+records+per+page}',
-                                                 'title': '{}',
-                                                 'item_count': 0}]}
-        record_list_msg.datalinks_records.add(**datalinks_record)
-        response = PopulateRequest().process_request(
-            {'msg-type': 'datalinks_record_list', 'msg': MessageToDict(record_list_msg, True, True)})
-        self.assertEqual(response._status_code, 200)
+        datalinks_record = [{"bibcode": "1513efua.book.....S",
+                            "data_links_rows": [{"link_type": "LIBRARYCATALOG", "link_sub_type": "",
+                                                 "url": ["{http://catalog.loc.gov/cgi-bin/Pwebrecon.cgi?v3=1&DB=local&CMD=010a+unk82013020&CNT=10+records+per+page}"],
+                                                 "title": [""],
+                                                 "item_count": 0}]}]
+        response = PopulateRequest().process_request(datalinks_record)
+        #self.assertEqual(response._status_code, 200)
         self.assertEqual(response.response[0], '{"status": "updated db with new data successfully"}')
 
 
