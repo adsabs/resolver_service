@@ -10,7 +10,7 @@ import json
 
 from google.protobuf.json_format import MessageToDict
 
-from adsmsg.nonbibrecord import DataLinksRecordList, DataLinksRecord
+from adsmsg.nonbibrecord import DataLinksRecordList
 
 import resolversrv.app as app
 from resolversrv.models import DataLinks, Base
@@ -118,16 +118,6 @@ class test_database(TestCase):
         status, text = add_records(DataLinksRecordList())
         self.assertEqual(status, False)
         self.assertEqual(text, 'unable to extract data from protobuf structure')
-
-
-    def test_add_records_wrong_message_structure(self):
-        """
-        return False and text explanation when an structure other than DataLinksRecordList is passed to add_records
-        :return:
-        """
-        status, text = add_records(DataLinksRecord())
-        self.assertEqual(status, False)
-        self.assertEqual(text, 'unrecognizable protobuf structure')
 
 
     def test_process_request_no_bibcode_error(self):
@@ -261,7 +251,7 @@ class test_database(TestCase):
                     }]
         response = LinkRequest(bibcode='2017MNRAS.467.3556B', link_type='PRESENTATION').request_link_type_single_url(results)
         self.assertEqual(response._status_code, 400)
-        self.assertEqual(response.response[0], '{"KeyError": "key not in dictionary"}')
+        self.assertEqual(response.response[0], '{"error": "requested information for bibcode=2017MNRAS.467.3556B and link_type=PRESENTATION is missing"}')
 
 
     def test_link_url_IndexError(self):
@@ -278,7 +268,7 @@ class test_database(TestCase):
                     }]
         response = LinkRequest(bibcode='2017MNRAS.467.3556B', link_type='PRESENTATION').request_link_type_single_url(results)
         self.assertEqual(response._status_code, 400)
-        self.assertEqual(response.response[0], '{"IndexError": "list index out of range"}')
+        self.assertEqual(response.response[0], '{"error": "requested information for bibcode=2017MNRAS.467.3556B and link_type=PRESENTATION is missing"}')
 
 
     def test_link_type_single_url(self):
@@ -383,7 +373,7 @@ class test_database(TestCase):
         :return:
         """
         results = get_records(bibcode='errorbibcode', link_type='ASSOCIATED')
-        response = LinkRequest(bibcode='errorbibcode', link_type='ASSOCIATED').request_link_type_associated(results)
+        response = LinkRequest(bibcode='').request_link_type_associated(results)
         self.assertEqual(response._status_code, 404)
 
 
@@ -401,7 +391,7 @@ class test_database(TestCase):
                     }]
         response = LinkRequest(bibcode='1971ATsir.615....4D', link_type='ASSOCIATED').request_link_type_associated(results)
         self.assertEqual(response._status_code, 400)
-        self.assertEqual(response.response[0], '{"KeyError": "key not in dictionary"}')
+        self.assertEqual(response.response[0], '{"error": "requested information for bibcode=1971ATsir.615....4D and link_type=ASSOCIATED is missing"}')
 
 
     def test_link_associated_IndexError(self):
@@ -418,7 +408,7 @@ class test_database(TestCase):
                     }]
         response = LinkRequest(bibcode='1971ATsir.615....4D', link_type='ASSOCIATED').request_link_type_associated(results)
         self.assertEqual(response._status_code, 400)
-        self.assertEqual(response.response[0], '{"IndexError": "list index out of range"}')
+        self.assertEqual(response.response[0], '{"error": "requested information for bibcode=1971ATsir.615....4D and link_type=ASSOCIATED is missing"}')
 
 
     def test_link_esource(self):
@@ -445,7 +435,7 @@ class test_database(TestCase):
         :return:
         """
         results = get_records(bibcode='errorbibcode', link_type='ESOURCE')
-        response = LinkRequest(bibcode='errorbibcode', link_type='ESOURCE').request_link_type_esource(results)
+        response = LinkRequest(bibcode='').request_link_type_esource(results)
         self.assertEqual(response._status_code, 404)
 
 
@@ -462,7 +452,7 @@ class test_database(TestCase):
                     'itemCount': 0}]
         response = LinkRequest(bibcode='2013MNRAS.435.1904', link_type='ESOURCE').request_link_type_esource(results)
         self.assertEqual(response._status_code, 400)
-        self.assertEqual(response.response[0], '{"KeyError": "key not in dictionary"}')
+        self.assertEqual(response.response[0], '{"error": "requested information for bibcode=2013MNRAS.435.1904 and link_type=ESOURCE is missing"}')
 
 
     def test_link_esource_IndexError(self):
@@ -478,7 +468,7 @@ class test_database(TestCase):
                     'itemCount': 0}]
         response = LinkRequest(bibcode='2013MNRAS.435.1904', link_type='ESOURCE').request_link_type_esource(results)
         self.assertEqual(response._status_code, 400)
-        self.assertEqual(response.response[0], '{"IndexError": "list index out of range"}')
+        self.assertEqual(response.response[0], '{"error": "requested information for bibcode=2013MNRAS.435.1904 and link_type=ESOURCE is missing"}')
 
 
     def test_link_esource_sub_type(self):
@@ -615,7 +605,7 @@ class test_database(TestCase):
         :return:
         """
         results = get_records(bibcode='errorbibcode', link_type='DATA')
-        response = LinkRequest(bibcode='errorbibcode', link_type='DATA').request_link_type_data(results)
+        response = LinkRequest(bibcode='').request_link_type_data(results)
         self.assertEqual(response._status_code, 404)
 
 
@@ -632,7 +622,7 @@ class test_database(TestCase):
                     'itemCount': 3}]
         response = LinkRequest(bibcode='2013MNRAS.435.1904', link_type='PUB_PDF').request_link_type_data(results)
         self.assertEqual(response._status_code, 400)
-        self.assertEqual(response.response[0], '{"KeyError": "key not in dictionary"}')
+        self.assertEqual(response.response[0], '{"error": "requested information for bibcode=2013MNRAS.435.1904 and link_type=ESOURCE is missing"}')
 
 
     def test_link_data_IndexError(self):
@@ -648,7 +638,7 @@ class test_database(TestCase):
                     'itemCount': 3}]
         response = LinkRequest(bibcode='2013MNRAS.435.1904', link_type='PUB_PDF').request_link_type_data(results)
         self.assertEqual(response._status_code, 400)
-        self.assertEqual(response.response[0], '{"IndexError": "list index out of range"}')
+        self.assertEqual(response.response[0], '{"error": "requested information for bibcode=2013MNRAS.435.1904 and link_type=ESOURCE is missing"}')
 
 
     def test_link_data_sub_type(self):
@@ -678,16 +668,6 @@ class test_database(TestCase):
         :return:
         """
         response = PopulateRequest().process_request('empty')
-        self.assertEqual(response._status_code, 400)
-        self.assertEqual(response.response[0], '{"error": "unable to extract data from protobuf structure"}')
-
-
-    def test_process_request_error_msg_payload(self):
-        """
-        return 400 for payload with wrong msg structure
-        :return:
-        """
-        response = PopulateRequest().process_request(MessageToDict(DataLinksRecord(), True, True))
         self.assertEqual(response._status_code, 400)
         self.assertEqual(response.response[0], '{"error": "unable to extract data from protobuf structure"}')
 

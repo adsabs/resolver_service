@@ -247,11 +247,9 @@ class LinkRequest():
 
         try:
             return self.request_link_type_single_url_toJSON(results[0]['url'][0])
-        except KeyError:
-            return self.__return_response({'KeyError': 'key not in dictionary'}, 400)
-        except IndexError:
-            return self.__return_response({'IndexError': 'list index out of range'}, 400)
-
+        except (KeyError, IndexError):
+            error_message = 'requested information for bibcode=%s and link_type=%s is missing' % (self.bibcode, self.link_type)
+            return self.__return_response({'error': error_message}, 400)
 
     def request_link_type_all(self):
         """
@@ -324,13 +322,12 @@ class LinkRequest():
                     response['links'] = links
                     return self.__return_response(response, 200)
             return self.__return_response({'error': 'did not find any records'}, 404)
-        except KeyError:
-            return self.__return_response({'KeyError': 'key not in dictionary'}, 400)
-        except IndexError:
-            return self.__return_response({'IndexError': 'list index out of range'}, 400)
+        except (KeyError, IndexError):
+            error_message = 'requested information for bibcode=%s and link_type=%s is missing' % (
+            self.bibcode, self.link_type)
+            return self.__return_response({'error': error_message}, 400)
 
-
-    def request_link_type_associated(self, results,):
+    def request_link_type_associated(self, results):
         """
         for link type = associated
 
@@ -363,10 +360,9 @@ class LinkRequest():
                 response['links'] = links
                 return self.__return_response(response, 200)
             return self.__return_response({'error': 'did not find any records'}, 404)
-        except KeyError:
-            return self.__return_response({'KeyError': 'key not in dictionary'}, 400)
-        except IndexError:
-            return self.__return_response({'IndexError': 'list index out of range'}, 400)
+        except (KeyError, IndexError):
+            error_message = 'requested information for bibcode=%s and link_type=%s is missing' %(self.bibcode, self.link_type)
+            return self.__return_response({'error': error_message}, 400)
 
 
     def request_link_type_data(self, results):
@@ -417,11 +413,9 @@ class LinkRequest():
                     response['links'] = links
                     return self.__return_response(response, 200)
             return self.__return_response({'error': 'did not find any records'}, 404)
-        except KeyError:
-            return self.__return_response({'KeyError': 'key not in dictionary'}, 400)
-        except IndexError:
-            return self.__return_response({'IndexError': 'list index out of range'}, 400)
-
+        except (KeyError, IndexError):
+            error_message = 'requested information for bibcode=%s and link_type=%s is missing' % (self.bibcode, self.link_type)
+            return self.__return_response({'error': error_message}, 400)
 
     def process_request(self):
         """
@@ -533,6 +527,7 @@ def resolver(bibcode, link_type):
     """
     return LinkRequest(bibcode, link_type.upper(), current_app.config['RESOLVER_GATEWAY_URL']).process_request()
 
+# scope: 'ads:resolver-service'
 @advertise(scopes=[], rate_limit=[1000, 3600 * 24])
 @bp.route('/update', methods=['POST'])
 def update():
@@ -543,6 +538,4 @@ def update():
     except:
         payload = dict(request.form)  # post data in form encoding
 
-    print '............'
-    print payload
     return PopulateRequest().process_request(payload)

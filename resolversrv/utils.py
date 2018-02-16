@@ -53,40 +53,38 @@ def add_records(datalinks_records_list):
     :param datalinks_records_list:
     :return: success boolean, plus a status text for retuning error message, if any, to the calling program
     """
-    if isinstance(datalinks_records_list, DataLinksRecordList):
-        rows = []
-        for i in range(len(datalinks_records_list.datalinks_records)):
-            for j in range(len(datalinks_records_list.datalinks_records[i].data_links_rows)):
-                rows.append([
-                    datalinks_records_list.datalinks_records[i].bibcode,
-                    datalinks_records_list.datalinks_records[i].data_links_rows[j].link_type,
-                    datalinks_records_list.datalinks_records[i].data_links_rows[j].link_sub_type,
-                    datalinks_records_list.datalinks_records[i].data_links_rows[j].url,
-                    datalinks_records_list.datalinks_records[i].data_links_rows[j].title,
-                    datalinks_records_list.datalinks_records[i].data_links_rows[j].item_count
-                ])
+    rows = []
+    for i in range(len(datalinks_records_list.datalinks_records)):
+        for j in range(len(datalinks_records_list.datalinks_records[i].data_links_rows)):
+            rows.append([
+                datalinks_records_list.datalinks_records[i].bibcode,
+                datalinks_records_list.datalinks_records[i].data_links_rows[j].link_type,
+                datalinks_records_list.datalinks_records[i].data_links_rows[j].link_sub_type,
+                datalinks_records_list.datalinks_records[i].data_links_rows[j].url,
+                datalinks_records_list.datalinks_records[i].data_links_rows[j].title,
+                datalinks_records_list.datalinks_records[i].data_links_rows[j].item_count
+            ])
 
-        if len(rows) > 0:
-            table = DataLinks.__table__
-            stmt = insert(table).values(rows)
+    if len(rows) > 0:
+        table = DataLinks.__table__
+        stmt = insert(table).values(rows)
 
-            no_update_cols = []
-            update_cols = [c.name for c in table.c
-                           if c not in list(table.primary_key.columns)
-                           and c.name not in no_update_cols]
+        no_update_cols = []
+        update_cols = [c.name for c in table.c
+                       if c not in list(table.primary_key.columns)
+                       and c.name not in no_update_cols]
 
-            on_conflict_stmt = stmt.on_conflict_do_update(
-                index_elements=table.primary_key.columns,
-                set_={k: getattr(stmt.excluded, k) for k in update_cols}
-            )
+        on_conflict_stmt = stmt.on_conflict_do_update(
+            index_elements=table.primary_key.columns,
+            set_={k: getattr(stmt.excluded, k) for k in update_cols}
+        )
 
-            try:
-                with current_app.session_scope() as session:
-                    session.execute(on_conflict_stmt)
-                current_app.logger.info('updated db with new data successfully')
-                return True, 'updated db with new data successfully'
-            except (SQLAlchemyError, DBAPIError) as e:
-                current_app.logger.error('SQLAlchemy: ' + str(e))
-                return False, 'SQLAlchemy: ' + str(e)
-        return False, 'unable to extract data from protobuf structure'
-    return False, 'unrecognizable protobuf structure'
+        try:
+            with current_app.session_scope() as session:
+                session.execute(on_conflict_stmt)
+            current_app.logger.info('updated db with new data successfully')
+            return True, 'updated db with new data successfully'
+        except (SQLAlchemyError, DBAPIError) as e:
+            current_app.logger.error('SQLAlchemy: ' + str(e))
+            return False, 'SQLAlchemy: ' + str(e)
+    return False, 'unable to extract data from protobuf structure'
