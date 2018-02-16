@@ -527,8 +527,7 @@ def resolver(bibcode, link_type):
     """
     return LinkRequest(bibcode, link_type.upper(), current_app.config['RESOLVER_GATEWAY_URL']).process_request()
 
-# scope: 'ads:resolver-service'
-@advertise(scopes=[], rate_limit=[1000, 3600 * 24])
+@advertise(scopes=['ads:resolver-service'], rate_limit=[1000, 3600 * 24])
 @bp.route('/update', methods=['POST'])
 def update():
     """
