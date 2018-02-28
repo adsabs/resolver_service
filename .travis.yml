@@ -20,3 +20,6 @@ notifications:
   email: false
 
 sudo: false
+
+addons:
+  postgresql: "9.6"

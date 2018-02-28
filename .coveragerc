@@ -1,0 +1,3 @@
+[run]
+source = resolversrv
+omit = resolversrv/tests*

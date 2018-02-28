@@ -1,9 +1,6 @@
-#!/usr/bin/python
-# -*- coding: utf-8 -*-
 
 from werkzeug.serving import run_simple
 
-from flask_restful import Api
 from flask_discoverer import Discoverer
 
 from adsmutils import ADSFlask
@@ -24,8 +21,6 @@ def create_app(**config):
 
     app.url_map.strict_slashes = False
 
-    # Register extensions
-    api = Api(app)
     Discoverer(app)
 
     app.register_blueprint(bp)

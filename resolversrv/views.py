@@ -1,4 +1,3 @@
-#!/usr/bin/python
 # -*- coding: utf-8 -*-
 
 import json
@@ -8,7 +7,11 @@ from flask_discoverer import advertise
 from flask import Response
 from requests.utils import quote
 
-from resolversrv.utils import get_records
+from adsmsg import DataLinksRecord, DataLinksRecordList
+
+from google.protobuf.json_format import Parse, ParseError
+
+from resolversrv.utils import get_records, add_records
 
 
 bp = Blueprint('resolver_service', __name__)
@@ -48,7 +51,9 @@ class LinkRequest():
             # 'COMMENTS': '???',
             'TOC': '{baseurl}/{bibcode}/toc',
             'OPENURL': '{baseurl}/{bibcode}/openurl',
-            # 'CUSTOM': '???'
+            # 'CUSTOM': '???',
+            'GRAPHICS':  '{baseurl}/{bibcode}/graphics',
+            'METRICS': '{baseurl}/{bibcode}/metrics',
         }
 
         # electronic journal sub types
@@ -60,10 +65,8 @@ class LinkRequest():
         # data sub types
         self.data = [
             'ARI', 'SIMBAD', 'NED', 'CDS', 'Vizier', 'GCPD', 'Author', 'PDG', 'MAST', 'HEASARC', 'INES', 'IBVS',
-            'Astroverse',
-            'ESA', 'NExScI', 'PDS', 'AcA', 'ISO', 'ESO', 'CXO', 'NOAO', 'XMM', 'Spitzer', 'PASA', 'ATNF', 'KOA',
-            'Herschel',
-            'GTC', 'BICEP2', 'ALMA', 'CADC', 'Zenodo', 'TNS'
+            'Astroverse', 'ESA', 'NExScI', 'PDS', 'AcA', 'ISO', 'ESO', 'CXO', 'NOAO', 'XMM', 'Spitzer', 'PASA',
+            'ATNF', 'KOA', 'Herschel', 'GTC', 'BICEP2', 'ALMA', 'CADC', 'Zenodo', 'TNS'
         ]
 
         self.link_types = self.on_the_fly.keys() + ['ESOURCE', 'DATA', 'INSPIRE', 'LIBRARYCATALOG', 'PRESENTATION', 'ASSOCIATED']
@@ -151,8 +154,8 @@ class LinkRequest():
         """
         data_resources = current_app.config['RESOLVER_DATA_SOURCES']
         if link_sub_type in data_resources:
-            title = data_resources[link_sub_type].get('name','')
-            url = data_resources[link_sub_type].get('url','')
+            title = data_resources[link_sub_type].get('name', 'Resource at ' + default_url)
+            url = data_resources[link_sub_type].get('url', default_url)
         else:
             title = 'Resource at ' + default_url
             url = default_url
@@ -187,8 +190,8 @@ class LinkRequest():
         """
         response = json.dumps(results)
 
-        current_app.logger.info('sending response status=%s'.format(status))
-        current_app.logger.debug('sending response text=%s'.format(response))
+        current_app.logger.info('sending response status=%s' % (status))
+        current_app.logger.debug('sending response text=%s' % (response))
 
         r = Response(response=response, status=status)
         r.headers['content-type'] = 'application/json'
@@ -206,7 +209,7 @@ class LinkRequest():
             return 1
         # query db
         results = get_records(bibcode=self.bibcode, link_type=link_type)
-        if len(results) == 0:
+        if (results is None):
             return 0
         count = 0
         for result in results:
@@ -239,15 +242,14 @@ class LinkRequest():
         :param results: result from the query
         :return:
         """
-        if (len(results) == 0):
+        if (results is None):
             return self.__return_response({'error': 'did not find any records'}, 404)
 
         try:
             return self.request_link_type_single_url_toJSON(results[0]['url'][0])
-        except KeyError:
-            return self.__return_response({'KeyError': 'key not in dictionary'}, 400)
-        except IndexError:
-            return self.__return_response({'IndexError': 'list index out of range'}, 400)
+        except (KeyError, IndexError):
+            error_message = 'requested information for bibcode=%s and link_type=%s is missing' % (self.bibcode, self.link_type)
+            return self.__return_response({'error': error_message}, 400)
 
     def request_link_type_all(self):
         """
@@ -298,7 +300,7 @@ class LinkRequest():
         :return:
         """
         try:
-            if (len(results) > 0):
+            if (results is not None):
                 if (len(results) == 1):
                     return self.request_link_type_single_url_toJSON(results[0]['url'][0])
                 else:
@@ -320,13 +322,12 @@ class LinkRequest():
                     response['links'] = links
                     return self.__return_response(response, 200)
             return self.__return_response({'error': 'did not find any records'}, 404)
-        except KeyError:
-            return self.__return_response({'KeyError': 'key not in dictionary'}, 400)
-        except IndexError:
-            return self.__return_response({'IndexError': 'list index out of range'}, 400)
+        except (KeyError, IndexError):
+            error_message = 'requested information for bibcode=%s and link_type=%s is missing' % (
+            self.bibcode, self.link_type)
+            return self.__return_response({'error': error_message}, 400)
 
-
-    def request_link_type_associated(self, results,):
+    def request_link_type_associated(self, results):
         """
         for link type = associated
 
@@ -334,7 +335,7 @@ class LinkRequest():
         :return:
         """
         try:
-            if (len(results) > 0):
+            if (results is not None):
                 link_format_str = self.on_the_fly['ABSTRACT']
                 for result in results:
                     links = {}
@@ -359,10 +360,10 @@ class LinkRequest():
                 response['links'] = links
                 return self.__return_response(response, 200)
             return self.__return_response({'error': 'did not find any records'}, 404)
-        except KeyError:
-            return self.__return_response({'KeyError': 'key not in dictionary'}, 400)
-        except IndexError:
-            return self.__return_response({'IndexError': 'list index out of range'}, 400)
+        except (KeyError, IndexError):
+            error_message = 'requested information for bibcode=%s and link_type=%s is missing' %(self.bibcode, self.link_type)
+            return self.__return_response({'error': error_message}, 400)
+
 
     def request_link_type_data(self, results):
         """
@@ -371,7 +372,7 @@ class LinkRequest():
         :param results: result from the query
         """
         try:
-            if (len(results) > 0):
+            if (results is not None):
                 if (len(results) == 1):
                     return self.request_link_type_single_url_toJSON(results[0]['url'][0])
                 else:
@@ -412,10 +413,9 @@ class LinkRequest():
                     response['links'] = links
                     return self.__return_response(response, 200)
             return self.__return_response({'error': 'did not find any records'}, 404)
-        except KeyError:
-            return self.__return_response({'KeyError': 'key not in dictionary'}, 400)
-        except IndexError:
-            return self.__return_response({'IndexError': 'list index out of range'}, 400)
+        except (KeyError, IndexError):
+            error_message = 'requested information for bibcode=%s and link_type=%s is missing' % (self.bibcode, self.link_type)
+            return self.__return_response({'error': error_message}, 400)
 
     def process_request(self):
         """
@@ -423,10 +423,10 @@ class LinkRequest():
 
         :return: json code of the result or error
         """
-        current_app.logger.info('received request with bibcode=%s, link_type=%s and link_sub_type=%s'.format(
-                self.bibcode,
-                self.link_type if self.link_type is not None else '*',
-                self.link_sub_type if self.link_sub_type is not None else '*'))
+        current_app.logger.error('received request with bibcode=%s, link_type=%s and link_sub_type=%s' %
+                                (self.bibcode,
+                                 self.link_type if self.link_type is not None else '*',
+                                 self.link_sub_type if self.link_sub_type is not None else '*'))
 
         if (len(self.bibcode) == 0):
             return self.__return_response({'error': 'no bibcode received'}, 400)
@@ -463,6 +463,58 @@ class LinkRequest():
         return self.__return_response({'error': 'unrecognizable link type:`{link_type}`'.format(link_type=self.link_type)}, 400)
 
 
+class PopulateRequest():
+    def __init__(self):
+        """
+        """
+        pass
+
+    def __return_response(self, results, status):
+        """
+
+        :param results: results in a dict
+        :param status: status code
+        :return:
+        """
+        response = json.dumps(results)
+
+        current_app.logger.info('sending response status=%s' % (status))
+        current_app.logger.debug('sending response text=%s' % (response))
+
+        r = Response(response=response, status=status)
+        r.headers['content-type'] = 'application/json'
+        return r
+
+
+    def process_request(self, records):
+        """
+        process the request
+
+        :param payload:
+        :return: json code of the result or error
+        """
+        if not records:
+            return self.__return_response({'error': 'no data received'}, 400)
+
+        if len(records) == 0:
+            return self.__return_response({'error': 'no records received'}, 400)
+
+        if len(records) > current_app.config['RESOLVER_MAX_RECORDS_ADD']:
+            return self.__return_response({'error': 'too many records to add to db at one time'}, 400)
+
+        current_app.logger.info('received request to populate db with %d records' % (len(records)))
+
+        try:
+            data = Parse(json.dumps({"status": 2, "datalinks_records": records}), DataLinksRecordList())
+        except ParseError as e:
+            return self.__return_response({'error': 'unable to extract data from protobuf structure'}, 400)
+
+        status, text = add_records(data)
+        if status == True:
+            return self.__return_response({'status': text}, 200)
+        return self.__return_response({'error': text}, 400)
+
+
 @advertise(scopes=[], rate_limit=[1000, 3600 * 24])
 @bp.route('/<bibcode>', defaults={'link_type': ''}, methods=['GET'])
 @bp.route('/<bibcode>/<link_type>', methods=['GET'])
@@ -474,3 +526,15 @@ def resolver(bibcode, link_type):
     :return:
     """
     return LinkRequest(bibcode, link_type.upper(), current_app.config['RESOLVER_GATEWAY_URL']).process_request()
+
+@advertise(scopes=['ads:resolver-service'], rate_limit=[1000, 3600 * 24])
+@bp.route('/update', methods=['POST'])
+def update():
+    """
+    """
+    try:
+        payload = request.get_json(force=True)  # post data in json
+    except:
+        payload = dict(request.form)  # post data in form encoding
+
+    return PopulateRequest().process_request(payload)

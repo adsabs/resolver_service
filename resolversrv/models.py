@@ -1,5 +1,3 @@
-#!/usr/bin/python
-# -*- coding: utf-8 -*-
 
 from sqlalchemy import Integer, String, Column
 from sqlalchemy.dialects.postgresql import ARRAY
@@ -10,7 +8,6 @@ Base = declarative_base()
 
 class DataLinks(Base):
     __tablename__ = 'datalinks'
-    #__table_args__ = ({"schema": "nonbib"})
     bibcode = Column(String, primary_key=True)
     link_type = Column(String, primary_key=True)
     link_sub_type = Column(String, primary_key=True)
