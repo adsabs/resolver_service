@@ -42,7 +42,7 @@ For example to return *all* links associated with 2017arXiv170909566R, you would
 
 #### Make a GET request with a bibcode and link type to return all links of the type specified associated for that bibcode:
 
-    curl https://ui.adsabs.harvard.edu/<bibcode>/<link_type>
+    curl https://api.adsabs.harvard.edu/v1/resolver/<bibcode>/<link_type>
 
 For example to return links for *all*  full text sources, you would do
 
