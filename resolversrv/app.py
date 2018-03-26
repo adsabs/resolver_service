@@ -13,7 +13,6 @@ def create_app(**config):
     :return: flask.Flask application
     """
 
-    # todo: figure out why getting this warning 'Sorry, cant find the proj home; returning the location of the caller'
     if config:
         app = ADSFlaskResolver(__name__, static_folder=None, local_config=config)
     else:
