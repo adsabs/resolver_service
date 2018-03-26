@@ -113,7 +113,7 @@ For example to return links for *all*  full text sources, you would do
     
 #### Insert/Update records in db (internal use only):
 
-    curl -POST https://api.adsabs.harvard.edu/v1/update -d @dataLinksRecordList.json --header "Content-Type: application/json"
+    curl -PUT https://api.adsabs.harvard.edu/v1/update -d @dataLinksRecordList.json --header "Content-Type: application/json"
 
 where *dataLinksRecordList.json* contains data in the format of protobuf structure *DataLinksRecordList*.
 
