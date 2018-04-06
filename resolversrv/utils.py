@@ -43,6 +43,7 @@ def get_records(bibcode, link_type=None, link_sub_type=None):
         results = []
         for row in rows:
             results.append(row.toJSON())
+            current_app.logger.info(results)
         return results
 
 
