@@ -33,20 +33,20 @@ On your desktop run:
 
 #### Make a GET request with a bibcode to return all links associated with that bibcode:
 
-    curl https://api.adsabs.harvard.edu/v1/resolver/<bibcode>
+    curl -H "Authorization: Bearer <your API token>" -X GET https://api.adsabs.harvard.edu/v1/resolver/<bibcode>
 
 For example to return *all* links associated with 2017arXiv170909566R, you would do   
 
-    curl https://api.adsabs.harvard.edu/v1/resolver/2017arXiv170909566R
+    curl -H "Authorization: Bearer <your API token>" -X GET https://api.adsabs.harvard.edu/v1/resolver/2017arXiv170909566R
 
 
 #### Make a GET request with a bibcode and link type to return all links of the type specified associated for that bibcode:
 
-    curl https://api.adsabs.harvard.edu/v1/resolver/<bibcode>/<link_type>
+    curl -H "Authorization: Bearer <your API token>" -X GET https://api.adsabs.harvard.edu/v1/resolver/<bibcode>/<link_type>
 
 For example to return links for *all*  full text sources, you would do
 
-    curl https://api.adsabs.harvard.edu/v1/resolver/2013MNRAS.435.1904M/esource
+    curl -H "Authorization: Bearer <your API token>" -X GET https://api.adsabs.harvard.edu/v1/resolver/2013MNRAS.435.1904M/esource
 
 #### Available Link Types:
 
@@ -113,7 +113,7 @@ For example to return links for *all*  full text sources, you would do
     
 #### Insert/Update records in db (internal use only):
 
-    curl -PUT https://api.adsabs.harvard.edu/v1/update -d @dataLinksRecordList.json --header "Content-Type: application/json"
+    curl -H "Authorization: Bearer <your API token>" -X PUT https://api.adsabs.harvard.edu/v1/resolver/update -d @dataLinksRecordList.json -H "Content-Type: application/json"
 
 where *dataLinksRecordList.json* contains data in the format of protobuf structure *DataLinksRecordList*.
 
