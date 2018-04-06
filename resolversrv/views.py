@@ -374,7 +374,11 @@ class LinkRequest():
         try:
             if (results is not None):
                 if (len(results) == 1):
-                    return self.request_link_type_single_url_toJSON(results[0]['url'][0])
+                    result = results[0]
+                    title, url = self.__get_data_source_title_url(result['link_sub_type'],
+                                                                  self.__get_url_hostname_with_protocol(result['url'][0]))
+                    revised_url = self.__update_data_type_hostname(url, result['link_sub_type'], result['url'][0])
+                    return self.request_link_type_single_url_toJSON(revised_url)
                 else:
                     domain = {}
                     records = []
@@ -423,7 +427,7 @@ class LinkRequest():
 
         :return: json code of the result or error
         """
-        current_app.logger.error('received request with bibcode=%s, link_type=%s and link_sub_type=%s' %
+        current_app.logger.info('received request with bibcode=%s, link_type=%s and link_sub_type=%s' %
                                 (self.bibcode,
                                  self.link_type if self.link_type is not None else '*',
                                  self.link_sub_type if self.link_sub_type is not None else '*'))
