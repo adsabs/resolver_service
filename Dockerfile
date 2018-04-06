@@ -1,4 +1,4 @@
-#ADS Base Microservice Image
+#ADS Base Image for microservices
 FROM adsabs/base-microimage:v1.0.1
 
 ADD ./ /app
