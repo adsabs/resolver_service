@@ -16,6 +16,9 @@ RESOLVER_GATEWAY_URL_TEST = '/{bibcode}/{link_type}/{url}'
 # This is the URL for deterministic links, needs to go to local-config, once deployed, if need to
 RESOLVER_DETERMINISTIC_LINKS_BASEURL = 'https://ui.adsabs.harvard.edu/#abs'
 
+# These URLs are used to create links for doi and arXiv sources
+RESOLVER_DOI_LINK_BASEURL = 'http://dx.doi.org/{id}'
+RESOLVER_ARXIV_LINK_BASEURL = 'http://arxiv.org/abs/{id}'
 
 RESOLVER_DATA_SOURCES = {
     "SIMBAD": {

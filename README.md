@@ -111,6 +111,17 @@ For example to return links for *all*  full text sources, you would do
 * **presentation** *Multimedia Presentation*
 * **associated** *Associated Articles*
     
+#### Identification Link Types:
+
+Please note that these links types' endpoints differ slightly from the rest of link types:
+
+    curl -H "Authorization: Bearer <your API token>" -X GET https://api.adsabs.harvard.edu/v1/resolver/<bibcode>/<Identification Link Type>:<id>
+
+where Identification Link Types are: `doi` or `arXiv` and `id` is their respective identification. For example
+
+    curl -H "Authorization: Bearer <your API token>" -X GET https://dev.adsabs.harvard.edu/v1/resolver/2010ApJ...713L.103B/doi:10.1088/2041-8205/713/2/L103
+    curl -H "Authorization: Bearer <your API token>" -X GET https://dev.adsabs.harvard.edu/v1/resolver/2018arXiv180303598K/arXiv:1803.03598
+
 #### Insert/Update records in db (internal use only):
 
     curl -H "Authorization: Bearer <your API token>" -X PUT https://api.adsabs.harvard.edu/v1/resolver/update -d @dataLinksRecordList.json -H "Content-Type: application/json"
