@@ -47,7 +47,7 @@ class test_database(TestCase):
 
             print '\n.............self.__class__.current_app)', self.__class__.current_app, '\n'
             print '\n.............url=',  self.__class__.current_app.config['SQLALCHEMY_DATABASE_URI'], '\n'
-            print '\n.............url=', self.__class__.current_app.db.engine, '\n'
+            print '\n.............engine=', self.__class__.current_app.db.engine, '\n'
 
             Base.metadata.create_all(bind=self.__class__.current_app.db.engine)
 
@@ -55,6 +55,8 @@ class test_database(TestCase):
                                                if callable(getattr(test_database, method_name)) and method_name.startswith('test_')])
 
             print '\n.............self.__class__.num_of_tests)', self.__class__.num_of_tests, '\n'
+
+            print '\n.............session=', self.__class__.current_app.session_scope(), '\n'
 
         return self.__class__.current_app
 
