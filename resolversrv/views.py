@@ -18,7 +18,7 @@ bp = Blueprint('resolver_service', __name__)
 
 class LinkRequest():
 
-    def __init__(self, bibcode, link_type='', gateway_redirect_url=''):
+    def __init__(self, bibcode, link_type='', gateway_redirect_url='', id=None):
         """
 
         :param bibcode:
@@ -32,6 +32,7 @@ class LinkRequest():
         self.__set_major_minor_link_types(link_type)
         self.__backward_compatibility(link_type)
         self.gateway_redirect_url = gateway_redirect_url
+        self.id = id
 
 
     def __init_default(self):
@@ -69,7 +70,13 @@ class LinkRequest():
             'ATNF', 'KOA', 'Herschel', 'GTC', 'BICEP2', 'ALMA', 'CADC', 'Zenodo', 'TNS'
         ]
 
-        self.link_types = self.on_the_fly.keys() + ['ESOURCE', 'DATA', 'INSPIRE', 'LIBRARYCATALOG', 'PRESENTATION', 'ASSOCIATED']
+        # identification link type
+        self.identification = {
+            'DOI': current_app.config['RESOLVER_DOI_LINK_BASEURL'],
+            'ARXIV': current_app.config['RESOLVER_ARXIV_LINK_BASEURL'],
+        }
+        
+        self.link_types = self.on_the_fly.keys() + ['ESOURCE', 'DATA', 'INSPIRE', 'LIBRARYCATALOG', 'PRESENTATION', 'ASSOCIATED'] + self.identification.keys()
 
 
     def __backward_compatibility(self, link_type):
@@ -204,8 +211,8 @@ class LinkRequest():
         :param link_type:
         :return:
         """
-        # on the fly links are only 1
-        if link_type in self.on_the_fly.keys():
+        # on the fly links or identification links are only 1
+        if link_type in self.on_the_fly.keys() or link_type in self.identification.keys():
             return 1
         # query db
         results = get_records(bibcode=self.bibcode, link_type=link_type)
@@ -217,9 +224,9 @@ class LinkRequest():
         return count
 
 
-    def request_link_type_single_url_toJSON(self, url):
+    def request_link_type_deterministic_single_url_toJSON(self, url):
         """
-        single url to JSON code transormation
+        single url to JSON code transformation
 
         :param url:
         :return:
@@ -246,10 +253,30 @@ class LinkRequest():
             return self.__return_response({'error': 'did not find any records'}, 404)
 
         try:
-            return self.request_link_type_single_url_toJSON(results[0]['url'][0])
+            return self.request_link_type_deterministic_single_url_toJSON(results[0]['url'][0])
         except (KeyError, IndexError):
             error_message = 'requested information for bibcode=%s and link_type=%s is missing' % (self.bibcode, self.link_type)
             return self.__return_response({'error': error_message}, 400)
+
+
+    def request_link_type_identification_single_url_toJSON(self, url):
+        """
+        single url to JSON code transformation
+
+        :param url:
+        :return:
+        """
+        if (len(url) > 0):
+            response = {}
+            response['service'] = '{baseurl}/{bibcode}/{link_type}:{id}'.format(baseurl=self.baseurl,
+                                                                           bibcode=self.bibcode, link_type=self.link_type,
+                                                                           id=self.id)
+            response['action'] = 'redirect'
+            response['link'] = url
+            return self.__return_response(response, 200)
+        return self.__return_response({'error': 'did not find any records'}, 404)
+
+
 
     def request_link_type_all(self):
         """
@@ -289,7 +316,7 @@ class LinkRequest():
         :return:
         """
         url = self.on_the_fly[self.link_type].format(baseurl=self.baseurl, bibcode=self.bibcode)
-        return self.request_link_type_single_url_toJSON(url)
+        return self.request_link_type_deterministic_single_url_toJSON(url)
 
 
     def request_link_type_esource(self, results):
@@ -302,7 +329,7 @@ class LinkRequest():
         try:
             if (results is not None):
                 if (len(results) == 1):
-                    return self.request_link_type_single_url_toJSON(results[0]['url'][0])
+                    return self.request_link_type_deterministic_single_url_toJSON(results[0]['url'][0])
                 else:
                     links = {}
                     links['count'] = len(results)
@@ -378,7 +405,7 @@ class LinkRequest():
                     title, url = self.__get_data_source_title_url(result['link_sub_type'],
                                                                   self.__get_url_hostname_with_protocol(result['url'][0]))
                     revised_url = self.__update_data_type_hostname(url, result['link_sub_type'], result['url'][0])
-                    return self.request_link_type_single_url_toJSON(revised_url)
+                    return self.request_link_type_deterministic_single_url_toJSON(revised_url)
                 else:
                     domain = {}
                     records = []
@@ -421,6 +448,18 @@ class LinkRequest():
             error_message = 'requested information for bibcode=%s and link_type=%s is missing' % (self.bibcode, self.link_type)
             return self.__return_response({'error': error_message}, 400)
 
+
+    def request_link_type_identification(self):
+        """
+        for these link types, we only need to format the deterministic link, attach the id to it, and return it
+
+        :return:
+        """
+        url = self.identification[self.link_type].format(id=self.id)
+        return self.request_link_type_identification_single_url_toJSON(url)
+
+
+
     def process_request(self):
         """
         process the request
@@ -462,6 +501,10 @@ class LinkRequest():
         # have divided them into 30+ sub types, defined in Solr field data
         if (self.link_type == 'DATA'):
             return self.request_link_type_data(get_records(bibcode=self.bibcode, link_type=self.link_type, link_sub_type=self.link_sub_type))
+
+        # for these link types, we only need to format the deterministic link, attach the id to it, and return it
+        if (self.link_type in self.identification.keys()):
+            return self.request_link_type_identification()
 
         # we did not recognize the link_type, so return an error
         return self.__return_response({'error': 'unrecognizable link type:`{link_type}`'.format(link_type=self.link_type)}, 400)
@@ -530,6 +573,19 @@ def resolver(bibcode, link_type):
     :return:
     """
     return LinkRequest(bibcode, link_type.upper(), current_app.config['RESOLVER_GATEWAY_URL']).process_request()
+
+
+@advertise(scopes=[], rate_limit=[1000, 3600 * 24])
+@bp.route('/<bibcode>/<link_type>:<path:id>', methods=['GET'])
+def resolver_id(bibcode, link_type, id):
+    """
+    endpoint for identification link types: doi and arXiv
+    :param bibcode:
+    :param link_type:
+    :return:
+    """
+    return LinkRequest(bibcode, link_type.upper(), current_app.config['RESOLVER_GATEWAY_URL'], id).process_request()
+
 
 @advertise(scopes=['ads:resolver-service'], rate_limit=[1000, 3600 * 24])
 @bp.route('/update', methods=['PUT'])

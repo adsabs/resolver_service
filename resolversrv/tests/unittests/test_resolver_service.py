@@ -126,7 +126,7 @@ class test_resolver(TestCase):
 
     # the following tests verify that public methods from class LinkRequest function properly
     def test_publicMethodLinkRequest1(self):
-        response = LinkRequest('1987gady.book.....B', 'ABSTRACT').request_link_type_single_url_toJSON('')
+        response = LinkRequest('1987gady.book.....B', 'ABSTRACT').request_link_type_deterministic_single_url_toJSON('')
         self.assertEqual(response._status_code, 404)
         self.assertEqual(response.response[0], '{"error": "did not find any records"}')
 

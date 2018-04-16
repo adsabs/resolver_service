@@ -36,6 +36,7 @@ class test_database(TestCase):
         # Only instantiate the postgresql once
         if self.postgresql is None:
             self.__class__.postgresql = testing.postgresql.Postgresql()
+
             self.assertIsNotNone(self.postgresql)
 
             self.__class__.current_app = app.create_app(**{'SQLALCHEMY_DATABASE_URI': self.postgresql.url()})
@@ -137,7 +138,7 @@ class test_database(TestCase):
         """
         response = LinkRequest(bibcode='2013MNRAS.435.1904M').process_request()
         self.assertEqual(response._status_code, 200)
-        self.assertEqual(response.response[0], '{"action": "display", "links": {"count": 14, '
+        self.assertEqual(response.response[0], '{"action": "display", "links": {"count": 16, '
                                                '"records": ['
                                                '{"url": "", "count": 1, "bibcode": "2013MNRAS.435.1904M", "type": "metrics", "title": "METRICS (1)"}, '
                                                '{"url": "", "count": 1, "bibcode": "2013MNRAS.435.1904M", "type": "citations", "title": "CITATIONS (1)"}, '
@@ -148,7 +149,9 @@ class test_database(TestCase):
                                                '{"url": "", "count": 1, "bibcode": "2013MNRAS.435.1904M", "type": "openurl", "title": "OPENURL (1)"}, '
                                                '{"url": "", "count": 1, "bibcode": "2013MNRAS.435.1904M", "type": "coreads", "title": "COREADS (1)"}, '
                                                '{"url": "", "count": 4, "bibcode": "2013MNRAS.435.1904M", "type": "esource", "title": "ESOURCE (4)"}, '
-                                               '{"url": "", "count": 65, "bibcode": "2013MNRAS.435.1904M", "type": "data", "title": "DATA (65)"}], '
+                                               '{"url": "", "count": 65, "bibcode": "2013MNRAS.435.1904M", "type": "data", "title": "DATA (65)"}, '
+                                               '{"url": "", "count": 1, "bibcode": "2013MNRAS.435.1904M", "type": "arxiv", "title": "ARXIV (1)"}, '
+                                               '{"url": "", "count": 1, "bibcode": "2013MNRAS.435.1904M", "type": "doi", "title": "DOI (1)"}], '
                                                '"link_type": "all"}, "service": ""}')
 
 
@@ -650,6 +653,20 @@ class test_database(TestCase):
         response = LinkRequest(bibcode='2013MNRAS.435.1904', link_type='PUB_PDF').request_link_type_data(results)
         self.assertEqual(response._status_code, 200)
         self.assertEqual(response.response[0], '{"action": "redirect", "link": "http://archive.stsci.edu/mastbibref.php?bibcode=2013MNRAS.435.1904M", "service": "https://ui.adsabs.harvard.edu/#abs/2013MNRAS.435.1904/ESOURCE"}')
+
+
+    def test_link_indentifications(self):
+        """
+        returning a url for either DOI or arXiv link types
+        :return:
+        """
+        response = LinkRequest(bibcode='2010ApJ...713L.103B', link_type='DOI', id='10.1088/2041-8205/713/2/L103').process_request()
+        self.assertEqual(response._status_code, 200)
+        self.assertEqual(response.response[0], '{"action": "redirect", "link": "http://dx.doi.org/10.1088/2041-8205/713/2/L103", "service": "https://ui.adsabs.harvard.edu/#abs/2010ApJ...713L.103B/DOI:10.1088/2041-8205/713/2/L103"}')
+
+        response = LinkRequest(bibcode='2018arXiv180303598K', link_type='ARXIV', id='1803.03598').process_request()
+        self.assertEqual(response._status_code, 200)
+        self.assertEqual(response.response[0], '{"action": "redirect", "link": "http://arxiv.org/abs/1803.03598", "service": "https://ui.adsabs.harvard.edu/#abs/2018arXiv180303598K/ARXIV:1803.03598"}')
 
 
     def test_process_request_no_payload(self):
