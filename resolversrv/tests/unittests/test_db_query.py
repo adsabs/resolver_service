@@ -116,8 +116,8 @@ class test_database(TestCase):
         print '\n.............done adding to structure)\n'
         status, text = add_records(record_list_msg)
         print '\n.............done attempting to add to db)\n'
-        self.assertEqual(status, True)
         print '\n.............status=', status, '\n'
+        self.assertEqual(status, True)
         self.assertEqual(text, 'updated db with new data successfully')
 
 
