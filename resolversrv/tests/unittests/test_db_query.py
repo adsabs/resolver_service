@@ -47,6 +47,7 @@ class test_database(TestCase):
 
             print '\n.............self.__class__.current_app)', self.__class__.current_app, '\n'
             print '\n.............url=',  self.__class__.current_app.config['SQLALCHEMY_DATABASE_URI'], '\n'
+            print '\n.............url=', self.__class__.current_app.db.engine, '\n'
 
             Base.metadata.create_all(bind=self.__class__.current_app.db.engine)
 
