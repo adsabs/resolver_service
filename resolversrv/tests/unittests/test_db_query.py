@@ -43,10 +43,10 @@ class test_database(TestCase):
 
             print '\n.............self.__class__.current_app)', self.postgresql.url(), '\n'
 
-            #self.__class__.current_app = app.create_app(**{'SQLALCHEMY_DATABASE_URI': self.postgresql.url()})
-            self.__class__.current_app = app.create_app(self.postgresql.url())
+            self.__class__.current_app = app.create_app(**{'SQLALCHEMY_DATABASE_URI': self.postgresql.url()})
 
             print '\n.............self.__class__.current_app)', self.__class__.current_app, '\n'
+            print '\n.............url=',  self.__class__.current_app.config['RESOLVER_DOI_LINK_BASEURL'], '\n'
 
             Base.metadata.create_all(bind=self.__class__.current_app.db.engine)
 
