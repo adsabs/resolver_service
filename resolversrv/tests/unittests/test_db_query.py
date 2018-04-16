@@ -41,6 +41,8 @@ class test_database(TestCase):
 
             print '\n.............self.assertIsNotNone(self.postgresql)\n'
 
+            print '\n.............self.__class__.current_app)', self.postgresql.url(), '\n'
+
             self.__class__.current_app = app.create_app(**{'SQLALCHEMY_DATABASE_URI': self.postgresql.url()})
 
             print '\n.............self.__class__.current_app)', self.__class__.current_app, '\n'
