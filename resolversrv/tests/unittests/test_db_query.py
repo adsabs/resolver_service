@@ -44,7 +44,8 @@ class test_database(TestCase):
             print '\n.............self.__class__.current_app)', self.postgresql.url(), '\n'
 
             self.__class__.current_app = app.create_app(**{'SQLALCHEMY_DATABASE_URI': self.postgresql.url()})
-
+            self.__class__.current_app = app.create_app(**{'SQLALCHEMY_DATABASE_URI': 'postgresql://postgres@127.0.0.1:52678/test'})
+#
             print '\n.............self.__class__.current_app)', self.__class__.current_app, '\n'
             print '\n.............url=',  self.__class__.current_app.config['SQLALCHEMY_DATABASE_URI'], '\n'
             print '\n.............engine=', self.__class__.current_app.db.engine, '\n'
