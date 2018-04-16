@@ -87,7 +87,7 @@ class test_database(TestCase):
         :return:
         """
         stub_data = [
-                        ('2013MNRAS.435.1904M', 'ESOURCE',      'EPRINT_HTML', ['http://arxiv.org/abs/1307.6556'], [''], 0),
+                        ('2013MNRAS.435.1904M', 'ESOURCE',      'EPRINT_HTML', ['http://arxiv.org/abs/1307.6556'], ['empty'], 0),
                         # ('2013MNRAS.435.1904M', 'ESOURCE',      'EPRINT_PDF',  ['http://arxiv.org/pdf/1307.6556'], [''], 0),
                         # ('2013MNRAS.435.1904M', 'ESOURCE',      'PUB_HTML',    ['http://dx.doi.org/10.1093%2Fmnras%2Fstt1379'], [''], 0),
                         # ('2013MNRAS.435.1904M', 'ESOURCE',      'PUB_PDF',     ['http://mnras.oxfordjournals.org/content/435/3/1904.full.pdf'], [''], 0),
