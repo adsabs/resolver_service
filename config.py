@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 # db config
-SQLALCHEMY_DATABASE_URI = 'url to db'
+SQLALCHEMY_DATABASE_URI = 'postgresql://postgres@127.0.0.1:56855/test'
 SQLALCHEMY_TRACK_MODIFICATIONS = False
 SQLALCHEMY_ECHO = False
 
