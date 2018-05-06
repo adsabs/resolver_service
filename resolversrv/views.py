@@ -371,7 +371,9 @@ class LinkRequest():
                     records = []
                     for idx in range(len(result['url'])):
                         bibcode = result['url'][idx]
-                        encodeURL = quote(link_format_str.format(baseurl=self.baseurl, bibcode=bibcode), safe='')
+                        # gunicorn does not like / or the encoded format so it is passed as ,
+                        # to be returned back to / before redirection on the gateway side
+                        encodeURL = link_format_str.format(baseurl=self.baseurl, bibcode=bibcode).replace('/', ',')
                         redirectURL = self.gateway_redirect_url.format(bibcode=bibcode, link_type=self.link_type.lower(),
                                                                  url=encodeURL)
                         record = {}
