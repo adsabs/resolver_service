@@ -22,10 +22,10 @@ TestCase.maxDiff = None
 class test_database(TestCase):
     """tests for generation of resolver"""
 
-    current_app = None
-    postgresql = None
-    counter      = 0
-    num_of_tests = None
+    def __init__(self, *args, **kwargs):
+        super(test_database, self).__init__(*args, **kwargs)
+        self.__class__.postgresql = None
+
 
     def create_app(self):
         """
@@ -56,8 +56,8 @@ class test_database(TestCase):
         Creates a temporary database and populates it.
         :return:
         """
-        # if self.counter == 0:
-        #     self.addStubData()
+        if self.counter == 0:
+            self.addStubData()
 
         self.__class__.counter = self.counter + 1
 
@@ -68,15 +68,14 @@ class test_database(TestCase):
         Closes the database connection and destroy the temporary database.
         :return:
         """
+        if self.counter == self.num_of_tests:
+            self.app.db.session.remove()
+            self.app.db.drop_all()
 
-        # if self.counter == self.num_of_tests:
-        #     self.app.db.session.remove()
-        #     self.app.db.drop_all()
-        #
-        #     del self.__class__.postgresql
+            del self.__class__.postgresql
 
 
-    def test_addStubData(self):
+    def addStubData(self):
         """
         Add stub data
         :return:
