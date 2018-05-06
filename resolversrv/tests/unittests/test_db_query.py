@@ -22,10 +22,11 @@ TestCase.maxDiff = None
 class test_database(TestCase):
     """tests for generation of resolver"""
 
+    postgresql = None
+    counter = 0
+
     def __init__(self, *args, **kwargs):
         super(test_database, self).__init__(*args, **kwargs)
-        self.__class__.postgresql = None
-        self.__class__.counter = 0
 
 
     def create_app(self):
@@ -33,7 +34,6 @@ class test_database(TestCase):
         Get the url from in-memory db and pass it to app to create test AlchemySQL db.
         :return:
         """
-
         # Only instantiate the postgresql once
         if self.postgresql is None:
             self.__class__.postgresql = testing.postgresql.Postgresql()
@@ -46,6 +46,10 @@ class test_database(TestCase):
             self.__class__.num_of_tests = len([method_name for method_name in dir(test_database)
                                                if callable(getattr(test_database, method_name)) and method_name.startswith('test_')])
 
+            self.__class__.current_app.logger.info("NEW.....self.postgresql={}".format(self.postgresql))
+        else:
+            self.__class__.current_app.logger.info("OLD.....self.postgresql={}".format(self.postgresql))
+
         return self.__class__.current_app
 
 
@@ -55,10 +59,14 @@ class test_database(TestCase):
         Creates a temporary database and populates it.
         :return:
         """
+        self.__class__.current_app.logger.info(".....self.counter={}".format(self.counter))
+        self.__class__.current_app.logger.info(".....self.__class__.counter={}".format(self.__class__.counter))
         if self.counter == 0:
             self.addStubData()
 
         self.__class__.counter = self.counter + 1
+        self.__class__.current_app.logger.info(".....self.counter={}".format(self.counter))
+        self.__class__.current_app.logger.info(".....self.__class__.counter={}".format(self.__class__.counter))
 
 
     def tearDown(self):
@@ -114,9 +122,12 @@ class test_database(TestCase):
         return False and text explanation when an empty DataLinksRecordList is passed to add_records
         :return:
         """
+        self.__class__.current_app.logger.info("test_add_records_no_data.....self.__class__.counter={}".format(self.__class__.counter))
+
         status, text = add_records(DataLinksRecordList())
         self.assertEqual(status, False)
         self.assertEqual(text, 'unable to extract data from protobuf structure')
+        self.__class__.current_app.logger.info("test_add_records_no_data.....self.__class__.counter={}".format(self.__class__.counter))
 
 
     def test_process_request_no_bibcode_error(self):
@@ -124,6 +135,8 @@ class test_database(TestCase):
         return 400 for bibcode of length 0
         :return:
         """
+        self.__class__.current_app.logger.info("test_process_request_no_bibcode_error.....self.__class__.counter={}".format(self.__class__.counter))
+
         response = LinkRequest(bibcode='', link_type='PRESENTATION').process_request()
         self.assertEqual(response._status_code, 400)
         self.assertEqual(response.response[0], '{"error": "no bibcode received"}')
@@ -134,6 +147,8 @@ class test_database(TestCase):
         return links for all types of a bibcode
         :return:
         """
+        self.__class__.current_app.logger.info("test_process_request_link_type_all.....self.__class__.counter={}".format(self.__class__.counter))
+
         response = LinkRequest(bibcode='2013MNRAS.435.1904M').process_request()
         self.assertEqual(response._status_code, 200)
         self.assertEqual(response.response[0], '{"action": "display", "links": {"count": 16, '
