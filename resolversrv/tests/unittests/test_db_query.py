@@ -41,6 +41,8 @@ class test_database(TestCase):
             self.__class__.num_of_tests = len([method_name for method_name in dir(test_database)
                                                if callable(getattr(test_database, method_name)) and method_name.startswith('test_')])
 
+            self.__class__.num_of_tests = 27
+            
         return self.current_app
 
 
@@ -109,12 +111,9 @@ class test_database(TestCase):
         return False and text explanation when an empty DataLinksRecordList is passed to add_records
         :return:
         """
-        print "test_add_records_no_data.....self.__class__.counter={}".format(self.__class__.counter)
-
         status, text = add_records(DataLinksRecordList())
         self.assertEqual(status, False)
         self.assertEqual(text, 'unable to extract data from protobuf structure')
-        print "test_add_records_no_data.....self.__class__.counter={}".format(self.__class__.counter)
 
 
     def test_process_request_no_bibcode_error(self):
@@ -122,8 +121,6 @@ class test_database(TestCase):
         return 400 for bibcode of length 0
         :return:
         """
-        print "test_process_request_no_bibcode_error.....self.__class__.counter={}".format(self.__class__.counter)
-
         response = LinkRequest(bibcode='', link_type='PRESENTATION').process_request()
         self.assertEqual(response._status_code, 400)
         self.assertEqual(response.response[0], '{"error": "no bibcode received"}')
@@ -134,8 +131,6 @@ class test_database(TestCase):
         return links for all types of a bibcode
         :return:
         """
-        print "test_process_request_link_type_all.....self.__class__.counter={}".format(self.__class__.counter)
-
         response = LinkRequest(bibcode='2013MNRAS.435.1904M').process_request()
         self.assertEqual(response._status_code, 200)
         self.assertEqual(response.response[0], '{"action": "display", "links": {"count": 16, '
