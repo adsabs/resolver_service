@@ -69,11 +69,11 @@ class test_database(TestCase):
         :return:
         """
 
-        if self.counter == self.num_of_tests:
-            self.app.db.session.remove()
-            self.app.db.drop_all()
-
-            del self.__class__.postgresql
+        # if self.counter == self.num_of_tests:
+        #     self.app.db.session.remove()
+        #     self.app.db.drop_all()
+        #
+        #     del self.__class__.postgresql
 
 
     def test_addStubData(self):
