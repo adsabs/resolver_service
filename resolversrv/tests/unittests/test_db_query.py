@@ -100,7 +100,7 @@ class test_database(TestCase):
                                                      'item_count': record[5]}]}
             record_list_msg.datalinks_records.add(**datalinks_record)
         status, text = add_records(record_list_msg)
-        # self.assertEqual(status, True)
+        self.assertEqual(status, True)
         # self.assertEqual(text, 'updated db with new data successfully')
 
 
