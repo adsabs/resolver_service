@@ -22,28 +22,18 @@ class test_database(TestCase):
     """tests for generation of resolver"""
 
     postgresql = None
-    current_app = None
-    num_of_tests = -1
-    counter = 0
 
     def create_app(self):
         """
         Get the url from in-memory db and pass it to app to create test AlchemySQL db.
         :return:
         """
-        # Only instantiate the postgresql once
-#        if self.postgresql is None:
-        self.__class__.postgresql = testing.postgresql.Postgresql()
+        self.postgresql = testing.postgresql.Postgresql()
         self.assertIsNotNone(self.postgresql)
 
-        self.__class__.current_app = app.create_app(**{'SQLALCHEMY_DATABASE_URI': self.postgresql.url()})
-
-        Base.metadata.create_all(bind=self.current_app.db.engine)
-
-        self.__class__.num_of_tests = len([method_name for method_name in dir(test_database)
-                                           if callable(getattr(test_database, method_name)) and method_name.startswith('test_')])
-
-        return self.current_app
+        current_app = app.create_app(**{'SQLALCHEMY_DATABASE_URI': self.postgresql.url()})
+        Base.metadata.create_all(bind=current_app.db.engine)
+        return current_app
 
 
     def setUp(self):
@@ -52,11 +42,7 @@ class test_database(TestCase):
         Creates a temporary database and populates it.
         :return:
         """
-        # if self.counter == 0:
         self.addStubData()
-
-        self.__class__.counter = self.counter + 1
-
 
     def tearDown(self):
         """
@@ -64,11 +50,10 @@ class test_database(TestCase):
         Closes the database connection and destroy the temporary database.
         :return:
         """
-        # if self.counter == self.num_of_tests:
         self.app.db.session.remove()
         self.app.db.drop_all()
 
-        del self.__class__.postgresql
+        del self.postgresql
 
     def add_records(self, datalinks_records_list):
         """
