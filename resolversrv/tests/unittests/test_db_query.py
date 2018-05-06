@@ -59,6 +59,7 @@ class test_database(TestCase):
         # if self.counter == 0:
         #     self.addStubData()
 
+
         self.__class__.counter = self.counter + 1
 
 
