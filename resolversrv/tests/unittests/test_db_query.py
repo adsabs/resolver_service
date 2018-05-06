@@ -22,7 +22,6 @@ class test_database(TestCase):
     """tests for generation of resolver"""
 
     postgresql = None
-    current_app = None
     num_of_tests = -1
     counter = 0
 
@@ -36,7 +35,7 @@ class test_database(TestCase):
             self.__class__.postgresql = testing.postgresql.Postgresql()
             self.assertIsNotNone(self.postgresql)
 
-            self.__class__.current_app = app.create_app(**{'SQLALCHEMY_DATABASE_URI': self.postgresql.url()})
+            self.current_app = app.create_app(**{'SQLALCHEMY_DATABASE_URI': self.postgresql.url()})
 
             Base.metadata.create_all(bind=self.current_app.db.engine)
 
@@ -104,7 +103,7 @@ class test_database(TestCase):
                 set_={k: getattr(stmt.excluded, k) for k in update_cols}
             )
 
-            with self.current_app.session_scope() as session:
+            with self.app.session_scope() as session:
                 session.execute(on_conflict_stmt)
             return True, 'updated db with new data successfully'
         return False, 'unable to extract data from protobuf structure'
