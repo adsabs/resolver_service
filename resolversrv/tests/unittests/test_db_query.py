@@ -6,9 +6,6 @@ if project_home not in sys.path:
 from flask_testing import TestCase
 import unittest
 import testing.postgresql
-import json
-
-from google.protobuf.json_format import MessageToDict
 
 from adsmsg.nonbibrecord import DataLinksRecordList
 
@@ -23,11 +20,9 @@ class test_database(TestCase):
     """tests for generation of resolver"""
 
     postgresql = None
+    current_app = None
+    num_of_tests = -1
     counter = 0
-
-    def __init__(self, *args, **kwargs):
-        super(test_database, self).__init__(*args, **kwargs)
-
 
     def create_app(self):
         """
@@ -41,16 +36,12 @@ class test_database(TestCase):
 
             self.__class__.current_app = app.create_app(**{'SQLALCHEMY_DATABASE_URI': self.postgresql.url()})
 
-            Base.metadata.create_all(bind=self.__class__.current_app.db.engine)
+            Base.metadata.create_all(bind=self.current_app.db.engine)
 
             self.__class__.num_of_tests = len([method_name for method_name in dir(test_database)
                                                if callable(getattr(test_database, method_name)) and method_name.startswith('test_')])
 
-            self.__class__.current_app.logger.info("NEW.....self.postgresql={}".format(self.postgresql))
-        else:
-            self.__class__.current_app.logger.info("OLD.....self.postgresql={}".format(self.postgresql))
-
-        return self.__class__.current_app
+        return self.current_app
 
 
     def setUp(self):
@@ -59,14 +50,10 @@ class test_database(TestCase):
         Creates a temporary database and populates it.
         :return:
         """
-        self.__class__.current_app.logger.info(".....self.counter={}".format(self.counter))
-        self.__class__.current_app.logger.info(".....self.__class__.counter={}".format(self.__class__.counter))
         if self.counter == 0:
             self.addStubData()
 
         self.__class__.counter = self.counter + 1
-        self.__class__.current_app.logger.info(".....self.counter={}".format(self.counter))
-        self.__class__.current_app.logger.info(".....self.__class__.counter={}".format(self.__class__.counter))
 
 
     def tearDown(self):
