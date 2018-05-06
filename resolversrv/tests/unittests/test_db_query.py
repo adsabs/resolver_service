@@ -35,14 +35,12 @@ class test_database(TestCase):
             self.__class__.postgresql = testing.postgresql.Postgresql()
             self.assertIsNotNone(self.postgresql)
 
-            self.current_app = app.create_app(**{'SQLALCHEMY_DATABASE_URI': self.postgresql.url()})
-
-            Base.metadata.create_all(bind=self.current_app.db.engine)
-
             self.__class__.num_of_tests = len([method_name for method_name in dir(test_database)
                                                if callable(getattr(test_database, method_name)) and method_name.startswith('test_')])
 
-        return self.current_app
+        current_app = app.create_app(**{'SQLALCHEMY_DATABASE_URI': self.postgresql.url()})
+        Base.metadata.create_all(bind=current_app.db.engine)
+        return current_app
 
 
     def setUp(self):
