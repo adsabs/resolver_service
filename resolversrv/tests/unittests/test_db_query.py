@@ -25,6 +25,7 @@ class test_database(TestCase):
     def __init__(self, *args, **kwargs):
         super(test_database, self).__init__(*args, **kwargs)
         self.__class__.postgresql = None
+        self.__class__.counter = 0
 
 
     def create_app(self):
@@ -44,8 +45,6 @@ class test_database(TestCase):
 
             self.__class__.num_of_tests = len([method_name for method_name in dir(test_database)
                                                if callable(getattr(test_database, method_name)) and method_name.startswith('test_')])
-
-            self.__class__.counter = 0
 
         return self.__class__.current_app
 
