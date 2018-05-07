@@ -26,7 +26,7 @@ class test_database(TestCase):
         'user': 'postgres',
         'database': 'testdb'
     }
-    postgresql_url = 'postgresql://{user}@{host}:{port}/{database}' \
+    postgresql_url = 'postgresql://{user}:{user}@{host}:{port}/{database}' \
         .format(
         user=postgresql_url_dict['user'],
         host=postgresql_url_dict['host'],
