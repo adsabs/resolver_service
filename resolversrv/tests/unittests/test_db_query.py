@@ -24,7 +24,7 @@ class test_database(TestCase):
         'port': 1234,
         'host': '127.0.0.1',
         'user': 'postgres',
-        'database': 'testdb'
+        'database': 'test'
     }
     postgresql_url = 'postgresql://{user}@{host}:{port}/{database}' \
         .format(
