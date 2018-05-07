@@ -21,12 +21,12 @@ class test_database(TestCase):
     """tests for generation of resolver"""
 
     postgresql_url_dict = {
-        'port': 1234,
-        'host': '127.0.0.1',
+        'port': 5432,
+        'host': 'localhost',
         'user': 'postgres',
         'database': 'testdb'
     }
-    postgresql_url = 'postgresql://{user}@{host}:{port}/{database}' \
+    postgresql_url = 'postgresql://{user}:{user}@{host}:{port}/{database}' \
         .format(
         user=postgresql_url_dict['user'],
         host=postgresql_url_dict['host'],
