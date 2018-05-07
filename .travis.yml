@@ -9,6 +9,9 @@ install:
   - "pip install -r requirements.txt"
   - "pip install -r dev-requirements.txt"
 
+before script:
+  - "psql -h localhost --port 15432 -U postgres testdb"
+
 script:
   - "py.test"
 

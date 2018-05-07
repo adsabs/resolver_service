@@ -27,10 +27,7 @@ class test_database(TestCase):
         Get the url from in-memory db and pass it to app to create test AlchemySQL db.
         :return:
         """
-        self.postgresql = testing.postgresql.Postgresql()
-        self.assertIsNotNone(self.postgresql)
-
-        current_app = app.create_app(**{'SQLALCHEMY_DATABASE_URI': self.postgresql.url()})
+        current_app = app.create_app(**{'SQLALCHEMY_DATABASE_URI': 'postgresql://postgres:postgres@localhost:15432/testdb'})
         return current_app
 
 
@@ -52,8 +49,6 @@ class test_database(TestCase):
         """
         self.app.db.session.remove()
         self.app.db.drop_all()
-
-        del self.postgresql
 
 
     def addStubData(self):
