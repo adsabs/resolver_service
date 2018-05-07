@@ -209,55 +209,55 @@ class test_database(TestCase):
                           u'service': u'https://ui.adsabs.harvard.edu/#abs/1971ATsir.615....4D/associated',
                           u'links': {u'count': 13,
                                      u'records': [{
-                                                        u'url': u'/1971ATsir.615....4D/associated/https:,,ui.adsabs.harvard.edu,#abs,1971ATsir.615....4D,abstract',
+                                                        u'url': u'/1971ATsir.615....4D/associated/https%3A%2F%2Fui.adsabs.harvard.edu%2F%23abs%2F1971ATsir.615....4D%2Fabstract',
                                                         u'bibcode': u'1971ATsir.615....4D',
                                                         u'title': u'Part  1'
                                                   }, {
-                                                        u'url': u'/1974Afz....10..315D/associated/https:,,ui.adsabs.harvard.edu,#abs,1974Afz....10..315D,abstract',
+                                                        u'url': u'/1974Afz....10..315D/associated/https%3A%2F%2Fui.adsabs.harvard.edu%2F%23abs%2F1974Afz....10..315D%2Fabstract',
                                                         u'bibcode': u'1974Afz....10..315D',
                                                         u'title': u'Part  2'
                                                   }, {
-                                                        u'url': u'/1971ATsir.621....7D/associated/https:,,ui.adsabs.harvard.edu,#abs,1971ATsir.621....7D,abstract',
+                                                        u'url': u'/1971ATsir.621....7D/associated/https%3A%2F%2Fui.adsabs.harvard.edu%2F%23abs%2F1971ATsir.621....7D%2Fabstract',
                                                         u'bibcode': u'1971ATsir.621....7D',
                                                         u'title': u'Part  3'
                                                   }, {
-                                                        u'url': u'/1976Afz....12..665D/associated/https:,,ui.adsabs.harvard.edu,#abs,1976Afz....12..665D,abstract',
+                                                        u'url': u'/1976Afz....12..665D/associated/https%3A%2F%2Fui.adsabs.harvard.edu%2F%23abs%2F1976Afz....12..665D%2Fabstract',
                                                         u'bibcode': u'1976Afz....12..665D',
                                                         u'title': u'Part  4'
                                                   }, {
-                                                        u'url': u'/1971ATsir.624....1D/associated/https:,,ui.adsabs.harvard.edu,#abs,1971ATsir.624....1D,abstract',
+                                                        u'url': u'/1971ATsir.624....1D/associated/https%3A%2F%2Fui.adsabs.harvard.edu%2F%23abs%2F1971ATsir.624....1D%2Fabstract',
                                                         u'bibcode': u'1971ATsir.624....1D',
                                                         u'title': u'Part  5'
                                                   }, {
-                                                        u'url': u'/1983Afz....19..229D/associated/https:,,ui.adsabs.harvard.edu,#abs,1983Afz....19..229D,abstract',
+                                                        u'url': u'/1983Afz....19..229D/associated/https%3A%2F%2Fui.adsabs.harvard.edu%2F%23abs%2F1983Afz....19..229D%2Fabstract',
                                                         u'bibcode': u'1983Afz....19..229D',
                                                         u'title': u'Part  6'
                                                   }, {
-                                                        u'url': u'/1983Ap.....19..134D/associated/https:,,ui.adsabs.harvard.edu,#abs,1983Ap.....19..134D,abstract',
+                                                        u'url': u'/1983Ap.....19..134D/associated/https%3A%2F%2Fui.adsabs.harvard.edu%2F%23abs%2F1983Ap.....19..134D%2Fabstract',
                                                         u'bibcode': u'1983Ap.....19..134D',
                                                         u'title': u'Part  7'
                                                   }, {
-                                                        u'url': u'/1973ATsir.759....6D/associated/https:,,ui.adsabs.harvard.edu,#abs,1973ATsir.759....6D,abstract',
+                                                        u'url': u'/1973ATsir.759....6D/associated/https%3A%2F%2Fui.adsabs.harvard.edu%2F%23abs%2F1973ATsir.759....6D%2Fabstract',
                                                         u'bibcode': u'1973ATsir.759....6D',
                                                         u'title': u'Part  8'
                                                   }, {
-                                                        u'url': u'/1984Afz....20..525D/associated/https:,,ui.adsabs.harvard.edu,#abs,1984Afz....20..525D,abstract',
+                                                        u'url': u'/1984Afz....20..525D/associated/https%3A%2F%2Fui.adsabs.harvard.edu%2F%23abs%2F1984Afz....20..525D%2Fabstract',
                                                         u'bibcode': u'1984Afz....20..525D',
                                                         u'title': u'Part  9'
                                                   }, {
-                                                        u'url': u'/1984Ap.....20..290D/associated/https:,,ui.adsabs.harvard.edu,#abs,1984Ap.....20..290D,abstract',
+                                                        u'url': u'/1984Ap.....20..290D/associated/https%3A%2F%2Fui.adsabs.harvard.edu%2F%23abs%2F1984Ap.....20..290D%2Fabstract',
                                                         u'bibcode': u'1984Ap.....20..290D',
                                                         u'title': u'Part 10'
                                                   }, {
-                                                        u'url': u'/1974ATsir.809....1D/associated/https:,,ui.adsabs.harvard.edu,#abs,1974ATsir.809....1D,abstract',
+                                                        u'url': u'/1974ATsir.809....1D/associated/https%3A%2F%2Fui.adsabs.harvard.edu%2F%23abs%2F1974ATsir.809....1D%2Fabstract',
                                                         u'bibcode': u'1974ATsir.809....1D',
                                                         u'title': u'Part 11'
                                                   }, {
-                                                        u'url': u'/1974ATsir.809....2D/associated/https:,,ui.adsabs.harvard.edu,#abs,1974ATsir.809....2D,abstract',
+                                                        u'url': u'/1974ATsir.809....2D/associated/https%3A%2F%2Fui.adsabs.harvard.edu%2F%23abs%2F1974ATsir.809....2D%2Fabstract',
                                                         u'bibcode': u'1974ATsir.809....2D',
                                                         u'title': u'Part 12'
                                                   }, {
-                                                        u'url': u'/1974ATsir.837....2D/associated/https:,,ui.adsabs.harvard.edu,#abs,1974ATsir.837....2D,abstract',
+                                                        u'url': u'/1974ATsir.837....2D/associated/https%3A%2F%2Fui.adsabs.harvard.edu%2F%23abs%2F1974ATsir.837....2D%2Fabstract',
                                                         u'bibcode': u'1974ATsir.837....2D',
                                                         u'title': u'Part 13'
                                                   }],

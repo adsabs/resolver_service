@@ -1,7 +1,7 @@
 git+https://github.com/adsabs/ADSMicroserviceUtils.git@v1.0.3
 git+https://github.com/adsabs/ADSPipelineMsg.git@v1.0.0
 alembic==0.9.1
-psycopg2==2.7.4
+psycopg2==2.7.1
 Flask==0.12.2
 flask-discoverer==0.0.2
 Flask-RESTful==0.3.6
