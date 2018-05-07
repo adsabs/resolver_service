@@ -11,6 +11,8 @@ import unittest
 import resolversrv.app as app
 from resolversrv.views import LinkRequest
 
+TestCase.maxDiff = None
+
 class test_resolver(TestCase):
     def create_app(self):
         self.current_app = app.create_app()

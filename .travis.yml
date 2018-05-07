@@ -3,14 +3,17 @@ language: python
 python:
   - "2.7"
 
-services:
-  - redis-server
-
 install:
   - "pip install --upgrade pip"
   - "pip install --upgrade setuptools"
   - "pip install -r requirements.txt"
   - "pip install -r dev-requirements.txt"
+
+addons:
+  postgresql: "9.6"
+
+before_script:
+  - psql -c 'create database test;' -U postgres
 
 script:
   - "py.test"
@@ -22,6 +25,3 @@ notifications:
   email: false
 
 sudo: false
-
-addons:
-  postgresql: "9.6"
