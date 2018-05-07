@@ -17,13 +17,6 @@ from resolversrv.views import LinkRequest, PopulateRequest
 
 TestCase.maxDiff = None
 
-
-
-from sqlalchemy.dialects.postgresql import insert
-
-
-
-
 class test_database(TestCase):
     """tests for generation of resolver"""
 
@@ -68,45 +61,6 @@ class test_database(TestCase):
         self.app.db.session.remove()
         Base.metadata.drop_all(bind=self.app.db.engine)
 
-    def add_records(self, datalinks_records_list):
-        """
-        upserts records into db
-
-        :param datalinks_records_list:
-        :return: success boolean, plus a status text for retuning error message, if any, to the calling program
-        """
-        rows = []
-        for i in range(len(datalinks_records_list.datalinks_records)):
-            for j in range(len(datalinks_records_list.datalinks_records[i].data_links_rows)):
-                rows.append([
-                    datalinks_records_list.datalinks_records[i].bibcode,
-                    datalinks_records_list.datalinks_records[i].data_links_rows[j].link_type,
-                    datalinks_records_list.datalinks_records[i].data_links_rows[j].link_sub_type,
-                    datalinks_records_list.datalinks_records[i].data_links_rows[j].url,
-                    datalinks_records_list.datalinks_records[i].data_links_rows[j].title,
-                    datalinks_records_list.datalinks_records[i].data_links_rows[j].item_count
-                ])
-
-        if len(rows) > 0:
-            table = DataLinks.__table__
-            stmt = insert(table).values(rows)
-
-            no_update_cols = []
-            update_cols = [c.name for c in table.c
-                           if c not in list(table.primary_key.columns)
-                           and c.name not in no_update_cols]
-
-            on_conflict_stmt = stmt.on_conflict_do_update(
-                index_elements=table.primary_key.columns,
-                set_={k: getattr(stmt.excluded, k) for k in update_cols}
-            )
-
-            self.assertNotEqual(self.app.session_scope(), None)
-            with self.app.session_scope() as session:
-                session.execute(on_conflict_stmt)
-            return True, 'updated db with new data successfully'
-        return False, 'unable to extract data from protobuf structure'
-
     def addStubData(self):
         """
         Add stub data
@@ -137,7 +91,7 @@ class test_database(TestCase):
                                                      'url': record[3], 'title': record[4],
                                                      'item_count': record[5]}]}
             record_list_msg.datalinks_records.add(**datalinks_record)
-        status, text = self.add_records(record_list_msg)
+        status, text = add_records(record_list_msg)
 
         self.assertEqual(status, True)
         self.assertEqual(text, 'updated db with new data successfully')
