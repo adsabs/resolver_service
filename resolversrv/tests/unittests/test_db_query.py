@@ -5,6 +5,7 @@ if project_home not in sys.path:
 
 from flask_testing import TestCase
 import unittest
+import testing.postgresql
 import json
 
 from adsmsg.nonbibrecord import DataLinksRecordList
@@ -19,50 +20,76 @@ TestCase.maxDiff = None
 class test_database(TestCase):
     """tests for generation of resolver"""
 
-    postgresql = None
+    postgresql_url_dict = {
+        'port': 1234,
+        'host': '127.0.0.1',
+        'user': 'postgres',
+        'database': 'testdb'
+    }
+    postgresql_url = 'postgresql://{user}@{host}:{port}/{database}' \
+        .format(
+        user=postgresql_url_dict['user'],
+        host=postgresql_url_dict['host'],
+        port=postgresql_url_dict['port'],
+        database=postgresql_url_dict['database']
+    )
 
     def create_app(self):
-        """
-        Get the url from in-memory db and pass it to app to create test AlchemySQL db.
-        :return:
-        """
-        postgresql_url_dict = {
-            'port': 1234,
-            'host': '127.0.0.1',
-            'user': 'postgres',
-            'database': 'testdb'
-        }
-        postgresql_url = 'postgresql://{user}@{host}:{port}/{database}' \
-            .format(
-            user=postgresql_url_dict['user'],
-            host=postgresql_url_dict['host'],
-            port=postgresql_url_dict['port'],
-            database=postgresql_url_dict['database']
-        )
+        '''Start the wsgi application'''
+        a = app.create_app(**{
+            'SQLALCHEMY_DATABASE_URI': self.postgresql_url,
+            'SQLALCHEMY_ECHO': False,
+            'TESTING': True,
+            'PROPAGATE_EXCEPTIONS': True,
+            'TRAP_BAD_REQUEST_ERRORS': True
+        })
+        return a
 
-        # current_app = app.create_app(**{'SQLALCHEMY_DATABASE_URI': 'postgresql://postgres:postgres@localhost:1234/testdb'})
-        current_app = app.create_app(**{'SQLALCHEMY_DATABASE_URI': postgresql_url})
-        return current_app
+    @classmethod
+    def setUpClass(cls):
+        cls.postgresql = \
+            testing.postgresql.Postgresql(**cls.postgresql_url_dict)
 
+    @classmethod
+    def tearDownClass(cls):
+        cls.postgresql.stop()
 
     def setUp(self):
-        """
-        Module level set-up called once before any tests in this file are executed.
-        Creates a temporary database and populates it.
-        :return:
-        """
         Base.metadata.create_all(bind=self.app.db.engine)
-        self.addStubData()
-
 
     def tearDown(self):
-        """
-        Called after once after each test in this file have been executed.
-        Closes the database connection and destroy the temporary database.
-        :return:
-        """
         self.app.db.session.remove()
         self.app.db.drop_all()
+
+    # postgresql = None
+    #
+    # def create_app(self):
+    #     """
+    #     Get the url from in-memory db and pass it to app to create test AlchemySQL db.
+    #     :return:
+    #     """
+    #     current_app = app.create_app(**{'SQLALCHEMY_DATABASE_URI': 'postgresql://postgres:postgres@localhost:1234/testdb'})
+    #     return current_app
+
+
+    # def setUp(self):
+    #     """
+    #     Module level set-up called once before any tests in this file are executed.
+    #     Creates a temporary database and populates it.
+    #     :return:
+    #     """
+    #     Base.metadata.create_all(bind=self.app.db.engine)
+    #     self.addStubData()
+    #
+    #
+    # def tearDown(self):
+    #     """
+    #     Called after once after each test in this file have been executed.
+    #     Closes the database connection and destroy the temporary database.
+    #     :return:
+    #     """
+    #     self.app.db.session.remove()
+    #     self.app.db.drop_all()
 
 
     def addStubData(self):
