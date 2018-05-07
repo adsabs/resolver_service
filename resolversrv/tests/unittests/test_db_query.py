@@ -27,7 +27,7 @@ class test_database(TestCase):
         Get the url from in-memory db and pass it to app to create test AlchemySQL db.
         :return:
         """
-        current_app = app.create_app(**{'SQLALCHEMY_DATABASE_URI': 'postgresql://postgres:postgres@localhost:5432/testdb'})
+        current_app = app.create_app(**{'SQLALCHEMY_DATABASE_URI': 'postgresql://postgres:postgres@localhost/testdb'})
         return current_app
 
 
