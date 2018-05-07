@@ -10,7 +10,8 @@ install:
   - "pip install -r dev-requirements.txt"
 
 before script:
-  - "psql -h localhost --port 15432 -U postgres testdb"
+  - psql -c 'create database testdb;' -U postgres
+  - psql -c "CREATE USER root WITH PASSWORD 'postgres';" -U postgres
 
 script:
   - "py.test"
