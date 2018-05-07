@@ -22,7 +22,7 @@ class test_database(TestCase):
 
     postgresql_url_dict = {
         'port': 1234,
-        'host': '127.0.0.0',
+        'host': '127.0.0.1',
         'user': 'postgres',
         'database': 'testdb'
     }
