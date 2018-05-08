@@ -128,7 +128,7 @@ class test_database(TestCase):
         """
         response = LinkRequest(bibcode='1943RvMP...15....1C', link_type='INSPIRE').process_request()
         self.assertEqual(response._status_code, 200)
-        self.assertEqual(response.response[0], '{"action": "redirect", "link": "http://inspirehep.net/search?p=find+j+RMPHA,15,1", "service": "https://ui.adsabs.harvard.edu/#abs/1943RvMP...15....1C/INSPIRE"}')
+        self.assertEqual(response.response[0], '{"action": "redirect", "link": "http://inspirehep.net/search?p=find+j+RMPHA,15,1", "service": "/#abs/1943RvMP...15....1C/INSPIRE"}')
 
 
     def test_process_request_link_associated(self):
@@ -175,7 +175,7 @@ class test_database(TestCase):
         results = get_records(bibcode='2017MNRAS.467.3556B', link_type='PRESENTATION')
         response = LinkRequest(bibcode='2017MNRAS.467.3556B', link_type='PRESENTATION').request_link_type_single_url(results)
         self.assertEqual(response._status_code, 200)
-        self.assertEqual(response.response[0], '{"action": "redirect", "link": "http://www.astro.lu.se/~alexey/animations.html", "service": "https://ui.adsabs.harvard.edu/#abs/2017MNRAS.467.3556B/PRESENTATION"}')
+        self.assertEqual(response.response[0], '{"action": "redirect", "link": "http://www.astro.lu.se/~alexey/animations.html", "service": "/#abs/2017MNRAS.467.3556B/PRESENTATION"}')
 
 
     def test_link_all_error_bibcode(self):
@@ -206,58 +206,58 @@ class test_database(TestCase):
         self.assertEqual(response._status_code, 200)
         self.assertEqual(json.loads(response.response[0]),
                          {u'action': u'display',
-                          u'service': u'https://ui.adsabs.harvard.edu/#abs/1971ATsir.615....4D/associated',
+                          u'service': u'/#abs/1971ATsir.615....4D/associated',
                           u'links': {u'count': 13,
                                      u'records': [{
-                                                        u'url': u'/1971ATsir.615....4D/associated/https%3A%2F%2Fui.adsabs.harvard.edu%2F%23abs%2F1971ATsir.615....4D%2Fabstract',
+                                                        u'url': u'/1971ATsir.615....4D/associated/:%2F%23abs%2F1971ATsir.615....4D%2Fabstract',
                                                         u'bibcode': u'1971ATsir.615....4D',
                                                         u'title': u'Part  1'
                                                   }, {
-                                                        u'url': u'/1974Afz....10..315D/associated/https%3A%2F%2Fui.adsabs.harvard.edu%2F%23abs%2F1974Afz....10..315D%2Fabstract',
+                                                        u'url': u'/1974Afz....10..315D/associated/:%2F%23abs%2F1974Afz....10..315D%2Fabstract',
                                                         u'bibcode': u'1974Afz....10..315D',
                                                         u'title': u'Part  2'
                                                   }, {
-                                                        u'url': u'/1971ATsir.621....7D/associated/https%3A%2F%2Fui.adsabs.harvard.edu%2F%23abs%2F1971ATsir.621....7D%2Fabstract',
+                                                        u'url': u'/1971ATsir.621....7D/associated/:%2F%23abs%2F1971ATsir.621....7D%2Fabstract',
                                                         u'bibcode': u'1971ATsir.621....7D',
                                                         u'title': u'Part  3'
                                                   }, {
-                                                        u'url': u'/1976Afz....12..665D/associated/https%3A%2F%2Fui.adsabs.harvard.edu%2F%23abs%2F1976Afz....12..665D%2Fabstract',
+                                                        u'url': u'/1976Afz....12..665D/associated/:%2F%23abs%2F1976Afz....12..665D%2Fabstract',
                                                         u'bibcode': u'1976Afz....12..665D',
                                                         u'title': u'Part  4'
                                                   }, {
-                                                        u'url': u'/1971ATsir.624....1D/associated/https%3A%2F%2Fui.adsabs.harvard.edu%2F%23abs%2F1971ATsir.624....1D%2Fabstract',
+                                                        u'url': u'/1971ATsir.624....1D/associated/:%2F%23abs%2F1971ATsir.624....1D%2Fabstract',
                                                         u'bibcode': u'1971ATsir.624....1D',
                                                         u'title': u'Part  5'
                                                   }, {
-                                                        u'url': u'/1983Afz....19..229D/associated/https%3A%2F%2Fui.adsabs.harvard.edu%2F%23abs%2F1983Afz....19..229D%2Fabstract',
+                                                        u'url': u'/1983Afz....19..229D/associated/:%2F%23abs%2F1983Afz....19..229D%2Fabstract',
                                                         u'bibcode': u'1983Afz....19..229D',
                                                         u'title': u'Part  6'
                                                   }, {
-                                                        u'url': u'/1983Ap.....19..134D/associated/https%3A%2F%2Fui.adsabs.harvard.edu%2F%23abs%2F1983Ap.....19..134D%2Fabstract',
+                                                        u'url': u'/1983Ap.....19..134D/associated/:%2F%23abs%2F1983Ap.....19..134D%2Fabstract',
                                                         u'bibcode': u'1983Ap.....19..134D',
                                                         u'title': u'Part  7'
                                                   }, {
-                                                        u'url': u'/1973ATsir.759....6D/associated/https%3A%2F%2Fui.adsabs.harvard.edu%2F%23abs%2F1973ATsir.759....6D%2Fabstract',
+                                                        u'url': u'/1973ATsir.759....6D/associated/:%2F%23abs%2F1973ATsir.759....6D%2Fabstract',
                                                         u'bibcode': u'1973ATsir.759....6D',
                                                         u'title': u'Part  8'
                                                   }, {
-                                                        u'url': u'/1984Afz....20..525D/associated/https%3A%2F%2Fui.adsabs.harvard.edu%2F%23abs%2F1984Afz....20..525D%2Fabstract',
+                                                        u'url': u'/1984Afz....20..525D/associated/:%2F%23abs%2F1984Afz....20..525D%2Fabstract',
                                                         u'bibcode': u'1984Afz....20..525D',
                                                         u'title': u'Part  9'
                                                   }, {
-                                                        u'url': u'/1984Ap.....20..290D/associated/https%3A%2F%2Fui.adsabs.harvard.edu%2F%23abs%2F1984Ap.....20..290D%2Fabstract',
+                                                        u'url': u'/1984Ap.....20..290D/associated/:%2F%23abs%2F1984Ap.....20..290D%2Fabstract',
                                                         u'bibcode': u'1984Ap.....20..290D',
                                                         u'title': u'Part 10'
                                                   }, {
-                                                        u'url': u'/1974ATsir.809....1D/associated/https%3A%2F%2Fui.adsabs.harvard.edu%2F%23abs%2F1974ATsir.809....1D%2Fabstract',
+                                                        u'url': u'/1974ATsir.809....1D/associated/:%2F%23abs%2F1974ATsir.809....1D%2Fabstract',
                                                         u'bibcode': u'1974ATsir.809....1D',
                                                         u'title': u'Part 11'
                                                   }, {
-                                                        u'url': u'/1974ATsir.809....2D/associated/https%3A%2F%2Fui.adsabs.harvard.edu%2F%23abs%2F1974ATsir.809....2D%2Fabstract',
+                                                        u'url': u'/1974ATsir.809....2D/associated/:%2F%23abs%2F1974ATsir.809....2D%2Fabstract',
                                                         u'bibcode': u'1974ATsir.809....2D',
                                                         u'title': u'Part 12'
                                                   }, {
-                                                        u'url': u'/1974ATsir.837....2D/associated/https%3A%2F%2Fui.adsabs.harvard.edu%2F%23abs%2F1974ATsir.837....2D%2Fabstract',
+                                                        u'url': u'/1974ATsir.837....2D/associated/:%2F%23abs%2F1974ATsir.837....2D%2Fabstract',
                                                         u'bibcode': u'1974ATsir.837....2D',
                                                         u'title': u'Part 13'
                                                   }],
@@ -311,7 +311,7 @@ class test_database(TestCase):
         results = get_records(bibcode='2013MNRAS.435.1904M', link_type='ESOURCE', link_sub_type='PUB_PDF')
         response = LinkRequest(bibcode='2013MNRAS.435.1904', link_type='PUB_PDF').request_link_type_esource(results)
         self.assertEqual(response._status_code, 200)
-        self.assertEqual(response.response[0], '{"action": "redirect", "link": "http://mnras.oxfordjournals.org/content/435/3/1904.full.pdf", "service": "https://ui.adsabs.harvard.edu/#abs/2013MNRAS.435.1904/ESOURCE"}')
+        self.assertEqual(response.response[0], '{"action": "redirect", "link": "http://mnras.oxfordjournals.org/content/435/3/1904.full.pdf", "service": "/#abs/2013MNRAS.435.1904/ESOURCE"}')
 
 
     def test_link_esource_parts(self):
@@ -449,7 +449,7 @@ class test_database(TestCase):
         results = get_records(bibcode='2013MNRAS.435.1904M', link_type='DATA', link_sub_type='MAST')
         response = LinkRequest(bibcode='2013MNRAS.435.1904', link_type='PUB_PDF').request_link_type_data(results)
         self.assertEqual(response._status_code, 200)
-        self.assertEqual(response.response[0], '{"action": "redirect", "link": "http://archive.stsci.edu/mastbibref.php?bibcode=2013MNRAS.435.1904M", "service": "https://ui.adsabs.harvard.edu/#abs/2013MNRAS.435.1904/ESOURCE"}')
+        self.assertEqual(response.response[0], '{"action": "redirect", "link": "http://archive.stsci.edu/mastbibref.php?bibcode=2013MNRAS.435.1904M", "service": "/#abs/2013MNRAS.435.1904/ESOURCE"}')
 
 
     def test_process_request_upsert(self):

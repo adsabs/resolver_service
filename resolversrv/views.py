@@ -371,7 +371,7 @@ class LinkRequest():
                     records = []
                     for idx in range(len(result['url'])):
                         bibcode = result['url'][idx]
-                        encodeURL = quote(link_format_str.format(baseurl=self.baseurl, bibcode=bibcode), safe='')
+                        encodeURL = ':' + quote(link_format_str.format(baseurl=self.baseurl, bibcode=bibcode), safe='')
                         redirectURL = self.gateway_redirect_url.format(bibcode=bibcode, link_type=self.link_type.lower(),
                                                                  url=encodeURL)
                         record = {}
