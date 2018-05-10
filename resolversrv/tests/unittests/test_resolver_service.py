@@ -22,19 +22,19 @@ class test_resolver(TestCase):
     def test_fetchingAbstract(self):
         response = LinkRequest('1987gady.book.....B', 'ABSTRACT').process_request()
         self.assertEqual(response._status_code, 200)
-        self.assertEqual(response.response[0], '{"action": "redirect", "link": "/#abs/1987gady.book.....B/abstract", "service": "/#abs/1987gady.book.....B/ABSTRACT"}')
+        self.assertEqual(response.response[0], '{"action": "redirect", "link": "/#abs/1987gady.book.....B/abstract", "service": "/#abs/1987gady.book.....B/abstract"}')
     def test_fetchingCitations(self):
         response = LinkRequest('1987gady.book.....B', 'CITATIONS').process_request()
         self.assertEqual(response._status_code, 200)
-        self.assertEqual(response.response[0], '{"action": "redirect", "link": "/#abs/1987gady.book.....B/citations", "service": "/#abs/1987gady.book.....B/CITATIONS"}')
+        self.assertEqual(response.response[0], '{"action": "redirect", "link": "/#abs/1987gady.book.....B/citations", "service": "/#abs/1987gady.book.....B/citations"}')
     def test_fetchingCoRead(self):
         response = LinkRequest('1987gady.book.....B', 'COREADS').process_request()
         self.assertEqual(response._status_code, 200)
-        self.assertEqual(response.response[0], '{"action": "redirect", "link": "/#abs/1987gady.book.....B/coreads", "service": "/#abs/1987gady.book.....B/COREADS"}')
+        self.assertEqual(response.response[0], '{"action": "redirect", "link": "/#abs/1987gady.book.....B/coreads", "service": "/#abs/1987gady.book.....B/coreads"}')
     def test_fetchingReferences(self):
         response = LinkRequest('1998ARA&A..36..189K', 'REFERENCES').process_request()
         self.assertEqual(response._status_code, 200)
-        self.assertEqual(response.response[0], '{"action": "redirect", "link": "/#abs/1998ARA&A..36..189K/references", "service": "/#abs/1998ARA&A..36..189K/REFERENCES"}')
+        self.assertEqual(response.response[0], '{"action": "redirect", "link": "/#abs/1998ARA&A..36..189K/references", "service": "/#abs/1998ARA&A..36..189K/references"}')
 
 
     # the following three tests support of legacy type EJOURNAL
