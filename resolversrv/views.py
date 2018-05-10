@@ -268,9 +268,7 @@ class LinkRequest():
         """
         if (len(url) > 0):
             response = {}
-            response['service'] = '{baseurl}/{bibcode}/{link_type}:{id}'.format(baseurl=self.baseurl,
-                                                                           bibcode=self.bibcode, link_type=self.link_type,
-                                                                           id=self.id)
+            response['service'] = url
             response['action'] = 'redirect'
             response['link'] = url
             return self.__return_response(response, 200)
