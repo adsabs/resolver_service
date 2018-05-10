@@ -101,7 +101,7 @@ class test_with_no_database_required(TestCase):
                     }]
         response = LinkRequest(bibcode='2017MNRAS.467.3556B', link_type='PRESENTATION').request_link_type_single_url(results)
         self.assertEqual(response._status_code, 200)
-        self.assertEqual(response.response[0], '{"action": "redirect", "link": "http://www.astro.lu.se/~alexey/animations.html", "service": "/#abs/2017MNRAS.467.3556B/PRESENTATION"}')
+        self.assertEqual(response.response[0], '{"action": "redirect", "link": "http://www.astro.lu.se/~alexey/animations.html", "service": "http://www.astro.lu.se/~alexey/animations.html"}')
 
 
     def test_link_presentation_error_link_type(self):
