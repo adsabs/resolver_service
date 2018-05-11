@@ -128,7 +128,7 @@ class test_database(TestCase):
         """
         response = LinkRequest(bibcode='1943RvMP...15....1C', link_type='INSPIRE').process_request()
         self.assertEqual(response._status_code, 200)
-        self.assertEqual(response.response[0], '{"action": "redirect", "link": "http://inspirehep.net/search?p=find+j+RMPHA,15,1", "service": "http://inspirehep.net/search?p=find+j+RMPHA,15,1"}')
+        self.assertEqual(response.response[0], '{"action": "redirect", "link": "http://inspirehep.net/search?p=find+j+RMPHA,15,1", "link_type": "INSPIRE", "service": "http://inspirehep.net/search?p=find+j+RMPHA,15,1"}')
 
 
     def test_process_request_link_associated(self):
@@ -175,7 +175,7 @@ class test_database(TestCase):
         results = get_records(bibcode='2017MNRAS.467.3556B', link_type='PRESENTATION')
         response = LinkRequest(bibcode='2017MNRAS.467.3556B', link_type='PRESENTATION').request_link_type_single_url(results)
         self.assertEqual(response._status_code, 200)
-        self.assertEqual(response.response[0], '{"action": "redirect", "link": "http://www.astro.lu.se/~alexey/animations.html", "service": "http://www.astro.lu.se/~alexey/animations.html"}')
+        self.assertEqual(response.response[0], '{"action": "redirect", "link": "http://www.astro.lu.se/~alexey/animations.html", "link_type": "PRESENTATION", "service": "http://www.astro.lu.se/~alexey/animations.html"}')
 
 
     def test_link_all_error_bibcode(self):
@@ -311,7 +311,7 @@ class test_database(TestCase):
         results = get_records(bibcode='2013MNRAS.435.1904M', link_type='ESOURCE', link_sub_type='PUB_PDF')
         response = LinkRequest(bibcode='2013MNRAS.435.1904', link_type='PUB_PDF').request_link_type_esource(results)
         self.assertEqual(response._status_code, 200)
-        self.assertEqual(response.response[0], '{"action": "redirect", "link": "http://mnras.oxfordjournals.org/content/435/3/1904.full.pdf", "service": "http://mnras.oxfordjournals.org/content/435/3/1904.full.pdf"}')
+        self.assertEqual(response.response[0], '{"action": "redirect", "link": "http://mnras.oxfordjournals.org/content/435/3/1904.full.pdf", "link_type": "ESOURCE|PUB_PDF", "service": "http://mnras.oxfordjournals.org/content/435/3/1904.full.pdf"}')
 
 
     def test_link_esource_parts(self):
@@ -447,9 +447,9 @@ class test_database(TestCase):
         :return:
         """
         results = get_records(bibcode='2013MNRAS.435.1904M', link_type='DATA', link_sub_type='MAST')
-        response = LinkRequest(bibcode='2013MNRAS.435.1904', link_type='PUB_PDF').request_link_type_data(results)
+        response = LinkRequest(bibcode='2013MNRAS.435.1904', link_type='MAST').request_link_type_data(results)
         self.assertEqual(response._status_code, 200)
-        self.assertEqual(response.response[0], '{"action": "redirect", "link": "http://archive.stsci.edu/mastbibref.php?bibcode=2013MNRAS.435.1904M", "service": "http://archive.stsci.edu/mastbibref.php?bibcode=2013MNRAS.435.1904M"}')
+        self.assertEqual(response.response[0], '{"action": "redirect", "link": "http://archive.stsci.edu/mastbibref.php?bibcode=2013MNRAS.435.1904M", "link_type": "DATA|MAST", "service": "http://archive.stsci.edu/mastbibref.php?bibcode=2013MNRAS.435.1904M"}')
 
 
     def test_process_request_upsert(self):

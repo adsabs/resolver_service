@@ -101,7 +101,7 @@ class test_with_no_database_required(TestCase):
                     }]
         response = LinkRequest(bibcode='2017MNRAS.467.3556B', link_type='PRESENTATION').request_link_type_single_url(results)
         self.assertEqual(response._status_code, 200)
-        self.assertEqual(response.response[0], '{"action": "redirect", "link": "http://www.astro.lu.se/~alexey/animations.html", "service": "http://www.astro.lu.se/~alexey/animations.html"}')
+        self.assertEqual(response.response[0], '{"action": "redirect", "link": "http://www.astro.lu.se/~alexey/animations.html", "link_type": "PRESENTATION", "service": "http://www.astro.lu.se/~alexey/animations.html"}')
 
 
     def test_link_presentation_error_link_type(self):
@@ -246,11 +246,11 @@ class test_with_no_database_required(TestCase):
         """
         response = LinkRequest(bibcode='2010ApJ...713L.103B', link_type='DOI', id='10.1088/2041-8205/713/2/L103').process_request()
         self.assertEqual(response._status_code, 200)
-        self.assertEqual(response.response[0], '{"action": "redirect", "link": "http://dx.doi.org/10.1088/2041-8205/713/2/L103", "service": "http://dx.doi.org/10.1088/2041-8205/713/2/L103"}')
+        self.assertEqual(response.response[0], '{"action": "redirect", "link": "http://dx.doi.org/10.1088/2041-8205/713/2/L103", "link_type": "DOI", "service": "http://dx.doi.org/10.1088/2041-8205/713/2/L103"}')
 
         response = LinkRequest(bibcode='2018arXiv180303598K', link_type='ARXIV', id='1803.03598').process_request()
         self.assertEqual(response._status_code, 200)
-        self.assertEqual(response.response[0], '{"action": "redirect", "link": "http://arxiv.org/abs/1803.03598", "service": "http://arxiv.org/abs/1803.03598"}')
+        self.assertEqual(response.response[0], '{"action": "redirect", "link": "http://arxiv.org/abs/1803.03598", "link_type": "ARXIV", "service": "http://arxiv.org/abs/1803.03598"}')
 
 
     def test_datalinks(self):
