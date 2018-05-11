@@ -129,7 +129,6 @@ class LinkRequest():
             self.link_sub_type = '?'
 
 
-
     def __get_url_hostname_with_protocol(self, url):
         """
         
@@ -236,6 +235,7 @@ class LinkRequest():
             response['service'] = url
             response['action'] = 'redirect'
             response['link'] = url
+            response['link_type'] = self.link_type + ('' if self.link_sub_type == None else '|' + self.link_sub_type)
             return self.__return_response(response, 200)
         return self.__return_response({'error': 'did not find any records'}, 404)
 
@@ -270,6 +270,7 @@ class LinkRequest():
             response['service'] = url
             response['action'] = 'redirect'
             response['link'] = url
+            response['link_type'] = self.link_type + ('' if self.link_sub_type == None else '|' + self.link_sub_type)
             return self.__return_response(response, 200)
         return self.__return_response({'error': 'did not find any records'}, 404)
 
