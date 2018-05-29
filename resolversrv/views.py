@@ -177,13 +177,11 @@ class LinkRequest():
         :param link_url:
         :return:
         """
-        hostname = self.__get_url_hostname(data_source_url)
-        if (link_sub_type == 'NED'):
-            return link_url.replace('$NED$', hostname)
-        if (link_sub_type == 'SIMBAD'):
-            return link_url.replace('$SIMBAD$', hostname)
+        if (link_sub_type == 'NED') or (link_sub_type == 'SIMBAD'):
+            return link_url.replace('${}$'.format(link_sub_type), self.__get_url_hostname(data_source_url))
         if (link_sub_type == 'Vizier') or (link_sub_type == 'CDS'):
-            return link_url.replace('$VIZIER$', hostname)
+            _, url = self.__get_data_source_title_url(link_sub_type='Vizier', default_url='')
+            return link_url.replace('$VIZIER$', self.__get_url_hostname(url))
         return link_url
 
 
