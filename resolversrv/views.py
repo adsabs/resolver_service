@@ -543,7 +543,7 @@ class PopulateRequest():
             return self.__return_response({'error': 'no records received'}, 400)
 
         if len(records) > current_app.config['RESOLVER_MAX_RECORDS_ADD']:
-            return self.__return_response({'error': 'too many records to add to db at one time'}, 400)
+            return self.__return_response({'error': 'too many records to add to db at one time, received %s records while the limit is %s'%(len(records), current_app.config['RESOLVER_MAX_RECORDS_ADD'])}, 400)
 
         current_app.logger.info('received request to populate db with %d records' % (len(records)))
 
