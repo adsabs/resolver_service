@@ -116,14 +116,19 @@ class test_resolver(TestCase):
                          'http://vizier.u-strasbg.fr/viz-bin/VizieR?-source=I/45')
     def test_privateMethodLinkRequest9(self):
         link_request = LinkRequest('1905POPot..50....1L', 'DATA', self.current_app.config['RESOLVER_GATEWAY_URL_TEST'])
-        self.assertEqual(link_request._LinkRequest__update_data_type_hostname('http://cdsweb.u-strasbg.fr/', 'CDS',
+        self.assertEqual(link_request._LinkRequest__update_data_type_hostname('http://vizier.u-strasbg.fr/', 'CDS',
                                                                               'http://$VIZIER$/viz-bin/VizieR?-source=IV/26'),
-                         'http://cdsweb.u-strasbg.fr/viz-bin/VizieR?-source=IV/26')
+                         'http://vizier.u-strasbg.fr/viz-bin/VizieR?-source=IV/26')
     def test_privateMethodLinkRequest10(self):
         link_request = LinkRequest('2013MNRAS.435.1904M', 'DATA', self.current_app.config['RESOLVER_GATEWAY_URL_TEST'])
         self.assertEqual(link_request._LinkRequest__update_data_type_hostname('http://cxc.harvard.edu/cda', 'CXO',
                                                                               'http://cda.harvard.edu/chaser?obsid=494'),
                          'http://cda.harvard.edu/chaser?obsid=494')
+    def test_privateMethodLinkRequest11(self):
+        link_request = LinkRequest('1979A&AS...38..423G', 'DATA', self.current_app.config['RESOLVER_GATEWAY_URL_TEST'])
+        self.assertEqual(link_request._LinkRequest__update_data_type_hostname('http://vizier.u-strasbg.fr/', 'CDS',
+                                                                              'http://cdsweb.u-strasbg.fr/cgi-bin/qcat?V/35'),
+                         'http://cdsweb.u-strasbg.fr/cgi-bin/qcat?V/35')
 
 
     # the following tests verify that public methods from class LinkRequest function properly
