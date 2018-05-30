@@ -204,9 +204,9 @@ class test_with_no_database_required(TestCase):
                     'title': [u'MAST References (GALEX EUVE HST)'],
                     'url': [],
                     'itemCount': 3}]
-        response = LinkRequest(bibcode='2013MNRAS.435.1904', link_type='PUB_PDF').request_link_type_data(results)
-        self.assertEqual(response._status_code, 400)
-        self.assertEqual(response.response[0], '{"error": "requested information for bibcode=2013MNRAS.435.1904 and link_type=ESOURCE is missing"}')
+        response = LinkRequest(bibcode='2013MNRAS.435.1904M', link_type='MAST').request_link_type_data(results)
+        self.assertEqual(response._status_code, 404)
+        self.assertEqual(response.response[0], '{"error": "did not find any records"}')
 
 
     def test_process_request_no_payload(self):

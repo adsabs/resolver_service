@@ -325,8 +325,12 @@ class LinkRequest():
         try:
             if (results is not None):
                 if (len(results) == 1):
-                    return self.request_link_type_deterministic_single_url_toJSON(results[0]['url'][0])
-                else:
+                    result = results[0]
+                    if (len(result['url']) == 1):
+                        return self.request_link_type_deterministic_single_url_toJSON(result['url'][0])
+
+                # we could go here if the length is 1, but there are multiple urls here
+                if (len(results) >= 1):
                     links = {}
                     links['count'] = len(results)
                     links['bibcode'] = self.bibcode
@@ -398,11 +402,13 @@ class LinkRequest():
             if (results is not None):
                 if (len(results) == 1):
                     result = results[0]
-                    title, url = self.__get_data_source_title_url(result['link_sub_type'],
-                                                                  self.__get_url_hostname_with_protocol(result['url'][0]))
-                    revised_url = self.__update_data_type_hostname(url, result['link_sub_type'], result['url'][0])
-                    return self.request_link_type_deterministic_single_url_toJSON(revised_url)
-                else:
+                    if (len(result['url']) == 1):
+                        title, url = self.__get_data_source_title_url(result['link_sub_type'],
+                                                                      self.__get_url_hostname_with_protocol(result['url'][0]))
+                        revised_url = self.__update_data_type_hostname(url, result['link_sub_type'], result['url'][0])
+                        return self.request_link_type_deterministic_single_url_toJSON(revised_url)
+                # we could go here if the length is 1, but there are multiple urls here
+                if (len(results) >= 1):
                     domain = {}
                     records = []
                     url = ''
@@ -427,18 +433,19 @@ class LinkRequest():
                             record['title'] = result['title'][idx] if result['title'][idx] else complete_url
                             record['url'] = redirectURL
                             data.append(record)
-                    domain['data'] = data
-                    records.append(domain)
-                    links = {}
-                    links['count'] = len(results)
-                    links['bibcode'] = self.bibcode
-                    links['records'] = records
-                    response = {}
-                    # when we have multiple sources of links elements there is no url to log (no service)
-                    response['service'] = ''
-                    response['action'] = 'display'
-                    response['links'] = links
-                    return self.__return_response(response, 200)
+                    if len(data) > 0:
+                        domain['data'] = data
+                        records.append(domain)
+                        links = {}
+                        links['count'] = len(results)
+                        links['bibcode'] = self.bibcode
+                        links['records'] = records
+                        response = {}
+                        # when we have multiple sources of links elements there is no url to log (no service)
+                        response['service'] = ''
+                        response['action'] = 'display'
+                        response['links'] = links
+                        return self.__return_response(response, 200)
             return self.__return_response({'error': 'did not find any records'}, 404)
         except (KeyError, IndexError):
             error_message = 'requested information for bibcode=%s and link_type=%s is missing' % (self.bibcode, self.link_type)
