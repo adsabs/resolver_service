@@ -125,7 +125,7 @@ class LinkRequest():
             self.link_sub_type = link_type
         elif (link_type in data_exceptions.keys()):
             self.link_type = 'DATA'
-            self.link_sub_type = data_exceptions['link_type']
+            self.link_sub_type = data_exceptions[link_type]
         # if link_type is empty treated as we are having only a bibcode and shall return all records for
         # for the bibcode
         elif len(link_type) == 0:
