@@ -69,7 +69,7 @@ class test_database(TestCase):
         stub_data = [
                         ('2013MNRAS.435.1904M', 'ESOURCE',      'EPRINT_HTML', ['http://arxiv.org/abs/1307.6556'], [''], 0),
                         ('2013MNRAS.435.1904M', 'ESOURCE',      'EPRINT_PDF',  ['http://arxiv.org/pdf/1307.6556'], [''], 0),
-                        ('2013MNRAS.435.1904M', 'ESOURCE',      'PUB_HTML',    ['http://dx.doi.org/10.1093%2Fmnras%2Fstt1379'], [''], 0),
+                        ('2013MNRAS.435.1904M', 'ESOURCE',      'PUB_HTML',    ['https://doi.org/10.1093%2Fmnras%2Fstt1379'], [''], 0),
                         ('2013MNRAS.435.1904M', 'ESOURCE',      'PUB_PDF',     ['http://mnras.oxfordjournals.org/content/435/3/1904.full.pdf'], [''], 0),
                         ('2013MNRAS.435.1904M', 'DATA',         'CXO',         ['http://cda.harvard.edu/chaser?obsid=494'], ['Chandra Data Archive ObsIds 494'], 27),
                         ('2013MNRAS.435.1904M', 'DATA',         'ESA',         ['http://archives.esac.esa.int/ehst/#bibcode=2013MNRAS.435.1904M'], ['European HST References (EHST)'], 1),
@@ -288,7 +288,7 @@ class test_database(TestCase):
                           "links": {"count": 4, "link_type": "ESOURCE", "bibcode": "2013MNRAS.435.1904", "records": [
                              {"url": "http://arxiv.org/abs/1307.6556", "title": "http://arxiv.org/abs/1307.6556"},
                              {"url": "http://arxiv.org/pdf/1307.6556", "title": "http://arxiv.org/pdf/1307.6556"},
-                             {"url": "http://dx.doi.org/10.1093%2Fmnras%2Fstt1379", "title": "http://dx.doi.org/10.1093%2Fmnras%2Fstt1379"},
+                             {"url": "https://doi.org/10.1093%2Fmnras%2Fstt1379", "title": "https://doi.org/10.1093%2Fmnras%2Fstt1379"},
                              {"url": "http://mnras.oxfordjournals.org/content/435/3/1904.full.pdf", "title": "http://mnras.oxfordjournals.org/content/435/3/1904.full.pdf"}]},
                           "service": ""})
 
