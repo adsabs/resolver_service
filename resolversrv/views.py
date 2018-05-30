@@ -69,8 +69,6 @@ class LinkRequest():
             'Astroverse', 'ESA', 'NExScI', 'PDS', 'AcA', 'ISO', 'ESO', 'CXO', 'NOAO', 'XMM', 'Spitzer', 'PASA',
             'ATNF', 'KOA', 'Herschel', 'GTC', 'BICEP2', 'ALMA', 'CADC', 'Zenodo', 'TNS'
         ]
-        # make sure all are upper case
-        self.data = [d.upper() for d in self.data]
 
         # identification link type
         self.identification = {
@@ -108,6 +106,11 @@ class LinkRequest():
         :param link_type:
         :return:
         """
+        # data sub types that are not upper case, need to keep them this way to get a match from db
+        data_exceptions = {'Vizier'.upper():'Vizier', 'Author'.upper():'Author', 'Astroverse'.upper():'Astroverse',
+                           'NExScI'.upper():'NExScI', 'AcA'.upper():'AcA', 'Spitzer'.upper():'Spitzer',
+                           'Herschel'.upper():'Herschel', 'Zenodo'.upper():'Zenodo'}
+
         # if link_type has been specified
         if (link_type in self.link_types):
             self.link_type = link_type
@@ -120,6 +123,9 @@ class LinkRequest():
         elif (link_type in self.data):
             self.link_type = 'DATA'
             self.link_sub_type = link_type
+        elif (link_type in data_exceptions.keys()):
+            self.link_type = 'DATA'
+            self.link_sub_type = data_exceptions['link_type']
         # if link_type is empty treated as we are having only a bibcode and shall return all records for
         # for the bibcode
         elif len(link_type) == 0:
