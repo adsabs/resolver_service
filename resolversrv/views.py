@@ -203,7 +203,7 @@ class LinkRequest():
         response = json.dumps(results)
 
         current_app.logger.info('sending response status=%s' % (status))
-        current_app.logger.debug('sending response text=%s' % (response))
+        current_app.logger.info('sending response text=%s' % (response))
 
         r = Response(response=response, status=status)
         r.headers['content-type'] = 'application/json'
@@ -537,7 +537,7 @@ class PopulateRequest():
         response = json.dumps(results)
 
         current_app.logger.info('sending response status=%s' % (status))
-        current_app.logger.debug('sending response text=%s' % (response))
+        current_app.logger.info('sending response text=%s' % (response))
 
         r = Response(response=response, status=status)
         r.headers['content-type'] = 'application/json'
@@ -569,7 +569,9 @@ class PopulateRequest():
 
         status, text = add_records(data)
         if status == True:
+            current_app.logger.info('completed request to populate db with %d records' % (len(records)))
             return self.__return_response({'status': text}, 200)
+        current_app.logger.info('failed to populate db with %d records' % (len(records)))
         return self.__return_response({'error': text}, 400)
 
 
