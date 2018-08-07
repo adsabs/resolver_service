@@ -1,6 +1,8 @@
 
 # -*- coding: utf-8 -*-
 
+LOG_STDOUT = True
+
 # db config
 SQLALCHEMY_DATABASE_URI = 'url to db'
 SQLALCHEMY_TRACK_MODIFICATIONS = False
