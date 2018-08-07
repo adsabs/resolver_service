@@ -1,6 +1,7 @@
 import logging
 LOG_LEVEL = 30 # To be deprecated when all microservices use ADSFlask
 LOGGING_LEVEL = "INFO"
+LOG_STDOUT = True
 DISCOVERER_SELF_PUBLISH = True
 SQLALCHEMY_BINDS = {"": ""}
 SQLALCHEMY_DATABASE_URI = ''
