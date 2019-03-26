@@ -121,7 +121,7 @@ class test_resolver(TestCase):
                          'http://vizier.u-strasbg.fr/viz-bin/VizieR?-source=IV/26')
     def test_privateMethodLinkRequest10(self):
         link_request = LinkRequest('2013MNRAS.435.1904M', 'DATA', self.current_app.config['RESOLVER_GATEWAY_URL_TEST'])
-        self.assertEqual(link_request._LinkRequest__update_data_type_hostname('http://cxc.harvard.edu/cda', 'CXO',
+        self.assertEqual(link_request._LinkRequest__update_data_type_hostname('http://cxc.harvard.edu/cda', 'Chandra',
                                                                               'http://cda.harvard.edu/chaser?obsid=494'),
                          'http://cda.harvard.edu/chaser?obsid=494')
     def test_privateMethodLinkRequest11(self):
