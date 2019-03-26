@@ -59,7 +59,7 @@ RESOLVER_DATA_SOURCES = {
         "name": "ESAC Science Data Center",
         "url": "http://archives.esac.esa.int",
     },
-    "CXO": {
+    "Chandra": {
         "name": "Chandra X-Ray Observatory",
         "url": "http://cxc.harvard.edu/cda",
     },

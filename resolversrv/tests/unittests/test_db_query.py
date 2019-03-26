@@ -71,7 +71,7 @@ class test_database(TestCase):
                         ('2013MNRAS.435.1904M', 'ESOURCE',      'EPRINT_PDF',  ['http://arxiv.org/pdf/1307.6556'], [''], 0),
                         ('2013MNRAS.435.1904M', 'ESOURCE',      'PUB_HTML',    ['http://dx.doi.org/10.1093%2Fmnras%2Fstt1379'], [''], 0),
                         ('2013MNRAS.435.1904M', 'ESOURCE',      'PUB_PDF',     ['http://mnras.oxfordjournals.org/content/435/3/1904.full.pdf'], [''], 0),
-                        ('2013MNRAS.435.1904M', 'DATA',         'CXO',         ['http://cda.harvard.edu/chaser?obsid=494'], ['Chandra Data Archive ObsIds 494'], 27),
+                        ('2013MNRAS.435.1904M', 'DATA',         'Chandra',     ['http://cda.harvard.edu/chaser?obsid=494'], ['Chandra Data Archive ObsIds 494'], 27),
                         ('2013MNRAS.435.1904M', 'DATA',         'ESA',         ['http://archives.esac.esa.int/ehst/#bibcode=2013MNRAS.435.1904M'], ['European HST References (EHST)'], 1),
                         ('2013MNRAS.435.1904M', 'DATA',         'HEASARC',     ['http://heasarc.gsfc.nasa.gov/cgi-bin/W3Browse/biblink.pl?code=2013MNRAS.435.1904M'], [], 1),
                         ('2013MNRAS.435.1904M', 'DATA',         'Herschel',    ['http://herschel.esac.esa.int/hpt/publicationdetailsview.do?bibcode=2013MNRAS.435.1904M'], [], 1),
