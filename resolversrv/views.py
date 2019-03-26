@@ -66,7 +66,7 @@ class LinkRequest():
         # data sub types
         self.data = [
             'ARI', 'SIMBAD', 'NED', 'CDS', 'Vizier', 'GCPD', 'Author', 'PDG', 'MAST', 'HEASARC', 'INES', 'IBVS',
-            'Astroverse', 'ESA', 'NExScI', 'PDS', 'AcA', 'ISO', 'ESO', 'CXO', 'NOAO', 'XMM', 'Spitzer', 'PASA',
+            'Astroverse', 'ESA', 'NExScI', 'PDS', 'AcA', 'ISO', 'ESO', 'Chandra', 'NOAO', 'XMM', 'Spitzer', 'PASA',
             'ATNF', 'KOA', 'Herschel', 'GTC', 'BICEP2', 'ALMA', 'CADC', 'Zenodo', 'TNS'
         ]
 
