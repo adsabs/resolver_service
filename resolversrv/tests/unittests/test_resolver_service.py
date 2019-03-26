@@ -58,9 +58,9 @@ class test_resolver(TestCase):
         self.assertEqual(link_request.link_type, 'DATA')
         self.assertEqual(link_request.link_sub_type, None)
     def test_linkSubTypeData(self):
-        link_request = LinkRequest('2013MNRAS.435.1904M', 'CXO', self.current_app.config['RESOLVER_GATEWAY_URL_TEST'])
+        link_request = LinkRequest('2013MNRAS.435.1904M', 'Chandra', self.current_app.config['RESOLVER_GATEWAY_URL_TEST'])
         self.assertEqual(link_request.link_type, 'DATA')
-        self.assertEqual(link_request.link_sub_type, 'CXO')
+        self.assertEqual(link_request.link_sub_type, 'Chandra')
     def test_linkSubTypeESOURCE(self):
         link_request = LinkRequest('1668RSPT....3..863M', 'PUB_HTML', self.current_app.config['RESOLVER_GATEWAY_URL_TEST'])
         self.assertEqual(link_request.link_type, 'ESOURCE')
