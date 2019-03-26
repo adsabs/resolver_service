@@ -82,7 +82,7 @@ For example to return links for *all*  full text sources, you would do
   * **bicep2** *BICEP/Keck Data*
   * **cadc** *Canadian Astronomy Data Center*
   * **cds** *Strasbourg Astronomical Data Center*
-  * **cxo** *Chandra X-Ray Observatory*
+  * **chandra** *Chandra X-Ray Observatory*
   * **esa** *ESAC Science Data Center*
   * **eso** *European Southern Observatory*
   * **gcpd** *The General Catalogue of Photometric Data*
