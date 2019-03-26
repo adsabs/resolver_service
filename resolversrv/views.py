@@ -109,7 +109,7 @@ class LinkRequest():
         # data sub types that are not upper case, need to keep them this way to get a match from db
         data_exceptions = {'Vizier'.upper():'Vizier', 'Author'.upper():'Author', 'Astroverse'.upper():'Astroverse',
                            'NExScI'.upper():'NExScI', 'AcA'.upper():'AcA', 'Spitzer'.upper():'Spitzer',
-                           'Herschel'.upper():'Herschel', 'Zenodo'.upper():'Zenodo'}
+                           'Herschel'.upper():'Herschel', 'Zenodo'.upper():'Zenodo', 'Chandra'.upper():'Chandra'}
 
         # if link_type has been specified
         if (link_type in self.link_types):
