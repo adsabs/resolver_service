@@ -246,7 +246,7 @@ class test_with_no_database_required(TestCase):
         """
         response = LinkRequest(bibcode='2010ApJ...713L.103B', link_type='DOI', id='10.1088/2041-8205/713/2/L103').process_request()
         self.assertEqual(response._status_code, 200)
-        self.assertEqual(response.response[0], '{"action": "redirect", "link": "http://dx.doi.org/10.1088/2041-8205/713/2/L103", "link_type": "DOI", "service": "http://dx.doi.org/10.1088/2041-8205/713/2/L103"}')
+        self.assertEqual(response.response[0], '{"action": "redirect", "link": "https://doi.org/10.1088/2041-8205/713/2/L103", "link_type": "DOI", "service": "https://doi.org/10.1088/2041-8205/713/2/L103"}')
 
         response = LinkRequest(bibcode='2018arXiv180303598K', link_type='ARXIV', id='1803.03598').process_request()
         self.assertEqual(response._status_code, 200)
