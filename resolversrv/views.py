@@ -7,8 +7,7 @@ from flask_discoverer import advertise
 from flask import Response
 from requests.utils import quote
 
-from adsmsg import DataLinksRecord, DataLinksRecordList
-
+from adsmsg import DataLinksRecordList
 from google.protobuf.json_format import Parse, ParseError
 
 from resolversrv.utils import get_records, add_records
@@ -18,7 +17,7 @@ bp = Blueprint('resolver_service', __name__)
 
 class LinkRequest():
 
-    def __init__(self, bibcode, link_type='', gateway_redirect_url='', id=None):
+    def __init__(self, bibcode, link_type='', id=None):
         """
 
         :param bibcode:
@@ -31,7 +30,7 @@ class LinkRequest():
         self.bibcode = bibcode
         self.__set_major_minor_link_types(link_type)
         self.__backward_compatibility(link_type)
-        self.gateway_redirect_url = gateway_redirect_url
+        self.gateway_redirect_url = current_app.config['RESOLVER_GATEWAY_URL']
         self.id = id
 
 
@@ -589,7 +588,7 @@ def resolver(bibcode, link_type):
     :param link_type: 
     :return:
     """
-    return LinkRequest(bibcode, link_type.upper(), current_app.config['RESOLVER_GATEWAY_URL']).process_request()
+    return LinkRequest(bibcode, link_type.upper()).process_request()
 
 
 @advertise(scopes=[], rate_limit=[1000, 3600 * 24])
@@ -601,7 +600,7 @@ def resolver_id(bibcode, link_type, id):
     :param link_type:
     :return:
     """
-    return LinkRequest(bibcode, link_type.upper(), current_app.config['RESOLVER_GATEWAY_URL'], id).process_request()
+    return LinkRequest(bibcode, link_type.upper(), id).process_request()
 
 
 @advertise(scopes=['ads:resolver-service'], rate_limit=[1000, 3600 * 24])

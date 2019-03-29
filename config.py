@@ -13,7 +13,6 @@ RESOLVER_MAX_RECORDS_ADD = 100
 
 # This is the URL to communicate with resolver_gateway api
 RESOLVER_GATEWAY_URL = 'http://localhost:5000/{bibcode}/{link_type}/{url}'
-RESOLVER_GATEWAY_URL_TEST = '/{bibcode}/{link_type}/{url}'
 
 # This is the URL for deterministic links, needs to go to local-config, once deployed, if need to
 RESOLVER_DETERMINISTIC_LINKS_BASEURL = '/#abs'

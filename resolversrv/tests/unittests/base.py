@@ -35,7 +35,8 @@ class TestCaseDatabase(TestCase):
             'SQLALCHEMY_ECHO': False,
             'TESTING': True,
             'PROPAGATE_EXCEPTIONS': True,
-            'TRAP_BAD_REQUEST_ERRORS': True
+            'TRAP_BAD_REQUEST_ERRORS': True,
+            'RESOLVER_GATEWAY_URL': '/{bibcode}/{link_type}/{url}',
         })
         return a
 
