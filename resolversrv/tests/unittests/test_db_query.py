@@ -88,6 +88,7 @@ class test_database(TestCaseDatabase):
         return a record of link type == inspire
         :return:
         """
+        self.add_stub_data()
         headers = {'Content-type': 'application/json', 'Accept': 'text/plain'}
         response = self.client.get('/1943RvMP...15....1C/INSPIRE', headers=headers)
         self.assertEqual(response._status_code, 200)
@@ -198,6 +199,7 @@ class test_database(TestCaseDatabase):
         returning list of url, title pairs
         :return:
         """
+        self.add_stub_data()
         headers = {'Content-type': 'application/json', 'Accept': 'text/plain'}
         response = self.client.get('/2013MNRAS.435.1904M/DATA', headers=headers)
         self.assertEqual(response._status_code, 200)
