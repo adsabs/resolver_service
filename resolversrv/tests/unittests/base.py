@@ -53,4 +53,4 @@ class TestCaseDatabase(TestCase):
 
     def tearDown(self):
         self.app.db.session.remove()
-        # self.app.db.drop_all()
+        self.app.db.drop_all()

@@ -312,9 +312,6 @@ class test_database(TestCaseDatabase):
         response = LinkRequest(bibcode='2013MNRAS.435.1904', link_type='DATA',
                     gateway_redirect_url = self.app.config['RESOLVER_GATEWAY_URL_TEST']).request_link_type_data(results)
         self.assertEqual(response._status_code, 200)
-        print '\n\n'
-        print json.loads(response.response[0])
-        print '\n\n'
         self.assertEqual(json.loads(response.response[0]),
              {
                  u'action': u'display',
