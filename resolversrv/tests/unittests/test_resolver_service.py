@@ -103,43 +103,38 @@ class test_resolver(TestCase):
         link_request = LinkRequest('2013MNRAS.435.1904M', 'DATA', self.current_app.config['RESOLVER_GATEWAY_URL_TEST'])
         self.assertEqual(link_request._LinkRequest__update_data_type_hostname('https://ned.ipac.caltech.edu', 'NED',
                                                                               'http://$NED$/cgi-bin/nph-objsearch?search_type=Search&refcode=2013MNRAS.435.1904M'),
-                         'http://ned.ipac.caltech.edu/cgi-bin/nph-objsearch?search_type=Search&refcode=2013MNRAS.435.1904M')
+                                                                              'http://ned.ipac.caltech.edu/cgi-bin/nph-objsearch?search_type=Search&refcode=2013MNRAS.435.1904M')
     def test_privateMethodLinkRequest7(self):
         link_request = LinkRequest('2013MNRAS.435.1904M', 'DATA', self.current_app.config['RESOLVER_GATEWAY_URL_TEST'])
         self.assertEqual(link_request._LinkRequest__update_data_type_hostname('http://simbad.u-strasbg.fr', 'SIMBAD',
                                                                               'http://$SIMBAD$/simbo.pl?bibcode=2013MNRAS.435.1904M'),
-                         'http://simbad.u-strasbg.fr/simbo.pl?bibcode=2013MNRAS.435.1904M')
+                                                                              'http://simbad.u-strasbg.fr/simbo.pl?bibcode=2013MNRAS.435.1904M')
     def test_privateMethodLinkRequest8(self):
         link_request = LinkRequest('1948TrPul..61....5Z', 'DATA', self.current_app.config['RESOLVER_GATEWAY_URL_TEST'])
         self.assertEqual(link_request._LinkRequest__update_data_type_hostname('http://vizier.u-strasbg.fr', 'Vizier',
                                                                               'http://$VIZIER$/viz-bin/VizieR?-source=I/45'),
-                         'http://vizier.u-strasbg.fr/viz-bin/VizieR?-source=I/45')
+                                                                              'http://vizier.u-strasbg.fr/viz-bin/VizieR?-source=I/45')
     def test_privateMethodLinkRequest9(self):
         link_request = LinkRequest('1905POPot..50....1L', 'DATA', self.current_app.config['RESOLVER_GATEWAY_URL_TEST'])
         self.assertEqual(link_request._LinkRequest__update_data_type_hostname('http://vizier.u-strasbg.fr/', 'CDS',
                                                                               'http://$VIZIER$/viz-bin/VizieR?-source=IV/26'),
-                         'http://vizier.u-strasbg.fr/viz-bin/VizieR?-source=IV/26')
+                                                                              'http://vizier.u-strasbg.fr/viz-bin/VizieR?-source=IV/26')
     def test_privateMethodLinkRequest10(self):
         link_request = LinkRequest('2013MNRAS.435.1904M', 'DATA', self.current_app.config['RESOLVER_GATEWAY_URL_TEST'])
         self.assertEqual(link_request._LinkRequest__update_data_type_hostname('http://cxc.harvard.edu/cda', 'Chandra',
                                                                               'http://cda.harvard.edu/chaser?obsid=494'),
-                         'http://cda.harvard.edu/chaser?obsid=494')
+                                                                              'http://cda.harvard.edu/chaser?obsid=494')
     def test_privateMethodLinkRequest11(self):
         link_request = LinkRequest('1979A&AS...38..423G', 'DATA', self.current_app.config['RESOLVER_GATEWAY_URL_TEST'])
         self.assertEqual(link_request._LinkRequest__update_data_type_hostname('http://vizier.u-strasbg.fr/', 'CDS',
                                                                               'http://cdsweb.u-strasbg.fr/cgi-bin/qcat?V/35'),
-                         'http://cdsweb.u-strasbg.fr/cgi-bin/qcat?V/35')
-
+                                                                              'http://cdsweb.u-strasbg.fr/cgi-bin/qcat?V/35')
 
     # the following tests verify that public methods from class LinkRequest function properly
     def test_publicMethodLinkRequest1(self):
         response = LinkRequest('1987gady.book.....B', 'ABSTRACT').request_link_type_deterministic_single_url_toJSON('')
         self.assertEqual(response._status_code, 404)
         self.assertEqual(response.response[0], '{"error": "did not find any records"}')
-
-
-    # the following tests verify that private methods from class LinkRequest function properly
-
 
     def test_route(self):
         """

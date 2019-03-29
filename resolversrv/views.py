@@ -319,6 +319,10 @@ class LinkRequest():
 
         :return:
         """
+        # as of 3/27/2019 we should have bibcodes with TOC in db, so check to see if for this bibcode
+        # there is an entry, if not, return an error
+        if self.link_type == 'TOC':
+            pass
         url = self.on_the_fly[self.link_type].format(baseurl=self.baseurl, bibcode=self.bibcode)
         return self.request_link_type_deterministic_single_url_toJSON(url)
 

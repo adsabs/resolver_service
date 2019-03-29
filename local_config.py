@@ -3,7 +3,7 @@ LOG_LEVEL = 30 # To be deprecated when all microservices use ADSFlask
 LOGGING_LEVEL = "INFO"
 LOG_STDOUT = True
 DISCOVERER_SELF_PUBLISH = True
-SQLALCHEMY_BINDS = {"": ""}
+SQLALCHEMY_BINDS = None
 SQLALCHEMY_DATABASE_URI = ''
 SQLALCHEMY_ECHO = False
 SQLALCHEMY_POOL_SIZE = 1
@@ -11,7 +11,6 @@ SQLALCHEMY_MAX_OVERFLOW = 1 # allow to exceptionally grow the pool by N
 SQLALCHEMY_POOL_TIMEOUT = 1 # Specifies the connection timeout in seconds for the pool
 SQLALCHEMY_TRACK_MODIFICATIONS = False
 SQLALCHEMY_RECORD_QUERIES = False
-
 
 # added by eb-deploy (over-write config values) from environment
 try:
