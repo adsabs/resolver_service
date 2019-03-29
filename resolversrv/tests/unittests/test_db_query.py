@@ -206,41 +206,41 @@ class test_database(TestCaseDatabase):
         self.assertDictEqual(response.json,{u'action': u'display',
                                             u'service': u'',
                                             u'links': {u'count': 8,
-                                            u'records': [{u'url': u'http://cxc.harvard.edu/cda',
+                                            u'records': [{u'url': u'http://cxc.harvard.edu/cda',  # Chandra
                                                           u'data': [{u'url': u'/2013MNRAS.435.1904M/data/http%3A%2F%2Fcda.harvard.edu%2Fchaser%3Fobsid%3D494',
                                                                      u'title': u'Chandra Data Archive ObsIds 494'}],
                                                           u'title': u'Chandra X-Ray Observatory'},
-                                                         {u'url': u'http://archives.esac.esa.int',
+                                                         {u'url': u'http://archives.esac.esa.int', # ESA
                                                           u'data': [{u'url': u'/2013MNRAS.435.1904M/data/http%3A%2F%2Farchives.esac.esa.int%2Fehst%2F%23bibcode%3D2013MNRAS.435.1904M',
                                                                      u'title': u'European HST References (EHST)'}],
                                                           u'title': u'ESAC Science Data Center'
                                                          },
-                                                         {u'url': u'https://heasarc.gsfc.nasa.gov/',
+                                                         {u'url': u'https://heasarc.gsfc.nasa.gov/', # HEASARC
                                                           u'data': [{u'url': u'/2013MNRAS.435.1904M/data/http%3A%2F%2Fheasarc.gsfc.nasa.gov%2Fcgi-bin%2FW3Browse%2Fbiblink.pl%3Fcode%3D2013MNRAS.435.1904M',
                                                                      u'title': u'http://heasarc.gsfc.nasa.gov/cgi-bin/W3Browse/biblink.pl?code=2013MNRAS.435.1904M'}],
                                                           u'title': u"NASA's High Energy Astrophysics Science Archive Research Center"
                                                          },
-                                                         {u'url': u'https://www.cosmos.esa.int/web/herschel/home',
+                                                         {u'url': u'https://www.cosmos.esa.int/web/herschel/home', #Herschel
                                                           u'data': [{u'url': u'/2013MNRAS.435.1904M/data/http%3A%2F%2Fherschel.esac.esa.int%2Fhpt%2Fpublicationdetailsview.do%3Fbibcode%3D2013MNRAS.435.1904M',
                                                                      u'title': u'http://herschel.esac.esa.int/hpt/publicationdetailsview.do?bibcode=2013MNRAS.435.1904M'}],
                                                           u'title': u'Herschel Science Center'
                                                          },
-                                                         {u'url': u'http://archive.stsci.edu',
+                                                         {u'url': u'http://archive.stsci.edu', # MAST
                                                           u'data': [{u'url': u'/2013MNRAS.435.1904M/data/http%3A%2F%2Farchive.stsci.edu%2Fmastbibref.php%3Fbibcode%3D2013MNRAS.435.1904M',
                                                                      u'title': u'MAST References (GALEX EUVE HST)'}],
                                                           u'title': u'Mikulski Archive for Space Telescopes'
                                                          },
-                                                         {u'url': u'http://simbad.u-strasbg.fr',
-                                                          u'data': [{u'url': u'/2013MNRAS.435.1904M/data/http%3A%2F%2Fsimbad.u-strasbg.fr%2Fsimbo.pl%3Fbibcode%3D2013MNRAS.435.1904M',
-                                                                     u'title': u'SIMBAD Objects (30)'}],
-                                                          u'title': u'SIMBAD Database at the CDS'
-                                                         },
-                                                         {u'url': u'https://ned.ipac.caltech.edu',
+                                                         {u'url': u'https://ned.ipac.caltech.edu', # NED
                                                           u'data': [{u'url': u'/2013MNRAS.435.1904M/data/http%3A%2F%2Fned.ipac.caltech.edu%2Fcgi-bin%2Fnph-objsearch%3Fsearch_type%3DSearch%26refcode%3D2013MNRAS.435.1904M',
                                                                      u'title': u'NED Objects (1)'}],
                                                           u'title': u'NASA/IPAC Extragalactic Database'
                                                          },
-                                                         {u'url': u'http://nxsa.esac.esa.int',
+                                                         {u'url': u'http://simbad.u-strasbg.fr', # SIMBAD
+                                                          u'data': [{u'url': u'/2013MNRAS.435.1904M/data/http%3A%2F%2Fsimbad.u-strasbg.fr%2Fsimbo.pl%3Fbibcode%3D2013MNRAS.435.1904M',
+                                                                     u'title': u'SIMBAD Objects (30)'}],
+                                                          u'title': u'SIMBAD Database at the CDS'
+                                                         },
+                                                         {u'url': u'http://nxsa.esac.esa.int', # XMM
                                                           u'data': [{u'url': u'/2013MNRAS.435.1904M/data/http%3A%2F%2Fnxsa.esac.esa.int%2Fnxsa-web%2F%23obsid%3D0097820101',
                                                                      u'title': u'XMM-Newton Observation Number 0097820101'}],
                                                           u'title': u'XMM Newton Science Archive'
