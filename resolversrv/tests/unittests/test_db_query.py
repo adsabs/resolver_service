@@ -319,6 +319,57 @@ class test_database(TestCaseDatabase):
                                              u'link_type': u'LIBRARYCATALOG',
                                              u'service': u'http://catalog.loc.gov/cgi-bin/Pwebrecon.cgi?v3=1&DB=local&CMD=010a+unk82013020&CNT=10+records+per+page'})
 
+    def test_process_request_delete(self):
+        """
+        return 200 for successful deletion from db
+        :return:
+        """
+        self.add_stub_data()
+        headers = {'Content-type': 'application/json', 'Accept': 'text/plain'}
+        # delete it here
+        bibcodes = {'bibcode': ['2013MNRAS.435.1904M']}
+        response = self.client.delete('/remove', data=json.dumps(bibcodes), headers=headers)
+        self.assertEqual(response._status_code, 200)
+        self.assertEqual(response.json['status'], 'removed 12 records of 1 bibcodes')
+        # select it here
+        response = self.client.get('/2013MNRAS.435.1904M/ESOURCE', headers=headers)
+        self.assertEqual(response._status_code, 404)
+        self.assertEqual(response.json['error'], 'did not find any records')
+
+    def test_link_toc(self):
+        """
+        TOC was one of the on the fly types, as of 3/27/2019 we should have bibcodes with TOC in db
+        so this link should not be created if the entry does not exists in db
+        :return:
+        """
+        self.add_stub_data()
+        headers = {'Content-type': 'application/json', 'Accept': 'text/plain'}
+
+        # verify that TOC record does not exsits in db and hence return error
+        response = self.client.get('/2019AIPC.2081c0032P/TOC', headers=headers)
+        self.assertEqual(response._status_code, 404)
+        # insert it here
+        datalinks_list = [{"bibcode": "2019AIPC.2081c0032P",
+                           "data_links_rows": [{"link_type": "TOC", "link_sub_type": "", "url": [""], "title": [""], "item_count": 0}]}]
+        response = self.client.put('/update', data=json.dumps(datalinks_list), headers=headers)
+        self.assertEqual(response._status_code, 200)
+        self.assertEqual(response.json['status'], 'updated db with new data successfully')
+        # select it here
+        response = self.client.get('/2019AIPC.2081c0032P/TOC', headers=headers)
+        self.assertEqual(response._status_code, 200)
+        self.assertDictEqual(response.json, {u'action': u'redirect',
+                                             u'link': u'/#abs/2019AIPC.2081c0032P/toc',
+                                             u'service': u'/#abs/2019AIPC.2081c0032P/toc',
+                                             u'link_type': u'TOC'})
+        # delete it here
+        bibcodes = {'bibcode': ['2019AIPC.2081c0032P']}
+        response = self.client.delete('/remove', data=json.dumps(bibcodes), headers=headers)
+        self.assertEqual(response._status_code, 200)
+        # verify that is gone
+        response = self.client.get('/2019AIPC.2081c0032P/TOC', headers=headers)
+        self.assertEqual(response._status_code, 404)
+
+
 
 if __name__ == '__main__':
     unittest.main()

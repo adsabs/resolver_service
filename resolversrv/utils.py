@@ -91,3 +91,21 @@ def add_records(datalinks_records_list):
             current_app.logger.error('SQLAlchemy: ' + str(e))
             return False, 'SQLAlchemy: ' + str(e)
     return False, 'unable to extract data from protobuf structure'
+
+
+def del_records(bibcode_list):
+    """
+
+    :param bibcode_list:
+    :return:
+    """
+    try:
+        with current_app.session_scope() as session:
+            count = 0
+            for bibcode in bibcode_list:
+                count += session.query(DataLinks).filter(DataLinks.bibcode == bibcode).delete(synchronize_session=False)
+            session.commit()
+    except (SQLAlchemyError, DBAPIError) as e:
+        current_app.logger.error('SQLAlchemy: ' + str(e))
+        return False, 'SQLAlchemy: ' + str(e)
+    return True, count, 'removed ' + str(count) + ' records of ' + str(len(bibcode_list)) + ' bibcodes'

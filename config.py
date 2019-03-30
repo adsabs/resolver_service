@@ -10,6 +10,8 @@ SQLALCHEMY_ECHO = False
 
 # number of records that can be inserted/updated in one call
 RESOLVER_MAX_RECORDS_ADD = 100
+# number of records that can be deleted in one call
+RESOLVER_MAX_RECORDS_DEL = 100
 
 # This is the URL to communicate with resolver_gateway api
 RESOLVER_GATEWAY_URL = 'http://localhost:5000/{bibcode}/{link_type}/{url}'

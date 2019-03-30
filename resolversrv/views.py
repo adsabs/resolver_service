@@ -10,7 +10,7 @@ from requests.utils import quote
 from adsmsg import DataLinksRecordList
 from google.protobuf.json_format import Parse, ParseError
 
-from resolversrv.utils import get_records, add_records
+from resolversrv.utils import get_records, add_records, del_records
 
 
 bp = Blueprint('resolver_service', __name__)
@@ -319,9 +319,12 @@ class LinkRequest():
         :return:
         """
         # as of 3/27/2019 we should have bibcodes with TOC in db, so check to see if for this bibcode
-        # there is an entry, if not, return an error
+        # there is an entry, and return accordingly
         if self.link_type == 'TOC':
-            pass
+            results = get_records(bibcode=self.bibcode, link_type=self.link_type)
+            print '.......results=', results
+            if (results is None):
+                return self.__return_response({'error': 'did not find any records'}, 404)
         url = self.on_the_fly[self.link_type].format(baseurl=self.baseurl, bibcode=self.bibcode)
         return self.request_link_type_deterministic_single_url_toJSON(url)
 
@@ -551,7 +554,7 @@ class PopulateRequest():
         """
         process the request
 
-        :param payload:
+        :param records:
         :return: json code of the result or error
         """
         if not records:
@@ -575,6 +578,59 @@ class PopulateRequest():
             current_app.logger.info('completed request to populate db with %d records' % (len(records)))
             return self.__return_response({'status': text}, 200)
         current_app.logger.info('failed to populate db with %d records' % (len(records)))
+        return self.__return_response({'error': text}, 400)
+
+class DeleteRequest():
+    def __init__(self):
+        """
+        """
+        pass
+
+    def __return_response(self, results, status):
+        """
+
+        :param results: results in a dict
+        :param status: status code
+        :return:
+        """
+        response = json.dumps(results)
+
+        current_app.logger.info('sending response status=%s' % (status))
+        current_app.logger.info('sending response text=%s' % (response))
+
+        r = Response(response=response, status=status)
+        r.headers['content-type'] = 'application/json'
+        return r
+
+
+    def process_request(self, payload):
+        """
+        process the request
+
+        :param payload:
+        :return: json code of the result or error
+        """
+
+        if not payload:
+            return self.__return_response({'error': 'no information received'}, 400)
+        if 'bibcode' not in payload:
+            return self.__return_response({'error': 'no bibcode found in payload (parameter name is `bibcode`)'}, 400)
+
+        bibcodes = payload['bibcode']
+
+        if len(bibcodes) == 0:
+            return self.__return_response({'error': 'no bibcode received'}, 400)
+
+        if len(bibcodes) > current_app.config['RESOLVER_MAX_RECORDS_DEL']:
+            return self.__return_response({'error': 'too many records to delete to db at one time, received %s records while the limit is %s'%(len(records), current_app.config['RESOLVER_MAX_RECORDS_DEL'])}, 400)
+
+        current_app.logger.info('received request to delete from db %d bibcodes' % (len(bibcodes)))
+
+        status, count, text = del_records(bibcodes)
+        if status == True:
+            current_app.logger.info('completed request to delete from db total of %d records' % (count))
+            return self.__return_response({'status': text}, 200)
+        current_app.logger.info('failed to delete from db %d bibcodes' % (len(bibcodes)))
         return self.__return_response({'error': text}, 400)
 
 
@@ -614,3 +670,16 @@ def update():
         payload = dict(request.form)  # post data in form encoding
 
     return PopulateRequest().process_request(payload)
+
+@advertise(scopes=['ads:resolver-service'], rate_limit=[1000, 3600 * 24])
+@bp.route('/remove', methods=['DELETE'])
+def remove():
+    """
+    """
+    try:
+        payload = request.get_json(force=True)  # post data in json
+    except:
+        payload = dict(request.form)  # post data in form encoding
+
+    return DeleteRequest().process_request(payload)
+
