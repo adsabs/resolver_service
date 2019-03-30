@@ -3,65 +3,25 @@ project_home = os.path.abspath(os.path.join(os.path.dirname(__file__), '../../..
 if project_home not in sys.path:
     sys.path.insert(0, project_home)
 
-from flask_testing import TestCase
 import unittest
-import testing.postgresql
 import json
 
-from adsmsg.nonbibrecord import DataLinksRecordList
-
-import resolversrv.app as app
-from resolversrv.models import DataLinks, Base
+from resolversrv import app
+from resolversrv.tests.unittests.base import TestCaseDatabase
 from resolversrv.utils import get_records, add_records
 from resolversrv.views import LinkRequest, PopulateRequest
 
-TestCase.maxDiff = None
-
-class test_database(TestCase):
-    """tests for generation of resolver"""
-
-    postgresql_url_dict = {
-        'port': 1234,
-        'host': '127.0.0.1',
-        'user': 'postgres',
-        'database': 'test'
-    }
-    postgresql_url = 'postgresql://{user}@{host}:{port}/{database}' \
-        .format(
-        user=postgresql_url_dict['user'],
-        host=postgresql_url_dict['host'],
-        port=postgresql_url_dict['port'],
-        database=postgresql_url_dict['database']
-    )
+class test_database(TestCaseDatabase):
 
     def create_app(self):
         '''Start the wsgi application'''
         a = app.create_app(**{
             'SQLALCHEMY_DATABASE_URI': self.postgresql_url,
-            'SQLALCHEMY_ECHO': False,
-            'TESTING': True,
-            'PROPAGATE_EXCEPTIONS': True,
-            'TRAP_BAD_REQUEST_ERRORS': True
-        })
+            'RESOLVER_GATEWAY_URL': '/{bibcode}/{link_type}/{url}',
+           })
         return a
 
-    @classmethod
-    def setUpClass(cls):
-        cls.postgresql = testing.postgresql.Postgresql(**cls.postgresql_url_dict)
-
-    @classmethod
-    def tearDownClass(cls):
-        cls.postgresql.stop()
-
-    def setUp(self):
-        Base.metadata.create_all(bind=self.app.db.engine)
-        self.addStubData()
-
-    def tearDown(self):
-        self.app.db.session.remove()
-        Base.metadata.drop_all(bind=self.app.db.engine)
-
-    def addStubData(self):
+    def add_stub_data(self):
         """
         Add stub data
         :return:
@@ -84,87 +44,58 @@ class test_database(TestCase):
                         ('1971ATsir.615....4D', 'ASSOCIATED',   '',            ['1971ATsir.615....4D', '1974Afz....10..315D', '1971ATsir.621....7D', '1976Afz....12..665D', '1971ATsir.624....1D', '1983Afz....19..229D', '1983Ap.....19..134D', '1973ATsir.759....6D', '1984Afz....20..525D', '1984Ap.....20..290D', '1974ATsir.809....1D', '1974ATsir.809....2D', '1974ATsir.837....2D'], ['Part  1', 'Part  2', 'Part  3', 'Part  4', 'Part  5', 'Part  6', 'Part  7', 'Part  8', 'Part  9', 'Part 10', 'Part 11', 'Part 12', 'Part 13'], 0)
                     ]
 
-        record_list_msg = DataLinksRecordList()
+        datalinks_list = []
         for record in stub_data:
             datalinks_record = {'bibcode': record[0],
                                 'data_links_rows': [{'link_type': record[1], 'link_sub_type': record[2],
                                                      'url': record[3], 'title': record[4],
                                                      'item_count': record[5]}]}
-            record_list_msg.datalinks_records.add(**datalinks_record)
-        status, text = add_records(record_list_msg)
+            datalinks_list.append(datalinks_record)
 
-        self.assertEqual(status, True)
-        self.assertEqual(text, 'updated db with new data successfully')
+        headers = {'Content-type': 'application/json', 'Accept': 'text/plain'}
+        response = self.client.put('/update', data=json.dumps(datalinks_list), headers=headers)
+        self.assertEqual(response._status_code, 200)
+        self.assertEqual(response.json['status'], 'updated db with new data successfully')
 
 
-    def test_process_request_link_type_all(self):
+    def test_link_type_all(self):
         """
         return links for all types of a bibcode
         :return:
         """
-        response = LinkRequest(bibcode='2013MNRAS.435.1904M').process_request()
+        self.add_stub_data()
+        headers = {'Content-type': 'application/json', 'Accept': 'text/plain'}
+        response = self.client.get('/2013MNRAS.435.1904M', headers=headers)
         self.assertEqual(response._status_code, 200)
-        self.assertEqual(response.response[0], '{"action": "display", "links": {"count": 16, '
-                                               '"records": ['
-                                               '{"url": "", "count": 1, "bibcode": "2013MNRAS.435.1904M", "type": "metrics", "title": "METRICS (1)"}, '
-                                               '{"url": "", "count": 1, "bibcode": "2013MNRAS.435.1904M", "type": "citations", "title": "CITATIONS (1)"}, '
-                                               '{"url": "", "count": 1, "bibcode": "2013MNRAS.435.1904M", "type": "references", "title": "REFERENCES (1)"}, '
-                                               '{"url": "", "count": 1, "bibcode": "2013MNRAS.435.1904M", "type": "graphics", "title": "GRAPHICS (1)"}, '
-                                               '{"url": "", "count": 1, "bibcode": "2013MNRAS.435.1904M", "type": "toc", "title": "TOC (1)"}, '
-                                               '{"url": "", "count": 1, "bibcode": "2013MNRAS.435.1904M", "type": "abstract", "title": "ABSTRACT (1)"}, '
-                                               '{"url": "", "count": 1, "bibcode": "2013MNRAS.435.1904M", "type": "openurl", "title": "OPENURL (1)"}, '
-                                               '{"url": "", "count": 1, "bibcode": "2013MNRAS.435.1904M", "type": "coreads", "title": "COREADS (1)"}, '
-                                               '{"url": "", "count": 4, "bibcode": "2013MNRAS.435.1904M", "type": "esource", "title": "ESOURCE (4)"}, '
-                                               '{"url": "", "count": 65, "bibcode": "2013MNRAS.435.1904M", "type": "data", "title": "DATA (65)"}, '
-                                               '{"url": "", "count": 1, "bibcode": "2013MNRAS.435.1904M", "type": "arxiv", "title": "ARXIV (1)"}, '
-                                               '{"url": "", "count": 1, "bibcode": "2013MNRAS.435.1904M", "type": "doi", "title": "DOI (1)"}], '
-                                               '"link_type": "all"}, "service": ""}')
+        self.assertDictEqual(response.json, {u'action': u'display', u'links': {u'count': 16, u'records': [
+                                                {u'url': u'/2013MNRAS.435.1904M/METRICS', u'count': 1, u'bibcode': u'2013MNRAS.435.1904M', u'type': u'metrics', u'title': u'METRICS (1)'},
+                                                {u'url': u'/2013MNRAS.435.1904M/CITATIONS', u'count': 1, u'bibcode': u'2013MNRAS.435.1904M', u'type': u'citations', u'title': u'CITATIONS (1)'},
+                                                {u'url': u'/2013MNRAS.435.1904M/REFERENCES', u'count': 1, u'bibcode': u'2013MNRAS.435.1904M', u'type': u'references', u'title': u'REFERENCES (1)'},
+                                                {u'url': u'/2013MNRAS.435.1904M/GRAPHICS', u'count': 1, u'bibcode': u'2013MNRAS.435.1904M', u'type': u'graphics', u'title': u'GRAPHICS (1)'},
+                                                {u'url': u'/2013MNRAS.435.1904M/TOC', u'count': 1, u'bibcode': u'2013MNRAS.435.1904M', u'type': u'toc', u'title': u'TOC (1)'},
+                                                {u'url': u'/2013MNRAS.435.1904M/ABSTRACT', u'count': 1, u'bibcode': u'2013MNRAS.435.1904M', u'type': u'abstract', u'title': u'ABSTRACT (1)'},
+                                                {u'url': u'/2013MNRAS.435.1904M/OPENURL', u'count': 1, u'bibcode': u'2013MNRAS.435.1904M', u'type': u'openurl', u'title': u'OPENURL (1)'},
+                                                {u'url': u'/2013MNRAS.435.1904M/COREADS', u'count': 1, u'bibcode': u'2013MNRAS.435.1904M', u'type': u'coreads', u'title': u'COREADS (1)'},
+                                                {u'url': u'/2013MNRAS.435.1904M/ESOURCE', u'count': 4, u'bibcode': u'2013MNRAS.435.1904M', u'type': u'esource', u'title': u'ESOURCE (4)'},
+                                                {u'url': u'/2013MNRAS.435.1904M/DATA', u'count': 65, u'bibcode': u'2013MNRAS.435.1904M', u'type': u'data', u'title': u'DATA (65)'},
+                                                {u'url': u'/2013MNRAS.435.1904M/ARXIV', u'count': 1, u'bibcode': u'2013MNRAS.435.1904M', u'type': u'arxiv', u'title': u'ARXIV (1)'},
+                                                {u'url': u'/2013MNRAS.435.1904M/DOI', u'count': 1, u'bibcode': u'2013MNRAS.435.1904M', u'type': u'doi', u'title': u'DOI (1)'}],
+                                             u'link_type': 'all'}, u'service': u''})
 
 
-    def test_process_request_link_inspire(self):
+    def test_link_inspire(self):
         """
         return a record of link type == inspire
         :return:
         """
-        response = LinkRequest(bibcode='1943RvMP...15....1C', link_type='INSPIRE').process_request()
+        self.add_stub_data()
+        headers = {'Content-type': 'application/json', 'Accept': 'text/plain'}
+        response = self.client.get('/1943RvMP...15....1C/INSPIRE', headers=headers)
         self.assertEqual(response._status_code, 200)
-        self.assertEqual(response.response[0], '{"action": "redirect", "link": "http://inspirehep.net/search?p=find+j+RMPHA,15,1", "link_type": "INSPIRE", "service": "http://inspirehep.net/search?p=find+j+RMPHA,15,1"}')
-
-
-    def test_process_request_link_associated(self):
-        """
-        check status code for calling process_request for link associated
-        :return:
-        """
-        response = LinkRequest(bibcode='1971ATsir.615....4D', link_type='ASSOCIATED').process_request()
-        self.assertEqual(response._status_code, 200)
-
-
-    def test_process_request_link_esource(self):
-        """
-        check status code for calling process_request for a esource sub type link
-        :return:
-        """
-        response = LinkRequest(bibcode='2013MNRAS.435.1904M', link_type='EPRINT_HTML').process_request()
-        self.assertEqual(response._status_code, 200)
-
-
-    def test_process_request_link_data(self):
-        """
-        check status code for calling process_request for a data sub type link
-        :return:
-        """
-        response = LinkRequest(bibcode='2013MNRAS.435.1904M', link_type='ESA').process_request()
-        self.assertEqual(response._status_code, 200)
-
-
-    def test_link_all(self):
-        """
-        call get_records to fetch all the records for a bibcode
-        :return:
-        """
-        results = get_records(bibcode='2013MNRAS.435.1904M')
-        self.assertEqual(len(results), 12)
+        self.assertDictEqual(response.json, {u'action': u'redirect',
+                                             u'link': u'http://inspirehep.net/search?p=find+j+RMPHA,15,1',
+                                             u'link_type': u'INSPIRE',
+                                             u'service': u'http://inspirehep.net/search?p=find+j+RMPHA,15,1'})
 
 
     def test_link_presentation(self):
@@ -172,10 +103,149 @@ class test_database(TestCase):
         fetch record of a link_type presentation
         :return:
         """
-        results = get_records(bibcode='2017MNRAS.467.3556B', link_type='PRESENTATION')
-        response = LinkRequest(bibcode='2017MNRAS.467.3556B', link_type='PRESENTATION').request_link_type_single_url(results)
+        self.add_stub_data()
+        headers = {'Content-type': 'application/json', 'Accept': 'text/plain'}
+        response = self.client.get('/2017MNRAS.467.3556B/PRESENTATION', headers=headers)
         self.assertEqual(response._status_code, 200)
-        self.assertEqual(response.response[0], '{"action": "redirect", "link": "http://www.astro.lu.se/~alexey/animations.html", "link_type": "PRESENTATION", "service": "http://www.astro.lu.se/~alexey/animations.html"}')
+        self.assertDictEqual(response.json, {u'action': u'redirect',
+                                             u'link': u'http://www.astro.lu.se/~alexey/animations.html',
+                                             u'link_type': u'PRESENTATION',
+                                             u'service': u'http://www.astro.lu.se/~alexey/animations.html'})
+
+
+    def test_link_associated(self):
+        """
+        returning list of url, title pairs
+        :return:
+        """
+        self.add_stub_data()
+        headers = {'Content-type': 'application/json', 'Accept': 'text/plain'}
+        response = self.client.get('/1971ATsir.615....4D/ASSOCIATED', headers=headers)
+        self.assertEqual(response._status_code, 200)
+        self.assertDictEqual(response.json, {u'action': u'display',
+                                             u'links': {u'count': 13,
+                                                        u'records': [{u'url': u'/1971ATsir.615....4D/associated/:%2F%23abs%2F1971ATsir.615....4D%2Fabstract', u'bibcode': u'1971ATsir.615....4D', u'title': u'Part  1'},
+                                                                     {u'url': u'/1974Afz....10..315D/associated/:%2F%23abs%2F1974Afz....10..315D%2Fabstract', u'bibcode': u'1974Afz....10..315D', u'title': u'Part  2'},
+                                                                     {u'url': u'/1971ATsir.621....7D/associated/:%2F%23abs%2F1971ATsir.621....7D%2Fabstract', u'bibcode': u'1971ATsir.621....7D', u'title': u'Part  3'},
+                                                                     {u'url': u'/1976Afz....12..665D/associated/:%2F%23abs%2F1976Afz....12..665D%2Fabstract', u'bibcode': u'1976Afz....12..665D', u'title': u'Part  4'},
+                                                                     {u'url': u'/1971ATsir.624....1D/associated/:%2F%23abs%2F1971ATsir.624....1D%2Fabstract', u'bibcode': u'1971ATsir.624....1D', u'title': u'Part  5'},
+                                                                     {u'url': u'/1983Afz....19..229D/associated/:%2F%23abs%2F1983Afz....19..229D%2Fabstract', u'bibcode': u'1983Afz....19..229D', u'title': u'Part  6'},
+                                                                     {u'url': u'/1983Ap.....19..134D/associated/:%2F%23abs%2F1983Ap.....19..134D%2Fabstract', u'bibcode': u'1983Ap.....19..134D', u'title': u'Part  7'},
+                                                                     {u'url': u'/1973ATsir.759....6D/associated/:%2F%23abs%2F1973ATsir.759....6D%2Fabstract', u'bibcode': u'1973ATsir.759....6D', u'title': u'Part  8'},
+                                                                     {u'url': u'/1984Afz....20..525D/associated/:%2F%23abs%2F1984Afz....20..525D%2Fabstract', u'bibcode': u'1984Afz....20..525D', u'title': u'Part  9'},
+                                                                     {u'url': u'/1984Ap.....20..290D/associated/:%2F%23abs%2F1984Ap.....20..290D%2Fabstract', u'bibcode': u'1984Ap.....20..290D', u'title': u'Part 10'},
+                                                                     {u'url': u'/1974ATsir.809....1D/associated/:%2F%23abs%2F1974ATsir.809....1D%2Fabstract', u'bibcode': u'1974ATsir.809....1D', u'title': u'Part 11'},
+                                                                     {u'url': u'/1974ATsir.809....2D/associated/:%2F%23abs%2F1974ATsir.809....2D%2Fabstract', u'bibcode': u'1974ATsir.809....2D', u'title': u'Part 12'},
+                                                                     {u'url': u'/1974ATsir.837....2D/associated/:%2F%23abs%2F1974ATsir.837....2D%2Fabstract', u'bibcode': u'1974ATsir.837....2D', u'title': u'Part 13'}],
+                                                        u'link_type': u'ASSOCIATED'},
+                                             u'service': u'/#abs/1971ATsir.615....4D/associated'})
+
+
+    def test_link_esource_subtype(self):
+        """
+        check status code for calling process_request for a esource sub type link
+        :return:
+        """
+        self.add_stub_data()
+        headers = {'Content-type': 'application/json', 'Accept': 'text/plain'}
+        response = self.client.get('/2013MNRAS.435.1904M/EPRINT_HTML', headers=headers)
+        self.assertEqual(response._status_code, 200)
+        self.assertDictEqual(response.json, {u'action': u'redirect',
+                                             u'link': u'http://arxiv.org/abs/1307.6556',
+                                             u'link_type': u'ESOURCE|EPRINT_HTML',
+                                             u'service': u'http://arxiv.org/abs/1307.6556'
+                                             })
+
+
+    def test_link_esource(self):
+        """
+        returning list of urls
+        :return:
+        """
+        self.add_stub_data()
+        headers = {'Content-type': 'application/json', 'Accept': 'text/plain'}
+        response = self.client.get('/2013MNRAS.435.1904M/ESOURCE', headers=headers)
+        self.assertEqual(response._status_code, 200)
+        self.assertDictEqual(response.json, {u'action': u'display',
+                                             u'links': {u'count': 4,
+                                                        u'link_type': u'ESOURCE',
+                                                        u'bibcode': u'2013MNRAS.435.1904M',
+                                                        u'records': [
+                                                            {u'url': u'http://arxiv.org/abs/1307.6556', u'title': u'http://arxiv.org/abs/1307.6556'},
+                                                            {u'url': u'http://arxiv.org/pdf/1307.6556', u'title': u'http://arxiv.org/pdf/1307.6556'},
+                                                            {u'url': u'https://doi.org/10.1093%2Fmnras%2Fstt1379', u'title': u'https://doi.org/10.1093%2Fmnras%2Fstt1379'},
+                                                            {u'url': u'http://mnras.oxfordjournals.org/content/435/3/1904.full.pdf', u'title': u'http://mnras.oxfordjournals.org/content/435/3/1904.full.pdf'}
+                                                        ]
+                                             },
+                                             u'service': u''})
+
+
+    def test_link_data_subtype(self):
+        """
+        check status code for calling process_request for a data sub type link
+        :return:
+        """
+        self.add_stub_data()
+        headers = {'Content-type': 'application/json', 'Accept': 'text/plain'}
+        response = self.client.get('/2013MNRAS.435.1904M/ESA', headers=headers)
+        self.assertEqual(response._status_code, 200)
+        self.assertDictEqual(response.json, {u'action': u'redirect',
+                                             u'link': u'http://archives.esac.esa.int/ehst/#bibcode=2013MNRAS.435.1904M',
+                                             u'link_type': u'DATA|ESA',
+                                             u'service': u'http://archives.esac.esa.int/ehst/#bibcode=2013MNRAS.435.1904M'})
+
+    def test_link_data(self):
+        """
+        returning list of url, title pairs
+        :return:
+        """
+        self.add_stub_data()
+        headers = {'Content-type': 'application/json', 'Accept': 'text/plain'}
+        response = self.client.get('/2013MNRAS.435.1904M/DATA', headers=headers)
+        self.assertEqual(response._status_code, 200)
+        self.assertDictEqual(response.json,{u'action': u'display',
+                                            u'service': u'',
+                                            u'links': {u'count': 8,
+                                            u'records': [{u'url': u'http://cxc.harvard.edu/cda',  # Chandra
+                                                          u'data': [{u'url': u'/2013MNRAS.435.1904M/data/http%3A%2F%2Fcda.harvard.edu%2Fchaser%3Fobsid%3D494',
+                                                                     u'title': u'Chandra Data Archive ObsIds 494'}],
+                                                          u'title': u'Chandra X-Ray Observatory'},
+                                                         {u'url': u'http://archives.esac.esa.int', # ESA
+                                                          u'data': [{u'url': u'/2013MNRAS.435.1904M/data/http%3A%2F%2Farchives.esac.esa.int%2Fehst%2F%23bibcode%3D2013MNRAS.435.1904M',
+                                                                     u'title': u'European HST References (EHST)'}],
+                                                          u'title': u'ESAC Science Data Center'
+                                                         },
+                                                         {u'url': u'https://heasarc.gsfc.nasa.gov/', # HEASARC
+                                                          u'data': [{u'url': u'/2013MNRAS.435.1904M/data/http%3A%2F%2Fheasarc.gsfc.nasa.gov%2Fcgi-bin%2FW3Browse%2Fbiblink.pl%3Fcode%3D2013MNRAS.435.1904M',
+                                                                     u'title': u'http://heasarc.gsfc.nasa.gov/cgi-bin/W3Browse/biblink.pl?code=2013MNRAS.435.1904M'}],
+                                                          u'title': u"NASA's High Energy Astrophysics Science Archive Research Center"
+                                                         },
+                                                         {u'url': u'https://www.cosmos.esa.int/web/herschel/home', #Herschel
+                                                          u'data': [{u'url': u'/2013MNRAS.435.1904M/data/http%3A%2F%2Fherschel.esac.esa.int%2Fhpt%2Fpublicationdetailsview.do%3Fbibcode%3D2013MNRAS.435.1904M',
+                                                                     u'title': u'http://herschel.esac.esa.int/hpt/publicationdetailsview.do?bibcode=2013MNRAS.435.1904M'}],
+                                                          u'title': u'Herschel Science Center'
+                                                         },
+                                                         {u'url': u'http://archive.stsci.edu', # MAST
+                                                          u'data': [{u'url': u'/2013MNRAS.435.1904M/data/http%3A%2F%2Farchive.stsci.edu%2Fmastbibref.php%3Fbibcode%3D2013MNRAS.435.1904M',
+                                                                     u'title': u'MAST References (GALEX EUVE HST)'}],
+                                                          u'title': u'Mikulski Archive for Space Telescopes'
+                                                         },
+                                                         {u'url': u'https://ned.ipac.caltech.edu', # NED
+                                                          u'data': [{u'url': u'/2013MNRAS.435.1904M/data/http%3A%2F%2Fned.ipac.caltech.edu%2Fcgi-bin%2Fnph-objsearch%3Fsearch_type%3DSearch%26refcode%3D2013MNRAS.435.1904M',
+                                                                     u'title': u'NED Objects (1)'}],
+                                                          u'title': u'NASA/IPAC Extragalactic Database'
+                                                         },
+                                                         {u'url': u'http://simbad.u-strasbg.fr', # SIMBAD
+                                                          u'data': [{u'url': u'/2013MNRAS.435.1904M/data/http%3A%2F%2Fsimbad.u-strasbg.fr%2Fsimbo.pl%3Fbibcode%3D2013MNRAS.435.1904M',
+                                                                     u'title': u'SIMBAD Objects (30)'}],
+                                                          u'title': u'SIMBAD Database at the CDS'
+                                                         },
+                                                         {u'url': u'http://nxsa.esac.esa.int', # XMM
+                                                          u'data': [{u'url': u'/2013MNRAS.435.1904M/data/http%3A%2F%2Fnxsa.esac.esa.int%2Fnxsa-web%2F%23obsid%3D0097820101',
+                                                                     u'title': u'XMM-Newton Observation Number 0097820101'}],
+                                                          u'title': u'XMM Newton Science Archive'
+                                                         }],
+                                            u'bibcode': u'2013MNRAS.435.1904M'}})
 
 
     def test_link_all_error_bibcode(self):
@@ -195,76 +265,6 @@ class test_database(TestCase):
         results = get_records(bibcode='errorbibcode', link_type='errorlinktype', link_sub_type='errorlinksubtype')
         self.assertEqual(results, None)
 
-    def test_link_associated(self):
-        """
-        returning list of url, title pairs
-        :return:
-        """
-        results = get_records(bibcode='1971ATsir.615....4D', link_type='ASSOCIATED')
-        response = LinkRequest(bibcode='1971ATsir.615....4D', link_type='ASSOCIATED',
-                    gateway_redirect_url = self.app.config['RESOLVER_GATEWAY_URL_TEST']).request_link_type_associated(results)
-        self.assertEqual(response._status_code, 200)
-        self.assertEqual(json.loads(response.response[0]),
-                         {u'action': u'display',
-                          u'service': u'/#abs/1971ATsir.615....4D/associated',
-                          u'links': {u'count': 13,
-                                     u'records': [{
-                                                        u'url': u'/1971ATsir.615....4D/associated/:%2F%23abs%2F1971ATsir.615....4D%2Fabstract',
-                                                        u'bibcode': u'1971ATsir.615....4D',
-                                                        u'title': u'Part  1'
-                                                  }, {
-                                                        u'url': u'/1974Afz....10..315D/associated/:%2F%23abs%2F1974Afz....10..315D%2Fabstract',
-                                                        u'bibcode': u'1974Afz....10..315D',
-                                                        u'title': u'Part  2'
-                                                  }, {
-                                                        u'url': u'/1971ATsir.621....7D/associated/:%2F%23abs%2F1971ATsir.621....7D%2Fabstract',
-                                                        u'bibcode': u'1971ATsir.621....7D',
-                                                        u'title': u'Part  3'
-                                                  }, {
-                                                        u'url': u'/1976Afz....12..665D/associated/:%2F%23abs%2F1976Afz....12..665D%2Fabstract',
-                                                        u'bibcode': u'1976Afz....12..665D',
-                                                        u'title': u'Part  4'
-                                                  }, {
-                                                        u'url': u'/1971ATsir.624....1D/associated/:%2F%23abs%2F1971ATsir.624....1D%2Fabstract',
-                                                        u'bibcode': u'1971ATsir.624....1D',
-                                                        u'title': u'Part  5'
-                                                  }, {
-                                                        u'url': u'/1983Afz....19..229D/associated/:%2F%23abs%2F1983Afz....19..229D%2Fabstract',
-                                                        u'bibcode': u'1983Afz....19..229D',
-                                                        u'title': u'Part  6'
-                                                  }, {
-                                                        u'url': u'/1983Ap.....19..134D/associated/:%2F%23abs%2F1983Ap.....19..134D%2Fabstract',
-                                                        u'bibcode': u'1983Ap.....19..134D',
-                                                        u'title': u'Part  7'
-                                                  }, {
-                                                        u'url': u'/1973ATsir.759....6D/associated/:%2F%23abs%2F1973ATsir.759....6D%2Fabstract',
-                                                        u'bibcode': u'1973ATsir.759....6D',
-                                                        u'title': u'Part  8'
-                                                  }, {
-                                                        u'url': u'/1984Afz....20..525D/associated/:%2F%23abs%2F1984Afz....20..525D%2Fabstract',
-                                                        u'bibcode': u'1984Afz....20..525D',
-                                                        u'title': u'Part  9'
-                                                  }, {
-                                                        u'url': u'/1984Ap.....20..290D/associated/:%2F%23abs%2F1984Ap.....20..290D%2Fabstract',
-                                                        u'bibcode': u'1984Ap.....20..290D',
-                                                        u'title': u'Part 10'
-                                                  }, {
-                                                        u'url': u'/1974ATsir.809....1D/associated/:%2F%23abs%2F1974ATsir.809....1D%2Fabstract',
-                                                        u'bibcode': u'1974ATsir.809....1D',
-                                                        u'title': u'Part 11'
-                                                  }, {
-                                                        u'url': u'/1974ATsir.809....2D/associated/:%2F%23abs%2F1974ATsir.809....2D%2Fabstract',
-                                                        u'bibcode': u'1974ATsir.809....2D',
-                                                        u'title': u'Part 12'
-                                                  }, {
-                                                        u'url': u'/1974ATsir.837....2D/associated/:%2F%23abs%2F1974ATsir.837....2D%2Fabstract',
-                                                        u'bibcode': u'1974ATsir.837....2D',
-                                                        u'title': u'Part 13'
-                                                  }],
-                                     u'link_type': u'ASSOCIATED'}}
-                         )
-
-
     def test_link_associated_error_bibcode(self):
         """
         return 404 for not finding any records
@@ -273,24 +273,6 @@ class test_database(TestCase):
         results = get_records(bibcode='errorbibcode', link_type='ASSOCIATED')
         response = LinkRequest(bibcode='').request_link_type_associated(results)
         self.assertEqual(response._status_code, 404)
-
-
-    def test_link_esource(self):
-        """
-        returning list of urls
-        :return:
-        """
-        results = get_records(bibcode='2013MNRAS.435.1904M', link_type='ESOURCE')
-        response = LinkRequest(bibcode='2013MNRAS.435.1904', link_type='ESOURCE').request_link_type_esource(results)
-        self.assertEqual(response._status_code, 200)
-        self.assertEqual(json.loads(response.response[0]),
-                         {"action": "display",
-                          "links": {"count": 4, "link_type": "ESOURCE", "bibcode": "2013MNRAS.435.1904", "records": [
-                             {"url": "http://arxiv.org/abs/1307.6556", "title": "http://arxiv.org/abs/1307.6556"},
-                             {"url": "http://arxiv.org/pdf/1307.6556", "title": "http://arxiv.org/pdf/1307.6556"},
-                             {"url": "https://doi.org/10.1093%2Fmnras%2Fstt1379", "title": "https://doi.org/10.1093%2Fmnras%2Fstt1379"},
-                             {"url": "http://mnras.oxfordjournals.org/content/435/3/1904.full.pdf", "title": "http://mnras.oxfordjournals.org/content/435/3/1904.full.pdf"}]},
-                          "service": ""})
 
 
     def test_link_esource_error_bibcode(self):
@@ -303,134 +285,6 @@ class test_database(TestCase):
         self.assertEqual(response._status_code, 404)
 
 
-    def test_link_esource_sub_type(self):
-        """
-        returning a url of link type ESOURCE
-        :return:
-        """
-        results = get_records(bibcode='2013MNRAS.435.1904M', link_type='ESOURCE', link_sub_type='PUB_PDF')
-        response = LinkRequest(bibcode='2013MNRAS.435.1904', link_type='PUB_PDF').request_link_type_esource(results)
-        self.assertEqual(response._status_code, 200)
-        self.assertEqual(response.response[0], '{"action": "redirect", "link": "http://mnras.oxfordjournals.org/content/435/3/1904.full.pdf", "link_type": "ESOURCE|PUB_PDF", "service": "http://mnras.oxfordjournals.org/content/435/3/1904.full.pdf"}')
-
-
-    def test_link_esource_parts(self):
-        """
-        test DataLinks class
-        :return:
-        """
-        results = get_records(bibcode='2013MNRAS.435.1904M', link_type='ESOURCE', link_sub_type='PUB_PDF')
-        self.assertEqual(len(results), 1)
-        results = results[0]
-        self.assertEqual(len(results), 6)
-        self.assertEqual(results['bibcode'], '2013MNRAS.435.1904M')
-        self.assertEqual(results['url'][0], 'http://mnras.oxfordjournals.org/content/435/3/1904.full.pdf')
-        self.assertEqual(results['title'][0], '')
-
-
-    def test_link_data(self):
-        """
-        returning list of url, title pairs
-        :return:
-        """
-        results = get_records(bibcode='2013MNRAS.435.1904M', link_type='DATA')
-        response = LinkRequest(bibcode='2013MNRAS.435.1904', link_type='DATA',
-                    gateway_redirect_url = self.app.config['RESOLVER_GATEWAY_URL_TEST']).request_link_type_data(results)
-        self.assertEqual(response._status_code, 200)
-        self.assertEqual(json.loads(response.response[0]),
-             {
-                 "action": "display",
-                 "service": "",
-                 "links": {
-                     "count": 8,
-                     "records": [
-                         {
-                             "url": "http://cxc.harvard.edu/cda",
-                             "data": [
-                                 {
-                                     "url": "/2013MNRAS.435.1904/data/http%3A%2F%2Fcda.harvard.edu%2Fchaser%3Fobsid%3D494",
-                                     "title": "Chandra Data Archive ObsIds 494"
-                                 }
-                             ],
-                             "title": "Chandra X-Ray Observatory"
-                         },
-                         {
-                             "url": "http://archives.esac.esa.int",
-                             "data": [
-                                 {
-                                     "url": "/2013MNRAS.435.1904/data/http%3A%2F%2Farchives.esac.esa.int%2Fehst%2F%23bibcode%3D2013MNRAS.435.1904M",
-                                     "title": "European HST References (EHST)"
-                                 }
-                             ],
-                             "title": "ESAC Science Data Center"
-                         },
-                         {
-                             "url": "https://heasarc.gsfc.nasa.gov/",
-                             "data": [
-                                 {
-                                     "url": "/2013MNRAS.435.1904/data/http%3A%2F%2Fheasarc.gsfc.nasa.gov%2Fcgi-bin%2FW3Browse%2Fbiblink.pl%3Fcode%3D2013MNRAS.435.1904M",
-                                     "title": "http://heasarc.gsfc.nasa.gov/cgi-bin/W3Browse/biblink.pl?code=2013MNRAS.435.1904M"
-                                 }
-                             ],
-                             "title": "NASA's High Energy Astrophysics Science Archive Research Center"
-                         },
-                         {
-                             "url": "https://www.cosmos.esa.int/web/herschel/home",
-                             "data": [
-                                 {
-                                     "url": "/2013MNRAS.435.1904/data/http%3A%2F%2Fherschel.esac.esa.int%2Fhpt%2Fpublicationdetailsview.do%3Fbibcode%3D2013MNRAS.435.1904M",
-                                     "title": "http://herschel.esac.esa.int/hpt/publicationdetailsview.do?bibcode=2013MNRAS.435.1904M"
-                                 }
-                             ],
-                             "title": "Herschel Science Center"
-                         },
-                         {
-                             "url": "http://archive.stsci.edu",
-                             "data": [
-                                 {
-                                     "url": "/2013MNRAS.435.1904/data/http%3A%2F%2Farchive.stsci.edu%2Fmastbibref.php%3Fbibcode%3D2013MNRAS.435.1904M",
-                                     "title": "MAST References (GALEX EUVE HST)"
-                                 }
-                             ],
-                             "title": "Mikulski Archive for Space Telescopes"
-                         },
-                         {
-                             "url": "https://ned.ipac.caltech.edu",
-                             "data": [
-                                 {
-                                     "url": "/2013MNRAS.435.1904/data/http%3A%2F%2Fned.ipac.caltech.edu%2Fcgi-bin%2Fnph-objsearch%3Fsearch_type%3DSearch%26refcode%3D2013MNRAS.435.1904M",
-                                     "title": "NED Objects (1)"
-                                 }
-                             ],
-                             "title": "NASA/IPAC Extragalactic Database"
-                         },
-                         {
-                             "url": "http://simbad.u-strasbg.fr",
-                             "data": [
-                                 {
-                                     "url": "/2013MNRAS.435.1904/data/http%3A%2F%2Fsimbad.u-strasbg.fr%2Fsimbo.pl%3Fbibcode%3D2013MNRAS.435.1904M",
-                                     "title": "SIMBAD Objects (30)"
-                                 }
-                             ],
-                             "title": "SIMBAD Database at the CDS"
-                         },
-                         {
-                             "url": "http://nxsa.esac.esa.int",
-                             "data": [
-                                 {
-                                     "url": "/2013MNRAS.435.1904/data/http%3A%2F%2Fnxsa.esac.esa.int%2Fnxsa-web%2F%23obsid%3D0097820101",
-                                     "title": "XMM-Newton Observation Number 0097820101"
-                                 }
-                             ],
-                             "title": "XMM Newton Science Archive"
-                         }
-                     ],
-                     "bibcode": "2013MNRAS.435.1904"
-                 }
-             }
-        )
-
-
     def test_link_data_error_bibcode(self):
         """
         return 404 for not finding any records
@@ -441,30 +295,80 @@ class test_database(TestCase):
         self.assertEqual(response._status_code, 404)
 
 
-    def test_link_data_sub_type(self):
-        """
-        returning a url of link type DATA
-        :return:
-        """
-        results = get_records(bibcode='2013MNRAS.435.1904M', link_type='DATA', link_sub_type='MAST')
-        response = LinkRequest(bibcode='2013MNRAS.435.1904', link_type='MAST').request_link_type_data(results)
-        self.assertEqual(response._status_code, 200)
-        self.assertEqual(response.response[0], '{"action": "redirect", "link": "http://archive.stsci.edu/mastbibref.php?bibcode=2013MNRAS.435.1904M", "link_type": "DATA|MAST", "service": "http://archive.stsci.edu/mastbibref.php?bibcode=2013MNRAS.435.1904M"}')
-
-
     def test_process_request_upsert(self):
         """
         return 200 for successful insert/update to db
         :return:
         """
-        datalinks_record = [{"bibcode": "1513efua.book.....S",
-                            "data_links_rows": [{"link_type": "LIBRARYCATALOG", "link_sub_type": "",
-                                                 "url": ["{http://catalog.loc.gov/cgi-bin/Pwebrecon.cgi?v3=1&DB=local&CMD=010a+unk82013020&CNT=10+records+per+page}"],
-                                                 "title": [""],
-                                                 "item_count": 0}]}]
-        response = PopulateRequest().process_request(datalinks_record)
-        #self.assertEqual(response._status_code, 200)
-        self.assertEqual(response.response[0], '{"status": "updated db with new data successfully"}')
+        self.add_stub_data()
+        datalinks_list = [{"bibcode": "1513efua.book.....S",
+                           "data_links_rows": [{"link_type": "LIBRARYCATALOG", "link_sub_type": "",
+                                                "url": ["http://catalog.loc.gov/cgi-bin/Pwebrecon.cgi?v3=1&DB=local&CMD=010a+unk82013020&CNT=10+records+per+page"],
+                                                "title": [""],
+                                                "item_count": 0}]}]
+        headers = {'Content-type': 'application/json', 'Accept': 'text/plain'}
+        # insert it here
+        response = self.client.put('/update', data=json.dumps(datalinks_list), headers=headers)
+        self.assertEqual(response._status_code, 200)
+        self.assertEqual(response.json['status'], 'updated db with new data successfully')
+        # select it here
+        response = self.client.get('/1513efua.book.....S/LIBRARYCATALOG', headers=headers)
+        self.assertEqual(response._status_code, 200)
+        self.assertDictEqual(response.json, {u'action': u'redirect',
+                                             u'link': u'http://catalog.loc.gov/cgi-bin/Pwebrecon.cgi?v3=1&DB=local&CMD=010a+unk82013020&CNT=10+records+per+page',
+                                             u'link_type': u'LIBRARYCATALOG',
+                                             u'service': u'http://catalog.loc.gov/cgi-bin/Pwebrecon.cgi?v3=1&DB=local&CMD=010a+unk82013020&CNT=10+records+per+page'})
+
+    def test_process_request_delete(self):
+        """
+        return 200 for successful deletion from db
+        :return:
+        """
+        self.add_stub_data()
+        headers = {'Content-type': 'application/json', 'Accept': 'text/plain'}
+        # delete it here
+        bibcodes = {'bibcode': ['2013MNRAS.435.1904M']}
+        response = self.client.delete('/remove', data=json.dumps(bibcodes), headers=headers)
+        self.assertEqual(response._status_code, 200)
+        self.assertEqual(response.json['status'], 'removed 12 records of 1 bibcodes')
+        # select it here
+        response = self.client.get('/2013MNRAS.435.1904M/ESOURCE', headers=headers)
+        self.assertEqual(response._status_code, 404)
+        self.assertEqual(response.json['error'], 'did not find any records')
+
+    def test_link_toc(self):
+        """
+        TOC was one of the on the fly types, as of 3/27/2019 we should have bibcodes with TOC in db
+        so this link should not be created if the entry does not exists in db
+        :return:
+        """
+        self.add_stub_data()
+        headers = {'Content-type': 'application/json', 'Accept': 'text/plain'}
+
+        # verify that TOC record does not exsits in db and hence return error
+        response = self.client.get('/2019AIPC.2081c0032P/TOC', headers=headers)
+        self.assertEqual(response._status_code, 404)
+        # insert it here
+        datalinks_list = [{"bibcode": "2019AIPC.2081c0032P",
+                           "data_links_rows": [{"link_type": "TOC", "link_sub_type": "", "url": [""], "title": [""], "item_count": 0}]}]
+        response = self.client.put('/update', data=json.dumps(datalinks_list), headers=headers)
+        self.assertEqual(response._status_code, 200)
+        self.assertEqual(response.json['status'], 'updated db with new data successfully')
+        # select it here
+        response = self.client.get('/2019AIPC.2081c0032P/TOC', headers=headers)
+        self.assertEqual(response._status_code, 200)
+        self.assertDictEqual(response.json, {u'action': u'redirect',
+                                             u'link': u'/#abs/2019AIPC.2081c0032P/toc',
+                                             u'service': u'/#abs/2019AIPC.2081c0032P/toc',
+                                             u'link_type': u'TOC'})
+        # delete it here
+        bibcodes = {'bibcode': ['2019AIPC.2081c0032P']}
+        response = self.client.delete('/remove', data=json.dumps(bibcodes), headers=headers)
+        self.assertEqual(response._status_code, 200)
+        # verify that is gone
+        response = self.client.get('/2019AIPC.2081c0032P/TOC', headers=headers)
+        self.assertEqual(response._status_code, 404)
+
 
 
 if __name__ == '__main__':
