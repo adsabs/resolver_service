@@ -154,4 +154,8 @@ RESOLVER_DATA_SOURCES = {
         "name": "Canadian Astronomy Data Center",
         "url": "http://www.canfar.phys.uvic.ca/en",
     },
+    "IRSA": {
+        "name": "NASA/IPAC Infrared Science Archive",
+        "url": "https://irsa.ipac.caltech.edu/frontpage/",
+    },
 }
