@@ -226,7 +226,7 @@ class test_with_no_database_required(TestCase):
         """
         response = PopulateRequest().process_request('empty')
         self.assertEqual(response._status_code, 400)
-        self.assertEqual(response.response[0], '{"error": "unable to extract data from protobuf structure"}')
+        self.assertEqual(response.response[0], '{"error": "unable to extract data from protobuf structure -- Failed to parse datalinks_records field: repeated field datalinks_records must be in [] which is empty."}')
 
 
     def test_process_request_empty_msg_payload(self):
@@ -236,7 +236,7 @@ class test_with_no_database_required(TestCase):
         """
         response = PopulateRequest().process_request(MessageToDict(DataLinksRecordList(), True, True))
         self.assertEqual(response._status_code, 400)
-        self.assertEqual(response.response[0], '{"error": "unable to extract data from protobuf structure"}')
+        self.assertEqual(response.response[0], '{"error": "unable to extract data from protobuf structure -- Failed to parse datalinks_records field: repeated field datalinks_records must be in [] which is {u\'status\': u\'active\', u\'datalinks_records\': []}."}')
 
 
     def test_link_indentifications(self):
