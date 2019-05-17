@@ -328,7 +328,7 @@ class test_database(TestCaseDatabase):
         headers = {'Content-type': 'application/json', 'Accept': 'text/plain'}
         # delete it here
         bibcodes = {'bibcode': ['2013MNRAS.435.1904M']}
-        response = self.client.delete('/remove', data=json.dumps(bibcodes), headers=headers)
+        response = self.client.delete('/delete', data=json.dumps(bibcodes), headers=headers)
         self.assertEqual(response._status_code, 200)
         self.assertEqual(response.json['status'], 'removed 12 records of 1 bibcodes')
         # select it here
@@ -363,7 +363,7 @@ class test_database(TestCaseDatabase):
                                              u'link_type': u'TOC'})
         # delete it here
         bibcodes = {'bibcode': ['2019AIPC.2081c0032P']}
-        response = self.client.delete('/remove', data=json.dumps(bibcodes), headers=headers)
+        response = self.client.delete('/delete', data=json.dumps(bibcodes), headers=headers)
         self.assertEqual(response._status_code, 200)
         # verify that is gone
         response = self.client.get('/2019AIPC.2081c0032P/TOC', headers=headers)

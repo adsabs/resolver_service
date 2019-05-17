@@ -571,7 +571,7 @@ class PopulateRequest():
         try:
             data = Parse(json.dumps({"status": 2, "datalinks_records": records}), DataLinksRecordList())
         except ParseError as e:
-            return self.__return_response({'error': 'unable to extract data from protobuf structure'}, 400)
+            return self.__return_response({'error': 'unable to extract data from protobuf structure -- %s' % (e)}, 400)
 
         status, text = add_records(data)
         if status == True:
@@ -672,7 +672,7 @@ def update():
     return PopulateRequest().process_request(payload)
 
 @advertise(scopes=['ads:resolver-service'], rate_limit=[1000, 3600 * 24])
-@bp.route('/remove', methods=['DELETE'])
+@bp.route('/delete', methods=['DELETE'])
 def remove():
     """
     """
