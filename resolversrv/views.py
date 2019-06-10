@@ -322,7 +322,6 @@ class LinkRequest():
         # there is an entry, and return accordingly
         if self.link_type == 'TOC':
             results = get_records(bibcode=self.bibcode, link_type=self.link_type)
-            print '.......results=', results
             if (results is None):
                 return self.__return_response({'error': 'did not find any records'}, 404)
         url = self.on_the_fly[self.link_type].format(baseurl=self.baseurl, bibcode=self.bibcode)
@@ -354,6 +353,7 @@ class LinkRequest():
                         record = {}
                         record['title'] = result['url'][0]
                         record['url'] = result['url'][0]
+                        record['link_type'] = result['link_sub_type']
                         records.append(record)
                     links['records'] = records
                     response = {}
@@ -446,6 +446,7 @@ class LinkRequest():
                             record = {}
                             record['title'] = result['title'][idx] if result['title'][idx] else complete_url
                             record['url'] = redirectURL
+                            record['link_type'] = result['link_sub_type']
                             data.append(record)
                     if len(data) > 0:
                         domain['data'] = data

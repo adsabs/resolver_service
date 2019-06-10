@@ -124,21 +124,21 @@ class test_database(TestCaseDatabase):
         self.assertEqual(response._status_code, 200)
         self.assertDictEqual(response.json, {u'action': u'display',
                                              u'links': {u'count': 13,
-                                                        u'records': [{u'url': u'/1971ATsir.615....4D/associated/:%2F%23abs%2F1971ATsir.615....4D%2Fabstract', u'bibcode': u'1971ATsir.615....4D', u'title': u'Part  1'},
-                                                                     {u'url': u'/1974Afz....10..315D/associated/:%2F%23abs%2F1974Afz....10..315D%2Fabstract', u'bibcode': u'1974Afz....10..315D', u'title': u'Part  2'},
-                                                                     {u'url': u'/1971ATsir.621....7D/associated/:%2F%23abs%2F1971ATsir.621....7D%2Fabstract', u'bibcode': u'1971ATsir.621....7D', u'title': u'Part  3'},
-                                                                     {u'url': u'/1976Afz....12..665D/associated/:%2F%23abs%2F1976Afz....12..665D%2Fabstract', u'bibcode': u'1976Afz....12..665D', u'title': u'Part  4'},
-                                                                     {u'url': u'/1971ATsir.624....1D/associated/:%2F%23abs%2F1971ATsir.624....1D%2Fabstract', u'bibcode': u'1971ATsir.624....1D', u'title': u'Part  5'},
-                                                                     {u'url': u'/1983Afz....19..229D/associated/:%2F%23abs%2F1983Afz....19..229D%2Fabstract', u'bibcode': u'1983Afz....19..229D', u'title': u'Part  6'},
-                                                                     {u'url': u'/1983Ap.....19..134D/associated/:%2F%23abs%2F1983Ap.....19..134D%2Fabstract', u'bibcode': u'1983Ap.....19..134D', u'title': u'Part  7'},
-                                                                     {u'url': u'/1973ATsir.759....6D/associated/:%2F%23abs%2F1973ATsir.759....6D%2Fabstract', u'bibcode': u'1973ATsir.759....6D', u'title': u'Part  8'},
-                                                                     {u'url': u'/1984Afz....20..525D/associated/:%2F%23abs%2F1984Afz....20..525D%2Fabstract', u'bibcode': u'1984Afz....20..525D', u'title': u'Part  9'},
-                                                                     {u'url': u'/1984Ap.....20..290D/associated/:%2F%23abs%2F1984Ap.....20..290D%2Fabstract', u'bibcode': u'1984Ap.....20..290D', u'title': u'Part 10'},
-                                                                     {u'url': u'/1974ATsir.809....1D/associated/:%2F%23abs%2F1974ATsir.809....1D%2Fabstract', u'bibcode': u'1974ATsir.809....1D', u'title': u'Part 11'},
-                                                                     {u'url': u'/1974ATsir.809....2D/associated/:%2F%23abs%2F1974ATsir.809....2D%2Fabstract', u'bibcode': u'1974ATsir.809....2D', u'title': u'Part 12'},
-                                                                     {u'url': u'/1974ATsir.837....2D/associated/:%2F%23abs%2F1974ATsir.837....2D%2Fabstract', u'bibcode': u'1974ATsir.837....2D', u'title': u'Part 13'}],
+                                                        u'records': [{u'url': u'/1971ATsir.615....4D/associated/:%2Fabs%2F1971ATsir.615....4D%2Fabstract', u'bibcode': u'1971ATsir.615....4D', u'title': u'Part  1'},
+                                                                     {u'url': u'/1974Afz....10..315D/associated/:%2Fabs%2F1974Afz....10..315D%2Fabstract', u'bibcode': u'1974Afz....10..315D', u'title': u'Part  2'},
+                                                                     {u'url': u'/1971ATsir.621....7D/associated/:%2Fabs%2F1971ATsir.621....7D%2Fabstract', u'bibcode': u'1971ATsir.621....7D', u'title': u'Part  3'},
+                                                                     {u'url': u'/1976Afz....12..665D/associated/:%2Fabs%2F1976Afz....12..665D%2Fabstract', u'bibcode': u'1976Afz....12..665D', u'title': u'Part  4'},
+                                                                     {u'url': u'/1971ATsir.624....1D/associated/:%2Fabs%2F1971ATsir.624....1D%2Fabstract', u'bibcode': u'1971ATsir.624....1D', u'title': u'Part  5'},
+                                                                     {u'url': u'/1983Afz....19..229D/associated/:%2Fabs%2F1983Afz....19..229D%2Fabstract', u'bibcode': u'1983Afz....19..229D', u'title': u'Part  6'},
+                                                                     {u'url': u'/1983Ap.....19..134D/associated/:%2Fabs%2F1983Ap.....19..134D%2Fabstract', u'bibcode': u'1983Ap.....19..134D', u'title': u'Part  7'},
+                                                                     {u'url': u'/1973ATsir.759....6D/associated/:%2Fabs%2F1973ATsir.759....6D%2Fabstract', u'bibcode': u'1973ATsir.759....6D', u'title': u'Part  8'},
+                                                                     {u'url': u'/1984Afz....20..525D/associated/:%2Fabs%2F1984Afz....20..525D%2Fabstract', u'bibcode': u'1984Afz....20..525D', u'title': u'Part  9'},
+                                                                     {u'url': u'/1984Ap.....20..290D/associated/:%2Fabs%2F1984Ap.....20..290D%2Fabstract', u'bibcode': u'1984Ap.....20..290D', u'title': u'Part 10'},
+                                                                     {u'url': u'/1974ATsir.809....1D/associated/:%2Fabs%2F1974ATsir.809....1D%2Fabstract', u'bibcode': u'1974ATsir.809....1D', u'title': u'Part 11'},
+                                                                     {u'url': u'/1974ATsir.809....2D/associated/:%2Fabs%2F1974ATsir.809....2D%2Fabstract', u'bibcode': u'1974ATsir.809....2D', u'title': u'Part 12'},
+                                                                     {u'url': u'/1974ATsir.837....2D/associated/:%2Fabs%2F1974ATsir.837....2D%2Fabstract', u'bibcode': u'1974ATsir.837....2D', u'title': u'Part 13'}],
                                                         u'link_type': u'ASSOCIATED'},
-                                             u'service': u'/#abs/1971ATsir.615....4D/associated'})
+                                             u'service': u'/abs/1971ATsir.615....4D/associated'})
 
 
     def test_link_esource_subtype(self):
@@ -171,10 +171,10 @@ class test_database(TestCaseDatabase):
                                                         u'link_type': u'ESOURCE',
                                                         u'bibcode': u'2013MNRAS.435.1904M',
                                                         u'records': [
-                                                            {u'url': u'http://arxiv.org/abs/1307.6556', u'title': u'http://arxiv.org/abs/1307.6556'},
-                                                            {u'url': u'http://arxiv.org/pdf/1307.6556', u'title': u'http://arxiv.org/pdf/1307.6556'},
-                                                            {u'url': u'https://doi.org/10.1093%2Fmnras%2Fstt1379', u'title': u'https://doi.org/10.1093%2Fmnras%2Fstt1379'},
-                                                            {u'url': u'http://mnras.oxfordjournals.org/content/435/3/1904.full.pdf', u'title': u'http://mnras.oxfordjournals.org/content/435/3/1904.full.pdf'}
+                                                            {u'url': u'http://arxiv.org/abs/1307.6556', u'title': u'http://arxiv.org/abs/1307.6556', u'link_type': u'EPRINT_HTML'},
+                                                            {u'url': u'http://arxiv.org/pdf/1307.6556', u'title': u'http://arxiv.org/pdf/1307.6556', u'link_type': u'EPRINT_PDF'},
+                                                            {u'url': u'https://doi.org/10.1093%2Fmnras%2Fstt1379', u'title': u'https://doi.org/10.1093%2Fmnras%2Fstt1379', u'link_type': u'PUB_HTML'},
+                                                            {u'url': u'http://mnras.oxfordjournals.org/content/435/3/1904.full.pdf', u'title': u'http://mnras.oxfordjournals.org/content/435/3/1904.full.pdf', u'link_type': u'PUB_PDF'}
                                                         ]
                                              },
                                              u'service': u''})
@@ -208,41 +208,49 @@ class test_database(TestCaseDatabase):
                                             u'links': {u'count': 8,
                                             u'records': [{u'url': u'http://cxc.harvard.edu/cda',  # Chandra
                                                           u'data': [{u'url': u'/2013MNRAS.435.1904M/data/http%3A%2F%2Fcda.harvard.edu%2Fchaser%3Fobsid%3D494',
-                                                                     u'title': u'Chandra Data Archive ObsIds 494'}],
+                                                                     u'title': u'Chandra Data Archive ObsIds 494',
+                                                                     u'link_type': u'Chandra'}],
                                                           u'title': u'Chandra X-Ray Observatory'},
                                                          {u'url': u'http://archives.esac.esa.int', # ESA
                                                           u'data': [{u'url': u'/2013MNRAS.435.1904M/data/http%3A%2F%2Farchives.esac.esa.int%2Fehst%2F%23bibcode%3D2013MNRAS.435.1904M',
-                                                                     u'title': u'European HST References (EHST)'}],
+                                                                     u'title': u'European HST References (EHST)',
+                                                                     u'link_type': u'ESA'}],
                                                           u'title': u'ESAC Science Data Center'
                                                          },
                                                          {u'url': u'https://heasarc.gsfc.nasa.gov/', # HEASARC
                                                           u'data': [{u'url': u'/2013MNRAS.435.1904M/data/http%3A%2F%2Fheasarc.gsfc.nasa.gov%2Fcgi-bin%2FW3Browse%2Fbiblink.pl%3Fcode%3D2013MNRAS.435.1904M',
-                                                                     u'title': u'http://heasarc.gsfc.nasa.gov/cgi-bin/W3Browse/biblink.pl?code=2013MNRAS.435.1904M'}],
+                                                                     u'title': u'http://heasarc.gsfc.nasa.gov/cgi-bin/W3Browse/biblink.pl?code=2013MNRAS.435.1904M',
+                                                                     u'link_type': u'HEASARC'}],
                                                           u'title': u"NASA's High Energy Astrophysics Science Archive Research Center"
                                                          },
                                                          {u'url': u'https://www.cosmos.esa.int/web/herschel/home', #Herschel
                                                           u'data': [{u'url': u'/2013MNRAS.435.1904M/data/http%3A%2F%2Fherschel.esac.esa.int%2Fhpt%2Fpublicationdetailsview.do%3Fbibcode%3D2013MNRAS.435.1904M',
-                                                                     u'title': u'http://herschel.esac.esa.int/hpt/publicationdetailsview.do?bibcode=2013MNRAS.435.1904M'}],
+                                                                     u'title': u'http://herschel.esac.esa.int/hpt/publicationdetailsview.do?bibcode=2013MNRAS.435.1904M',
+                                                                     u'link_type': u'Herschel'}],
                                                           u'title': u'Herschel Science Center'
                                                          },
                                                          {u'url': u'http://archive.stsci.edu', # MAST
                                                           u'data': [{u'url': u'/2013MNRAS.435.1904M/data/http%3A%2F%2Farchive.stsci.edu%2Fmastbibref.php%3Fbibcode%3D2013MNRAS.435.1904M',
-                                                                     u'title': u'MAST References (GALEX EUVE HST)'}],
+                                                                     u'title': u'MAST References (GALEX EUVE HST)',
+                                                                     u'link_type': u'MAST'}],
                                                           u'title': u'Mikulski Archive for Space Telescopes'
                                                          },
                                                          {u'url': u'https://ned.ipac.caltech.edu', # NED
                                                           u'data': [{u'url': u'/2013MNRAS.435.1904M/data/http%3A%2F%2Fned.ipac.caltech.edu%2Fcgi-bin%2Fnph-objsearch%3Fsearch_type%3DSearch%26refcode%3D2013MNRAS.435.1904M',
-                                                                     u'title': u'NED Objects (1)'}],
+                                                                     u'title': u'NED Objects (1)',
+                                                                     u'link_type': u'NED'}],
                                                           u'title': u'NASA/IPAC Extragalactic Database'
                                                          },
                                                          {u'url': u'http://simbad.u-strasbg.fr', # SIMBAD
                                                           u'data': [{u'url': u'/2013MNRAS.435.1904M/data/http%3A%2F%2Fsimbad.u-strasbg.fr%2Fsimbo.pl%3Fbibcode%3D2013MNRAS.435.1904M',
-                                                                     u'title': u'SIMBAD Objects (30)'}],
+                                                                     u'title': u'SIMBAD Objects (30)',
+                                                                     u'link_type': u'SIMBAD'}],
                                                           u'title': u'SIMBAD Database at the CDS'
                                                          },
                                                          {u'url': u'http://nxsa.esac.esa.int', # XMM
                                                           u'data': [{u'url': u'/2013MNRAS.435.1904M/data/http%3A%2F%2Fnxsa.esac.esa.int%2Fnxsa-web%2F%23obsid%3D0097820101',
-                                                                     u'title': u'XMM-Newton Observation Number 0097820101'}],
+                                                                     u'title': u'XMM-Newton Observation Number 0097820101',
+                                                                     u'link_type': u'XMM'}],
                                                           u'title': u'XMM Newton Science Archive'
                                                          }],
                                             u'bibcode': u'2013MNRAS.435.1904M'}})
@@ -358,8 +366,8 @@ class test_database(TestCaseDatabase):
         response = self.client.get('/2019AIPC.2081c0032P/TOC', headers=headers)
         self.assertEqual(response._status_code, 200)
         self.assertDictEqual(response.json, {u'action': u'redirect',
-                                             u'link': u'/#abs/2019AIPC.2081c0032P/toc',
-                                             u'service': u'/#abs/2019AIPC.2081c0032P/toc',
+                                             u'link': u'/abs/2019AIPC.2081c0032P/toc',
+                                             u'service': u'/abs/2019AIPC.2081c0032P/toc',
                                              u'link_type': u'TOC'})
         # delete it here
         bibcodes = {'bibcode': ['2019AIPC.2081c0032P']}

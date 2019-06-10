@@ -17,7 +17,7 @@ RESOLVER_MAX_RECORDS_DEL = 100
 RESOLVER_GATEWAY_URL = 'http://localhost:5000/{bibcode}/{link_type}/{url}'
 
 # This is the URL for deterministic links, needs to go to local-config, once deployed, if need to
-RESOLVER_DETERMINISTIC_LINKS_BASEURL = '/#abs'
+RESOLVER_DETERMINISTIC_LINKS_BASEURL = '/abs'
 
 # These URLs are used to create links for doi and arXiv sources
 RESOLVER_DOI_LINK_BASEURL = 'https://doi.org/{id}'
