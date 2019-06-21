@@ -27,6 +27,7 @@ class test_database(TestCaseDatabase):
         :return:
         """
         stub_data = [
+                        ('2013MNRAS.435.1904M', 'TOC',          '',            [''], [''], 0),
                         ('2013MNRAS.435.1904M', 'ESOURCE',      'EPRINT_HTML', ['http://arxiv.org/abs/1307.6556'], [''], 0),
                         ('2013MNRAS.435.1904M', 'ESOURCE',      'EPRINT_PDF',  ['http://arxiv.org/pdf/1307.6556'], [''], 0),
                         ('2013MNRAS.435.1904M', 'ESOURCE',      'PUB_HTML',    ['https://doi.org/10.1093%2Fmnras%2Fstt1379'], [''], 0),
@@ -338,7 +339,7 @@ class test_database(TestCaseDatabase):
         bibcodes = {'bibcode': ['2013MNRAS.435.1904M']}
         response = self.client.delete('/delete', data=json.dumps(bibcodes), headers=headers)
         self.assertEqual(response._status_code, 200)
-        self.assertEqual(response.json['status'], 'removed 12 records of 1 bibcodes')
+        self.assertEqual(response.json['status'], 'removed 13 records of 1 bibcodes')
         # select it here
         response = self.client.get('/2013MNRAS.435.1904M/ESOURCE', headers=headers)
         self.assertEqual(response._status_code, 404)
