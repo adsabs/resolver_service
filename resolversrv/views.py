@@ -216,7 +216,7 @@ class LinkRequest():
         :return:
         """
         # on the fly links or identification links are only 1
-        if link_type in self.on_the_fly.keys() or link_type in self.identification.keys():
+        if (link_type != 'TOC' and link_type in self.on_the_fly.keys()) or link_type in self.identification.keys():
             return 1
         # query db
         results = get_records(bibcode=self.bibcode, link_type=link_type)
