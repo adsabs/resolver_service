@@ -54,6 +54,7 @@ class LinkRequest():
             # 'CUSTOM': '???',
             'GRAPHICS':  '{baseurl}/{bibcode}/graphics',
             'METRICS': '{baseurl}/{bibcode}/metrics',
+            'SIMILAR': '{baseurl}/{bibcode}/similar',
         }
 
         # electronic journal sub types
