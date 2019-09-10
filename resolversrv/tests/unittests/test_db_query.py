@@ -68,10 +68,11 @@ class test_database(TestCaseDatabase):
         headers = {'Content-type': 'application/json', 'Accept': 'text/plain'}
         response = self.client.get('/2013MNRAS.435.1904M', headers=headers)
         self.assertEqual(response._status_code, 200)
-        self.assertDictEqual(response.json, {u'action': u'display', u'links': {u'count': 16, u'records': [
+        self.assertDictEqual(response.json, {u'action': u'display', u'links': {u'count': 17, u'records': [
                                                 {u'url': u'/2013MNRAS.435.1904M/METRICS', u'count': 1, u'bibcode': u'2013MNRAS.435.1904M', u'type': u'metrics', u'title': u'METRICS (1)'},
                                                 {u'url': u'/2013MNRAS.435.1904M/CITATIONS', u'count': 1, u'bibcode': u'2013MNRAS.435.1904M', u'type': u'citations', u'title': u'CITATIONS (1)'},
                                                 {u'url': u'/2013MNRAS.435.1904M/REFERENCES', u'count': 1, u'bibcode': u'2013MNRAS.435.1904M', u'type': u'references', u'title': u'REFERENCES (1)'},
+                                                {u'url': u'/2013MNRAS.435.1904M/SIMILAR', u'count': 1, u'bibcode': u'2013MNRAS.435.1904M', u'type': u'similar', u'title': u'SIMILAR (1)'},
                                                 {u'url': u'/2013MNRAS.435.1904M/GRAPHICS', u'count': 1, u'bibcode': u'2013MNRAS.435.1904M', u'type': u'graphics', u'title': u'GRAPHICS (1)'},
                                                 {u'url': u'/2013MNRAS.435.1904M/TOC', u'count': 1, u'bibcode': u'2013MNRAS.435.1904M', u'type': u'toc', u'title': u'TOC (1)'},
                                                 {u'url': u'/2013MNRAS.435.1904M/ABSTRACT', u'count': 1, u'bibcode': u'2013MNRAS.435.1904M', u'type': u'abstract', u'title': u'ABSTRACT (1)'},
