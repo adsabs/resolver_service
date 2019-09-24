@@ -158,4 +158,8 @@ RESOLVER_DATA_SOURCES = {
         "name": "NASA/IPAC Infrared Science Archive",
         "url": "https://irsa.ipac.caltech.edu/frontpage/",
     },
+    "JOSS": {
+        "name": "Journal of Open Source Software",
+        "url": "https://joss.theoj.org",
+    }
 }
