@@ -86,6 +86,7 @@ For example to return links for *all*  full text sources, you would do
   * **esa** *ESAC Science Data Center*
   * **eso** *European Southern Observatory*
   * **gcpd** *The General Catalogue of Photometric Data*
+  * **github** *Git Repository Hosting Service*
   * **gtc** *Gran Telescopio CANARIAS Public Archive*
   * **heasarc** *NASA's High Energy Astrophysics Science Archive Research Center*
   * **herschel** *Herschel Science Center*
