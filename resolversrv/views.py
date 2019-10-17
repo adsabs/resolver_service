@@ -530,6 +530,16 @@ class LinkRequest():
         return self.__return_response({'error': 'unrecognizable link type:`{link_type}`'.format(link_type=self.link_type)}, 400)
 
 
+    def check(self):
+        """
+        verify that link_type is valid
+        :return:
+        """
+        if self.link_type is not None and self.link_type != '?':
+            return self.__return_response({'status': 'OK'}, 200)
+        return self.__return_response({'error': 'unrecognizable link_type'}, 400)
+
+
 class PopulateRequest():
     def __init__(self):
         """
@@ -647,6 +657,8 @@ def resolver(bibcode, link_type):
     :param link_type: 
     :return:
     """
+    if bibcode == 'check_link_type':
+        return LinkRequest('', link_type.upper()).check()
     return LinkRequest(bibcode, link_type.upper()).process_request()
 
 
@@ -685,4 +697,3 @@ def remove():
         payload = dict(request.form)  # post data in form encoding
 
     return DeleteRequest().process_request(payload)
-
