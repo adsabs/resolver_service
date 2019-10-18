@@ -143,5 +143,17 @@ class test_resolver(TestCase):
         r = self.client.get('/1987gady.book.....B/ABSTRACT')
         self.assertEqual(r.status_code, 200)
 
+    def test_check_link_type(self):
+        r = self.client.get('/check_link_type/ABSTRACT')
+        self.assertEqual(r.status_code, 200)
+        r = self.client.get('/check_link_type/DATA|ISO')
+        self.assertEqual(r.status_code, 200)
+        r = self.client.get('/check_link_type/DATA|ISO2')
+        self.assertEqual(r.status_code, 400)
+        r = self.client.get('/check_link_type/ABSTRACT|ISO')
+        self.assertEqual(r.status_code, 400)
+        r = self.client.get('/check_link_type/DATA|ACA')
+        self.assertEqual(r.status_code, 200)
+
 if __name__ == '__main__':
   unittest.main()

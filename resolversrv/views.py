@@ -127,6 +127,16 @@ class LinkRequest():
         elif (link_type in data_exceptions.keys()):
             self.link_type = 'DATA'
             self.link_sub_type = data_exceptions[link_type]
+        elif ('|' in link_type):
+            # init to unknown, then if found valid types, reset it
+            self.link_type = '?'
+            self.link_sub_type = '?'
+            parts = link_type.split('|')
+            if len(parts) == 2:
+                if (parts[0] == 'ESOURCE' and parts[1] in self.esource) or \
+                   (parts[0] == 'DATA' and parts[1] in self.data + data_exceptions.keys()):
+                    self.link_type = parts[0]
+                    self.link_sub_type = parts[1]
         # if link_type is empty treated as we are having only a bibcode and shall return all records for
         # for the bibcode
         elif len(link_type) == 0:
