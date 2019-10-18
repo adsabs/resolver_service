@@ -442,13 +442,14 @@ class LinkRequest():
                                                                                            self.__get_url_hostname_with_protocol(url))
                                 domain['title'] = domain_title
                                 domain['url'] = domain_url
+                            complete_link_type = '%s|%s'%(self.link_type, result['link_sub_type'])
                             complete_url = self.__update_data_type_hostname(domain_url, result['link_sub_type'], result['url'][idx])
                             encodeURL = quote(complete_url, safe='')
-                            redirectURL = self.gateway_redirect_url.format(bibcode=self.bibcode, link_type=self.link_type.lower(), url=encodeURL)
+                            redirectURL = self.gateway_redirect_url.format(bibcode=self.bibcode, link_type=complete_link_type, url=encodeURL)
                             record = {}
                             record['title'] = result['title'][idx] if result['title'][idx] else complete_url
                             record['url'] = redirectURL
-                            record['link_type'] = '%s|%s'%(self.link_type, result['link_sub_type'])
+                            record['link_type'] = complete_link_type
                             data.append(record)
                     if len(data) > 0:
                         domain['data'] = data
