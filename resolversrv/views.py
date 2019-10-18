@@ -355,7 +355,7 @@ class LinkRequest():
                         record = {}
                         record['title'] = result['url'][0]
                         record['url'] = result['url'][0]
-                        record['link_type'] = result['link_sub_type']
+                        record['link_type'] = '%s|%s'%(self.link_type, result['link_sub_type'])
                         records.append(record)
                     links['records'] = records
                     response = {}
@@ -448,7 +448,7 @@ class LinkRequest():
                             record = {}
                             record['title'] = result['title'][idx] if result['title'][idx] else complete_url
                             record['url'] = redirectURL
-                            record['link_type'] = result['link_sub_type']
+                            record['link_type'] = '%s|%s'%(self.link_type, result['link_sub_type'])
                             data.append(record)
                     if len(data) > 0:
                         domain['data'] = data
