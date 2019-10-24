@@ -161,5 +161,29 @@ RESOLVER_DATA_SOURCES = {
     "Github": {
         "name": "Git Repository Hosting Service",
         "url": "https://github.com",
-    }
+    },
+    "Dryad": {
+        "name": "International Repository of Research Data",
+        "url": "https://datadryad.org",
+    },
+    "Figshare": {
+        "name": "Online Open Access Repository",
+        "url": "https://figshare.com",
+    },
+    "JWST": {
+        "name": "JWST Proposal Info",
+        "url": "http://www.stsci.edu/jwst",
+    },
+    "PANGAEA": {
+        "name": "Digital Data Library and a Data Publisher for Earth System Science",
+        "url": "https://www.pangaea.de",
+    },
+    "protocols": {
+        "name": "Collaborative Platform and Preprint Server for Science Methods and Protocols",
+        "url": "https://www.protocols.io",
+    },
+    "BAVJ": {
+        "name": "Data of the German Association for Variable Stars",
+        "url": "https://www.bav-astro.eu",
+    },
 }
