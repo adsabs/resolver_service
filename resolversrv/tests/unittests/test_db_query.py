@@ -42,8 +42,14 @@ class test_database(TestCaseDatabase):
                         ('2013MNRAS.435.1904M', 'DATA',         'XMM',         ['http://nxsa.esac.esa.int/nxsa-web/#obsid=0097820101'], ['XMM-Newton Observation Number 0097820101'], 1),
                         ('2017MNRAS.467.3556B', 'PRESENTATION', '',            ['http://www.astro.lu.se/~alexey/animations.html'], [''], 0),
                         ('1943RvMP...15....1C', 'INSPIRE',      '',            ['http://inspirehep.net/search?p=find+j+RMPHA,15,1'], [''], 0),
-                        ('1971ATsir.615....4D', 'ASSOCIATED',   '',            ['1971ATsir.615....4D', '1974Afz....10..315D', '1971ATsir.621....7D', '1976Afz....12..665D', '1971ATsir.624....1D', '1983Afz....19..229D', '1983Ap.....19..134D', '1973ATsir.759....6D', '1984Afz....20..525D', '1984Ap.....20..290D', '1974ATsir.809....1D', '1974ATsir.809....2D', '1974ATsir.837....2D'], ['Part  1', 'Part  2', 'Part  3', 'Part  4', 'Part  5', 'Part  6', 'Part  7', 'Part  8', 'Part  9', 'Part 10', 'Part 11', 'Part 12', 'Part 13'], 0)
-                    ]
+                        ('1971ATsir.615....4D', 'ASSOCIATED',   '',            ['1971ATsir.615....4D', '1974Afz....10..315D', '1971ATsir.621....7D', '1976Afz....12..665D', '1971ATsir.624....1D', '1983Afz....19..229D', '1983Ap.....19..134D', '1973ATsir.759....6D', '1984Afz....20..525D', '1984Ap.....20..290D', '1974ATsir.809....1D', '1974ATsir.809....2D', '1974ATsir.837....2D'], ['Part  1', 'Part  2', 'Part  3', 'Part  4', 'Part  5', 'Part  6', 'Part  7', 'Part  8', 'Part  9', 'Part 10', 'Part 11', 'Part 12', 'Part 13'], 0),
+                        ('2007ASPC..368...27R', 'ESOURCE',      'ADS_PDF',     ['http://articles.adsabs.harvard.edu/pdf/2007ASPC..368...27R'], [''], 0),
+                        ('2007ASPC..368...27R', 'ESOURCE',      'ADS_SCAN',    ['http://articles.adsabs.harvard.edu/full/2007ASPC..368...27R'], [''], 0),
+                        ('2007ASPC..368...27R', 'ESOURCE',      'EPRINT_HTML', ['https://arxiv.org/abs/astro-ph/0703637'], [''], 0),
+                        ('2007ASPC..368...27R', 'ESOURCE',      'EPRINT_PDF',  ['https://arxiv.org/pdf/astro-ph/0703637'], [''], 0),
+                        ('2007ASPC..368...27R', 'ESOURCE',      'PUB_HTML',    ['http://aspbooks.org/custom/publications/paper/368-0027.html'], [''], 0),
+                        ('2007ASPC..368...27R', 'TOC',          '',            [''], [''], 0)
+        ]
 
         datalinks_list = []
         for record in stub_data:
@@ -379,6 +385,26 @@ class test_database(TestCaseDatabase):
         response = self.client.get('/2019AIPC.2081c0032P/TOC', headers=headers)
         self.assertEqual(response._status_code, 404)
 
+
+    def test_link_esource_subtype_article(self):
+        """
+        check status code for calling process_request for a esource sub type link for legacy type article
+        :return:
+        """
+        self.add_stub_data()
+        headers = {'Content-type': 'application/json', 'Accept': 'text/plain'}
+        response = self.client.get('/2007ASPC..368...27R/ARTICLE', headers=headers)
+        self.assertEqual(response._status_code, 200)
+        self.assertDictEqual(response.json, {u'action': u'redirect',
+                                             u'link': u'http://articles.adsabs.harvard.edu/pdf/2007ASPC..368...27R',
+                                             u'service': u'http://articles.adsabs.harvard.edu/pdf/2007ASPC..368...27R',
+                                             u'link_type': u'ESOURCE|ADS_PDF'})
+        response = self.client.get('/2013MNRAS.435.1904M/ARTICLE', headers=headers)
+        self.assertEqual(response._status_code, 200)
+        self.assertDictEqual(response.json, {u'action': u'redirect',
+                                             u'link': u'http://mnras.oxfordjournals.org/content/435/3/1904.full.pdf',
+                                             u'service': u'http://mnras.oxfordjournals.org/content/435/3/1904.full.pdf',
+                                             u'link_type': u'ESOURCE|PUB_PDF'})
 
 
 if __name__ == '__main__':

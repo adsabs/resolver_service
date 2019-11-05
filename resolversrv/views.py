@@ -97,6 +97,9 @@ class LinkRequest():
         elif (link_type == 'EJOURNAL'):
             self.link_type = 'ESOURCE'
             self.link_sub_type = 'PUB_HTML'
+        elif (link_type == 'ARTICLE'):
+            self.link_type = 'ESOURCE'
+            self.link_sub_type = '%_PDF'
 
 
     def __set_major_minor_link_types(self, link_type):
@@ -355,6 +358,14 @@ class LinkRequest():
                     result = results[0]
                     if (len(result['url']) == 1):
                         return self.request_link_type_deterministic_single_url_toJSON(result['url'][0])
+
+                if self.link_sub_type == '%_PDF':
+                    # check in the following order for any _PDF esources
+                    for esource in ['ADS_PDF', 'PUB_PDF', 'EPRINT_PDF']:
+                        for result in results:
+                            if (result['link_sub_type'] == esource) and (len(result['url']) == 1):
+                                self.link_sub_type = esource
+                                return self.request_link_type_deterministic_single_url_toJSON(result['url'][0])
 
                 # we could go here if the length is 1, but there are multiple urls here
                 if (len(results) >= 1):
