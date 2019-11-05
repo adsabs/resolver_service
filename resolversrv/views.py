@@ -354,11 +354,7 @@ class LinkRequest():
         """
         try:
             if (results is not None):
-                if (len(results) == 1):
-                    result = results[0]
-                    if (len(result['url']) == 1):
-                        return self.request_link_type_deterministic_single_url_toJSON(result['url'][0])
-
+                # we have all the esources of type PDF
                 if self.link_sub_type == '%_PDF':
                     # check in the following order for any _PDF esources
                     for esource in ['ADS_PDF', 'PUB_PDF', 'EPRINT_PDF']:
@@ -366,6 +362,12 @@ class LinkRequest():
                             if (result['link_sub_type'] == esource) and (len(result['url']) == 1):
                                 self.link_sub_type = esource
                                 return self.request_link_type_deterministic_single_url_toJSON(result['url'][0])
+                    return self.__return_response({'error': 'did not find any records'}, 404)
+
+                if (len(results) == 1):
+                    result = results[0]
+                    if (len(result['url']) == 1):
+                        return self.request_link_type_deterministic_single_url_toJSON(result['url'][0])
 
                 # we could go here if the length is 1, but there are multiple urls here
                 if (len(results) >= 1):
