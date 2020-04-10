@@ -357,7 +357,7 @@ class LinkRequest():
                 # we have all the esources of type PDF
                 if self.link_sub_type == '%_PDF':
                     # check in the following order for any _PDF esources
-                    for esource in ['ADS_PDF', 'PUB_PDF', 'EPRINT_PDF']:
+                    for esource in ['ADS_PDF', 'PUB_PDF', 'AUTHOR_PDF', 'EPRINT_PDF']:
                         for result in results:
                             if (result['link_sub_type'] == esource) and (len(result['url']) == 1):
                                 self.link_sub_type = esource
@@ -377,18 +377,20 @@ class LinkRequest():
                     links['link_type'] = self.link_type
                     records = []
                     for result in results:
-                        record = {}
-                        record['title'] = result['url'][0]
-                        record['url'] = result['url'][0]
-                        record['link_type'] = '%s|%s'%(self.link_type, result['link_sub_type'])
-                        records.append(record)
-                    links['records'] = records
-                    response = {}
-                    # when we have multiple sources of electronic journal, there is no url to log (no service)
-                    response['service'] = ''
-                    response['action'] = 'display'
-                    response['links'] = links
-                    return self.__return_response(response, 200)
+                        for idx in range(len(result['url'])):
+                            record = {}
+                            record['title'] = result['url'][idx]
+                            record['url'] = result['url'][idx]
+                            record['link_type'] = '%s|%s'%(self.link_type, result['link_sub_type'])
+                            records.append(record)
+                    if len(records) > 0:
+                        links['records'] = records
+                        response = {}
+                        # when we have multiple sources of electronic journal, there is no url to log (no service)
+                        response['service'] = ''
+                        response['action'] = 'display'
+                        response['links'] = links
+                        return self.__return_response(response, 200)
             return self.__return_response({'error': 'did not find any records'}, 404)
         except (KeyError, IndexError):
             error_message = 'requested information for bibcode=%s and link_type=%s is missing' % (
