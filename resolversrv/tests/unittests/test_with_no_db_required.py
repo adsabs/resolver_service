@@ -72,7 +72,7 @@ class test_with_no_database_required(TestCase):
 
     def test_link_url_IndexError(self):
         """
-        return 404 from request_link_type_single_url when there is IndexError
+        return 400 from request_link_type_single_url when there is IndexError
         :return:
         """
         results = [{'bibcode': u'2017MNRAS.467.3556B',
@@ -131,7 +131,7 @@ class test_with_no_database_required(TestCase):
 
     def test_link_associated_IndexError(self):
         """
-        return 404 from request_link_type_associated when there is IndexError
+        return 400 from request_link_type_associated when there is IndexError
         :return:
         """
         results = [{'bibcode': u'1971ATsir.615....4D',
@@ -162,7 +162,7 @@ class test_with_no_database_required(TestCase):
         self.assertEqual(response.response[0], '{"error": "requested information for bibcode=2013MNRAS.435.1904 and link_type=ESOURCE is missing"}')
 
 
-    def test_link_esource_IndexError(self):
+    def test_link_no_url_esource(self):
         """
         return 404 from request_link_type_esource when there is IndexError
         :return:
@@ -174,8 +174,31 @@ class test_with_no_database_required(TestCase):
                     'url': [],
                     'itemCount': 0}]
         response = LinkRequest(bibcode='2013MNRAS.435.1904', link_type='ESOURCE').request_link_type_esource(results)
-        self.assertEqual(response._status_code, 400)
-        self.assertEqual(response.response[0], '{"error": "requested information for bibcode=2013MNRAS.435.1904 and link_type=ESOURCE is missing"}')
+        self.assertEqual(response._status_code, 404)
+        self.assertEqual(response.response[0], '{"error": "did not find any records"}')
+
+    def test_link_esource_multiple_urls(self):
+        """
+        return multiple escourse
+        :return:
+        """
+        results = [{'bibcode': u'22020AANv....1..199K',
+                    'link_type': u'ESOURCE',
+                    'link_sub_type': u'PUB_PDF',
+                    'title': [u''],
+                    'url': ['http://astronomianova.org/pdf/AAN1_2020.pdf',
+                            'http://uavso.org.ua/ila/2020AANv....1..199K.pdf',
+                            'http://www.oa.uj.edu.pl/pbl/AAN/AAN6.pdf'''],
+                    'itemCount': 0}]
+        response = LinkRequest(bibcode='2020AANv....1..199K', link_type='ESOURCE').request_link_type_esource(results)
+        response_json = {'action': 'display', 'service': '',
+                         'links': {'count': 1,
+                                   'records': [{'url': 'http://astronomianova.org/pdf/AAN1_2020.pdf', 'link_type': 'ESOURCE|PUB_PDF', 'title': 'http://astronomianova.org/pdf/AAN1_2020.pdf'},
+                                               {'url': 'http://uavso.org.ua/ila/2020AANv....1..199K.pdf', 'link_type': 'ESOURCE|PUB_PDF', 'title': 'http://uavso.org.ua/ila/2020AANv....1..199K.pdf'},
+                                               {'url': 'http://www.oa.uj.edu.pl/pbl/AAN/AAN6.pdf', 'link_type': 'ESOURCE|PUB_PDF', 'title': 'http://www.oa.uj.edu.pl/pbl/AAN/AAN6.pdf'}],
+                                   'bibcode': '2020AANv....1..199K', 'link_type': 'ESOURCE'}}
+        self.assertEqual(response._status_code, 200)
+        self.assertEqual(eval(response.response[0]), response_json)
 
     def test_link_data_KeyError(self):
         """
