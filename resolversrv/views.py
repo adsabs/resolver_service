@@ -67,7 +67,8 @@ class LinkRequest():
         self.data = [
             'ARI', 'SIMBAD', 'NED', 'CDS', 'Vizier', 'GCPD', 'Author', 'PDG', 'MAST', 'HEASARC', 'INES', 'IBVS',
             'Astroverse', 'ESA', 'NExScI', 'PDS', 'AcA', 'ISO', 'ESO', 'Chandra', 'NOAO', 'XMM', 'Spitzer', 'PASA',
-            'ATNF', 'KOA', 'Herschel', 'GTC', 'BICEP2', 'ALMA', 'CADC', 'Zenodo', 'TNS', 'IRSA'
+            'ATNF', 'KOA', 'Herschel', 'GTC', 'BICEP2', 'ALMA', 'CADC', 'Zenodo', 'TNS', 'IRSA', 'Github', 'Dryad',
+            'Figshare', 'protocols', 'JWST', 'PANGAEA', 'BAVJ'
         ]
 
         # identification link type
@@ -96,6 +97,9 @@ class LinkRequest():
         elif (link_type == 'EJOURNAL'):
             self.link_type = 'ESOURCE'
             self.link_sub_type = 'PUB_HTML'
+        elif (link_type == 'ARTICLE'):
+            self.link_type = 'ESOURCE'
+            self.link_sub_type = '%_PDF'
 
 
     def __set_major_minor_link_types(self, link_type):
@@ -109,7 +113,9 @@ class LinkRequest():
         # data sub types that are not upper case, need to keep them this way to get a match from db
         data_exceptions = {'Vizier'.upper():'Vizier', 'Author'.upper():'Author', 'Astroverse'.upper():'Astroverse',
                            'NExScI'.upper():'NExScI', 'AcA'.upper():'AcA', 'Spitzer'.upper():'Spitzer',
-                           'Herschel'.upper():'Herschel', 'Zenodo'.upper():'Zenodo', 'Chandra'.upper():'Chandra'}
+                           'Herschel'.upper():'Herschel', 'Zenodo'.upper():'Zenodo', 'Chandra'.upper():'Chandra',
+                           'Github'.upper():'Github', 'Dryad'.upper():'Dryad', 'Figshare'.upper():'Figshare',
+                           'protocols'.upper():'protocols'}
 
         # if link_type has been specified
         if (link_type in self.link_types):
@@ -126,6 +132,16 @@ class LinkRequest():
         elif (link_type in data_exceptions.keys()):
             self.link_type = 'DATA'
             self.link_sub_type = data_exceptions[link_type]
+        elif ('|' in link_type):
+            # init to unknown, then if found valid types, reset it
+            self.link_type = '?'
+            self.link_sub_type = '?'
+            parts = link_type.split('|')
+            if len(parts) == 2:
+                if (parts[0] == 'ESOURCE' and parts[1] in self.esource) or \
+                   (parts[0] == 'DATA' and parts[1] in self.data + data_exceptions.keys()):
+                    self.link_type = parts[0]
+                    self.link_sub_type = parts[1]
         # if link_type is empty treated as we are having only a bibcode and shall return all records for
         # for the bibcode
         elif len(link_type) == 0:
@@ -338,6 +354,16 @@ class LinkRequest():
         """
         try:
             if (results is not None):
+                # we have all the esources of type PDF
+                if self.link_sub_type == '%_PDF':
+                    # check in the following order for any _PDF esources
+                    for esource in ['ADS_PDF', 'PUB_PDF', 'AUTHOR_PDF', 'EPRINT_PDF']:
+                        for result in results:
+                            if (result['link_sub_type'] == esource) and (len(result['url']) == 1):
+                                self.link_sub_type = esource
+                                return self.request_link_type_deterministic_single_url_toJSON(result['url'][0])
+                    return self.__return_response({'error': 'did not find any records'}, 404)
+
                 if (len(results) == 1):
                     result = results[0]
                     if (len(result['url']) == 1):
@@ -351,18 +377,20 @@ class LinkRequest():
                     links['link_type'] = self.link_type
                     records = []
                     for result in results:
-                        record = {}
-                        record['title'] = result['url'][0]
-                        record['url'] = result['url'][0]
-                        record['link_type'] = result['link_sub_type']
-                        records.append(record)
-                    links['records'] = records
-                    response = {}
-                    # when we have multiple sources of electronic journal, there is no url to log (no service)
-                    response['service'] = ''
-                    response['action'] = 'display'
-                    response['links'] = links
-                    return self.__return_response(response, 200)
+                        for idx in range(len(result['url'])):
+                            record = {}
+                            record['title'] = result['url'][idx]
+                            record['url'] = result['url'][idx]
+                            record['link_type'] = '%s|%s'%(self.link_type, result['link_sub_type'])
+                            records.append(record)
+                    if len(records) > 0:
+                        links['records'] = records
+                        response = {}
+                        # when we have multiple sources of electronic journal, there is no url to log (no service)
+                        response['service'] = ''
+                        response['action'] = 'display'
+                        response['links'] = links
+                        return self.__return_response(response, 200)
             return self.__return_response({'error': 'did not find any records'}, 404)
         except (KeyError, IndexError):
             error_message = 'requested information for bibcode=%s and link_type=%s is missing' % (
@@ -441,13 +469,14 @@ class LinkRequest():
                                                                                            self.__get_url_hostname_with_protocol(url))
                                 domain['title'] = domain_title
                                 domain['url'] = domain_url
+                            complete_link_type = '%s|%s'%(self.link_type, result['link_sub_type'])
                             complete_url = self.__update_data_type_hostname(domain_url, result['link_sub_type'], result['url'][idx])
                             encodeURL = quote(complete_url, safe='')
-                            redirectURL = self.gateway_redirect_url.format(bibcode=self.bibcode, link_type=self.link_type.lower(), url=encodeURL)
+                            redirectURL = self.gateway_redirect_url.format(bibcode=self.bibcode, link_type=complete_link_type, url=encodeURL)
                             record = {}
                             record['title'] = result['title'][idx] if result['title'][idx] else complete_url
                             record['url'] = redirectURL
-                            record['link_type'] = result['link_sub_type']
+                            record['link_type'] = complete_link_type
                             data.append(record)
                     if len(data) > 0:
                         domain['data'] = data
@@ -527,6 +556,16 @@ class LinkRequest():
 
         # we did not recognize the link_type, so return an error
         return self.__return_response({'error': 'unrecognizable link type:`{link_type}`'.format(link_type=self.link_type)}, 400)
+
+
+    def check(self):
+        """
+        verify that link_type is valid
+        :return:
+        """
+        if self.link_type is not None and self.link_type != '?':
+            return self.__return_response({'status': 'OK'}, 200)
+        return self.__return_response({'error': 'unrecognizable link_type'}, 400)
 
 
 class PopulateRequest():
@@ -646,6 +685,8 @@ def resolver(bibcode, link_type):
     :param link_type: 
     :return:
     """
+    if bibcode == 'check_link_type':
+        return LinkRequest('', link_type.upper()).check()
     return LinkRequest(bibcode, link_type.upper()).process_request()
 
 
@@ -684,4 +725,3 @@ def remove():
         payload = dict(request.form)  # post data in form encoding
 
     return DeleteRequest().process_request(payload)
-

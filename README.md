@@ -79,27 +79,34 @@ For example to return links for *all*  full text sources, you would do
   * **astroverse** *CfA Dataverse*
   * **atnf** *Australia Telescope Online Archive*
   * **author** *Author Hosted Dataset*
+  * **bavj** *Data of the German Association for Variable Stars*
   * **bicep2** *BICEP/Keck Data*
   * **cadc** *Canadian Astronomy Data Center*
   * **cds** *Strasbourg Astronomical Data Center*
   * **chandra** *Chandra X-Ray Observatory*
+  * **dryad** *International Repository of Research Data*
   * **esa** *ESAC Science Data Center*
   * **eso** *European Southern Observatory*
+  * **figshare** *Online Open Access Repository*
   * **gcpd** *The General Catalogue of Photometric Data*
+  * **github** *Git Repository Hosting Service*
   * **gtc** *Gran Telescopio CANARIAS Public Archive*
   * **heasarc** *NASA's High Energy Astrophysics Science Archive Research Center*
   * **herschel** *Herschel Science Center*
   * **ibvs** *Information Bulletin on Variable Stars*
   * **ines** *IUE Newly Extracted Spectra*
   * **iso** *Infrared Space Observatory*
+  * **jwst** *JWST Proposal Info*
   * **koa** *Keck Observatory Archive*
   * **mast** *Mikulski Archive for Space Telescopes*
   * **ned** *NASA/IPAC Extragalactic Database*
   * **nexsci** *NASA Exoplanet Archive*
   * **noao** *National Optical Astronomy Observatory*
+  * **pangaea** *Digital Data Library and a Data Publisher for Earth System Science*
   * **pasa** *Publication of the Astronomical Society of Australia Datasets*
   * **pdg** *Particle Data Group*
   * **pds** *The NASA Planetary Data System*
+  * **protocols** *Collaborative Platform and Preprint Server for Science Methods and Protocols*
   * **simbad** *SIMBAD Database at the CDS*
   * **spitzer** *Spitzer Space Telescope*
   * **tns** *Transient Name Server*

@@ -42,8 +42,14 @@ class test_database(TestCaseDatabase):
                         ('2013MNRAS.435.1904M', 'DATA',         'XMM',         ['http://nxsa.esac.esa.int/nxsa-web/#obsid=0097820101'], ['XMM-Newton Observation Number 0097820101'], 1),
                         ('2017MNRAS.467.3556B', 'PRESENTATION', '',            ['http://www.astro.lu.se/~alexey/animations.html'], [''], 0),
                         ('1943RvMP...15....1C', 'INSPIRE',      '',            ['http://inspirehep.net/search?p=find+j+RMPHA,15,1'], [''], 0),
-                        ('1971ATsir.615....4D', 'ASSOCIATED',   '',            ['1971ATsir.615....4D', '1974Afz....10..315D', '1971ATsir.621....7D', '1976Afz....12..665D', '1971ATsir.624....1D', '1983Afz....19..229D', '1983Ap.....19..134D', '1973ATsir.759....6D', '1984Afz....20..525D', '1984Ap.....20..290D', '1974ATsir.809....1D', '1974ATsir.809....2D', '1974ATsir.837....2D'], ['Part  1', 'Part  2', 'Part  3', 'Part  4', 'Part  5', 'Part  6', 'Part  7', 'Part  8', 'Part  9', 'Part 10', 'Part 11', 'Part 12', 'Part 13'], 0)
-                    ]
+                        ('1971ATsir.615....4D', 'ASSOCIATED',   '',            ['1971ATsir.615....4D', '1974Afz....10..315D', '1971ATsir.621....7D', '1976Afz....12..665D', '1971ATsir.624....1D', '1983Afz....19..229D', '1983Ap.....19..134D', '1973ATsir.759....6D', '1984Afz....20..525D', '1984Ap.....20..290D', '1974ATsir.809....1D', '1974ATsir.809....2D', '1974ATsir.837....2D'], ['Part  1', 'Part  2', 'Part  3', 'Part  4', 'Part  5', 'Part  6', 'Part  7', 'Part  8', 'Part  9', 'Part 10', 'Part 11', 'Part 12', 'Part 13'], 0),
+                        ('2007ASPC..368...27R', 'ESOURCE',      'ADS_PDF',     ['http://articles.adsabs.harvard.edu/pdf/2007ASPC..368...27R'], [''], 0),
+                        ('2007ASPC..368...27R', 'ESOURCE',      'ADS_SCAN',    ['http://articles.adsabs.harvard.edu/full/2007ASPC..368...27R'], [''], 0),
+                        ('2007ASPC..368...27R', 'ESOURCE',      'EPRINT_HTML', ['https://arxiv.org/abs/astro-ph/0703637'], [''], 0),
+                        ('2007ASPC..368...27R', 'ESOURCE',      'EPRINT_PDF',  ['https://arxiv.org/pdf/astro-ph/0703637'], [''], 0),
+                        ('2007ASPC..368...27R', 'ESOURCE',      'PUB_HTML',    ['http://aspbooks.org/custom/publications/paper/368-0027.html'], [''], 0),
+                        ('2007ASPC..368...27R', 'TOC',          '',            [''], [''], 0)
+        ]
 
         datalinks_list = []
         for record in stub_data:
@@ -173,10 +179,10 @@ class test_database(TestCaseDatabase):
                                                         u'link_type': u'ESOURCE',
                                                         u'bibcode': u'2013MNRAS.435.1904M',
                                                         u'records': [
-                                                            {u'url': u'http://arxiv.org/abs/1307.6556', u'title': u'http://arxiv.org/abs/1307.6556', u'link_type': u'EPRINT_HTML'},
-                                                            {u'url': u'http://arxiv.org/pdf/1307.6556', u'title': u'http://arxiv.org/pdf/1307.6556', u'link_type': u'EPRINT_PDF'},
-                                                            {u'url': u'https://doi.org/10.1093%2Fmnras%2Fstt1379', u'title': u'https://doi.org/10.1093%2Fmnras%2Fstt1379', u'link_type': u'PUB_HTML'},
-                                                            {u'url': u'http://mnras.oxfordjournals.org/content/435/3/1904.full.pdf', u'title': u'http://mnras.oxfordjournals.org/content/435/3/1904.full.pdf', u'link_type': u'PUB_PDF'}
+                                                            {u'url': u'http://arxiv.org/abs/1307.6556', u'title': u'http://arxiv.org/abs/1307.6556', u'link_type': u'ESOURCE|EPRINT_HTML'},
+                                                            {u'url': u'http://arxiv.org/pdf/1307.6556', u'title': u'http://arxiv.org/pdf/1307.6556', u'link_type': u'ESOURCE|EPRINT_PDF'},
+                                                            {u'url': u'https://doi.org/10.1093%2Fmnras%2Fstt1379', u'title': u'https://doi.org/10.1093%2Fmnras%2Fstt1379', u'link_type': u'ESOURCE|PUB_HTML'},
+                                                            {u'url': u'http://mnras.oxfordjournals.org/content/435/3/1904.full.pdf', u'title': u'http://mnras.oxfordjournals.org/content/435/3/1904.full.pdf', u'link_type': u'ESOURCE|PUB_PDF'}
                                                         ]
                                              },
                                              u'service': u''})
@@ -209,50 +215,50 @@ class test_database(TestCaseDatabase):
                                             u'service': u'',
                                             u'links': {u'count': 8,
                                             u'records': [{u'url': u'http://cxc.harvard.edu/cda',  # Chandra
-                                                          u'data': [{u'url': u'/2013MNRAS.435.1904M/data/http%3A%2F%2Fcda.harvard.edu%2Fchaser%3Fobsid%3D494',
+                                                          u'data': [{u'url': u'/2013MNRAS.435.1904M/DATA|Chandra/http%3A%2F%2Fcda.harvard.edu%2Fchaser%3Fobsid%3D494',
                                                                      u'title': u'Chandra Data Archive ObsIds 494',
-                                                                     u'link_type': u'Chandra'}],
+                                                                     u'link_type': u'DATA|Chandra'}],
                                                           u'title': u'Chandra X-Ray Observatory'},
                                                          {u'url': u'http://archives.esac.esa.int', # ESA
-                                                          u'data': [{u'url': u'/2013MNRAS.435.1904M/data/http%3A%2F%2Farchives.esac.esa.int%2Fehst%2F%23bibcode%3D2013MNRAS.435.1904M',
+                                                          u'data': [{u'url': u'/2013MNRAS.435.1904M/DATA|ESA/http%3A%2F%2Farchives.esac.esa.int%2Fehst%2F%23bibcode%3D2013MNRAS.435.1904M',
                                                                      u'title': u'European HST References (EHST)',
-                                                                     u'link_type': u'ESA'}],
+                                                                     u'link_type': u'DATA|ESA'}],
                                                           u'title': u'ESAC Science Data Center'
                                                          },
                                                          {u'url': u'https://heasarc.gsfc.nasa.gov/', # HEASARC
-                                                          u'data': [{u'url': u'/2013MNRAS.435.1904M/data/http%3A%2F%2Fheasarc.gsfc.nasa.gov%2Fcgi-bin%2FW3Browse%2Fbiblink.pl%3Fcode%3D2013MNRAS.435.1904M',
+                                                          u'data': [{u'url': u'/2013MNRAS.435.1904M/DATA|HEASARC/http%3A%2F%2Fheasarc.gsfc.nasa.gov%2Fcgi-bin%2FW3Browse%2Fbiblink.pl%3Fcode%3D2013MNRAS.435.1904M',
                                                                      u'title': u'http://heasarc.gsfc.nasa.gov/cgi-bin/W3Browse/biblink.pl?code=2013MNRAS.435.1904M',
-                                                                     u'link_type': u'HEASARC'}],
+                                                                     u'link_type': u'DATA|HEASARC'}],
                                                           u'title': u"NASA's High Energy Astrophysics Science Archive Research Center"
                                                          },
                                                          {u'url': u'https://www.cosmos.esa.int/web/herschel/home', #Herschel
-                                                          u'data': [{u'url': u'/2013MNRAS.435.1904M/data/http%3A%2F%2Fherschel.esac.esa.int%2Fhpt%2Fpublicationdetailsview.do%3Fbibcode%3D2013MNRAS.435.1904M',
+                                                          u'data': [{u'url': u'/2013MNRAS.435.1904M/DATA|Herschel/http%3A%2F%2Fherschel.esac.esa.int%2Fhpt%2Fpublicationdetailsview.do%3Fbibcode%3D2013MNRAS.435.1904M',
                                                                      u'title': u'http://herschel.esac.esa.int/hpt/publicationdetailsview.do?bibcode=2013MNRAS.435.1904M',
-                                                                     u'link_type': u'Herschel'}],
+                                                                     u'link_type': u'DATA|Herschel'}],
                                                           u'title': u'Herschel Science Center'
                                                          },
                                                          {u'url': u'http://archive.stsci.edu', # MAST
-                                                          u'data': [{u'url': u'/2013MNRAS.435.1904M/data/http%3A%2F%2Farchive.stsci.edu%2Fmastbibref.php%3Fbibcode%3D2013MNRAS.435.1904M',
+                                                          u'data': [{u'url': u'/2013MNRAS.435.1904M/DATA|MAST/http%3A%2F%2Farchive.stsci.edu%2Fmastbibref.php%3Fbibcode%3D2013MNRAS.435.1904M',
                                                                      u'title': u'MAST References (GALEX EUVE HST)',
-                                                                     u'link_type': u'MAST'}],
+                                                                     u'link_type': u'DATA|MAST'}],
                                                           u'title': u'Mikulski Archive for Space Telescopes'
                                                          },
                                                          {u'url': u'https://ned.ipac.caltech.edu', # NED
-                                                          u'data': [{u'url': u'/2013MNRAS.435.1904M/data/http%3A%2F%2Fned.ipac.caltech.edu%2Fcgi-bin%2Fnph-objsearch%3Fsearch_type%3DSearch%26refcode%3D2013MNRAS.435.1904M',
+                                                          u'data': [{u'url': u'/2013MNRAS.435.1904M/DATA|NED/http%3A%2F%2Fned.ipac.caltech.edu%2Fcgi-bin%2Fnph-objsearch%3Fsearch_type%3DSearch%26refcode%3D2013MNRAS.435.1904M',
                                                                      u'title': u'NED Objects (1)',
-                                                                     u'link_type': u'NED'}],
+                                                                     u'link_type': u'DATA|NED'}],
                                                           u'title': u'NASA/IPAC Extragalactic Database'
                                                          },
                                                          {u'url': u'http://simbad.u-strasbg.fr', # SIMBAD
-                                                          u'data': [{u'url': u'/2013MNRAS.435.1904M/data/http%3A%2F%2Fsimbad.u-strasbg.fr%2Fsimbo.pl%3Fbibcode%3D2013MNRAS.435.1904M',
+                                                          u'data': [{u'url': u'/2013MNRAS.435.1904M/DATA|SIMBAD/http%3A%2F%2Fsimbad.u-strasbg.fr%2Fsimbo.pl%3Fbibcode%3D2013MNRAS.435.1904M',
                                                                      u'title': u'SIMBAD Objects (30)',
-                                                                     u'link_type': u'SIMBAD'}],
+                                                                     u'link_type': u'DATA|SIMBAD'}],
                                                           u'title': u'SIMBAD Database at the CDS'
                                                          },
                                                          {u'url': u'http://nxsa.esac.esa.int', # XMM
-                                                          u'data': [{u'url': u'/2013MNRAS.435.1904M/data/http%3A%2F%2Fnxsa.esac.esa.int%2Fnxsa-web%2F%23obsid%3D0097820101',
+                                                          u'data': [{u'url': u'/2013MNRAS.435.1904M/DATA|XMM/http%3A%2F%2Fnxsa.esac.esa.int%2Fnxsa-web%2F%23obsid%3D0097820101',
                                                                      u'title': u'XMM-Newton Observation Number 0097820101',
-                                                                     u'link_type': u'XMM'}],
+                                                                     u'link_type': u'DATA|XMM'}],
                                                           u'title': u'XMM Newton Science Archive'
                                                          }],
                                             u'bibcode': u'2013MNRAS.435.1904M'}})
@@ -379,6 +385,26 @@ class test_database(TestCaseDatabase):
         response = self.client.get('/2019AIPC.2081c0032P/TOC', headers=headers)
         self.assertEqual(response._status_code, 404)
 
+
+    def test_link_esource_subtype_article(self):
+        """
+        check status code for calling process_request for a esource sub type link for legacy type article
+        :return:
+        """
+        self.add_stub_data()
+        headers = {'Content-type': 'application/json', 'Accept': 'text/plain'}
+        response = self.client.get('/2007ASPC..368...27R/ARTICLE', headers=headers)
+        self.assertEqual(response._status_code, 200)
+        self.assertDictEqual(response.json, {u'action': u'redirect',
+                                             u'link': u'http://articles.adsabs.harvard.edu/pdf/2007ASPC..368...27R',
+                                             u'service': u'http://articles.adsabs.harvard.edu/pdf/2007ASPC..368...27R',
+                                             u'link_type': u'ESOURCE|ADS_PDF'})
+        response = self.client.get('/2013MNRAS.435.1904M/ARTICLE', headers=headers)
+        self.assertEqual(response._status_code, 200)
+        self.assertDictEqual(response.json, {u'action': u'redirect',
+                                             u'link': u'http://mnras.oxfordjournals.org/content/435/3/1904.full.pdf',
+                                             u'service': u'http://mnras.oxfordjournals.org/content/435/3/1904.full.pdf',
+                                             u'link_type': u'ESOURCE|PUB_PDF'})
 
 
 if __name__ == '__main__':
