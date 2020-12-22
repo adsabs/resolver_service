@@ -1,6 +1,4 @@
-git+https://github.com/adsabs/ADSMicroserviceUtils.git@v1.1.5
+git+https://github.com/adsabs/ADSMicroserviceUtils.git@v1.1.9
 git+https://github.com/adsabs/ADSPipelineMsg.git@v1.0.0
 alembic==0.9.1
 psycopg2==2.8.3
-Flask-RESTful==0.3.6
-Werkzeug==0.11.15
