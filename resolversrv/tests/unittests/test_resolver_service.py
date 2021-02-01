@@ -155,5 +155,22 @@ class test_resolver(TestCase):
         r = self.client.get('/check_link_type/DATA|ACA')
         self.assertEqual(r.status_code, 200)
 
+    def test_case_insensetive_link_sub_type_data(self):
+        """
+        Test case insensitvity of data link subtypes
+        """
+        lowercase_data_sub_type = ['aca', 'alma', 'ari', 'astroverse', 'atnf', 'author', 'bavj', 'bicep2', 'cadc', 'cds', 'chandra', 'dryad', 'esa', 'eso', 'figshare', 'gcpd', 'gemini', 'github', 'gtc', 'heasarc', 'herschel', 'ibvs', 'ines', 'irsa', 'iso', 'jwst', 'koa', 'mast', 'ned', 'nexsci', 'noao', 'pangaea', 'pasa', 'pdg', 'pds', 'protocols', 'simbad', 'spitzer', 'tns', 'vizier', 'xmm', 'zenodo']
+        uppercase_data_sub_type = ['ACA', 'ALMA', 'ARI', 'ASTROVERSE', 'ATNF', 'AUTHOR', 'BAVJ', 'BICEP2', 'CADC', 'CDS', 'CHANDRA', 'DRYAD', 'ESA', 'ESO', 'FIGSHARE', 'GCPD', 'GEMINI', 'GITHUB', 'GTC', 'HEASARC', 'HERSCHEL', 'IBVS', 'INES', 'IRSA', 'ISO', 'JWST', 'KOA', 'MAST', 'NED', 'NEXSCI', 'NOAO', 'PANGAEA', 'PASA', 'PDG', 'PDS', 'PROTOCOLS', 'SIMBAD', 'SPITZER', 'TNS', 'VIZIER', 'XMM', 'ZENODO']
+        mixedcase_data_sub_type = ['AcA', 'ALMA', 'ARI', 'Astroverse', 'ATNF', 'Author', 'BAVJ', 'BICEP2', 'CADC', 'CDS', 'Chandra', 'Dryad', 'ESA', 'ESO', 'Figshare', 'GCPD', 'Gemini', 'Github', 'GTC', 'HEASARC', 'Herschel', 'IBVS', 'INES', 'IRSA', 'ISO', 'JWST', 'KOA', 'MAST', 'NED', 'NExScI', 'NOAO', 'PANGAEA', 'PASA', 'PDG', 'PDS', 'protocols', 'SIMBAD', 'Spitzer', 'TNS', 'Vizier', 'XMM', 'Zenodo']
+        for lower,db in zip(lowercase_data_sub_type, mixedcase_data_sub_type):
+            link_request = LinkRequest('anybibcode', lower, self.current_app.config['RESOLVER_GATEWAY_URL'])
+            self.assertEqual(link_request.link_type, 'DATA')
+            self.assertEqual(link_request.link_sub_type, db)
+        for upper,db in zip(uppercase_data_sub_type, mixedcase_data_sub_type):
+            link_request = LinkRequest('anybibcode', upper, self.current_app.config['RESOLVER_GATEWAY_URL'])
+            self.assertEqual(link_request.link_type, 'DATA')
+            self.assertEqual(link_request.link_sub_type, db)
+
+
 if __name__ == '__main__':
   unittest.main()

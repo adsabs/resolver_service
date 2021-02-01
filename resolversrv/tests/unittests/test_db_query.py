@@ -48,7 +48,8 @@ class test_database(TestCaseDatabase):
                         ('2007ASPC..368...27R', 'ESOURCE',      'EPRINT_HTML', ['https://arxiv.org/abs/astro-ph/0703637'], [''], 0),
                         ('2007ASPC..368...27R', 'ESOURCE',      'EPRINT_PDF',  ['https://arxiv.org/pdf/astro-ph/0703637'], [''], 0),
                         ('2007ASPC..368...27R', 'ESOURCE',      'PUB_HTML',    ['http://aspbooks.org/custom/publications/paper/368-0027.html'], [''], 0),
-                        ('2007ASPC..368...27R', 'TOC',          '',            [''], [''], 0)
+                        ('2007ASPC..368...27R', 'TOC',          '',            [''], [''], 0),
+                        ('2004astro.ph..1427R', 'DATA',         'MAST',        ['http://archive.stsci.edu/prepds/gems','https://archive.stsci.edu/mastbibref.php?bibcode=2004ApJS..152..163R'],['GEMS: Galaxy Evolution from Morphologies and SEDs (Hans-Walter Rix)','MAST References (HST)'], 2),
         ]
 
         datalinks_list = []
@@ -405,6 +406,32 @@ class test_database(TestCaseDatabase):
                                              u'link': u'http://mnras.oxfordjournals.org/content/435/3/1904.full.pdf',
                                              u'service': u'http://mnras.oxfordjournals.org/content/435/3/1904.full.pdf',
                                              u'link_type': u'ESOURCE|PUB_PDF'})
+
+
+    def test_data_subtype_multiple_links(self):
+        """
+
+        :return:
+        """
+        self.add_stub_data()
+        headers = {'Content-type': 'application/json', 'Accept': 'text/plain'}
+        response = self.client.get('/2004astro.ph..1427R/MAST', headers=headers)
+        self.assertEqual(response._status_code, 200)
+        print response.json
+        self.assertDictEqual(response.json, {u'action': u'display',
+                                             u'links': {u'bibcode': u'2004astro.ph..1427R',
+                                             u'count': 1,
+                                             u'records': [{u'data': [{u'link_type': u'DATA|MAST',
+                                                                      u'title': u'GEMS: Galaxy Evolution from Morphologies and SEDs (Hans-Walter Rix)',
+                                                                      u'url': u'/2004astro.ph..1427R/DATA|MAST/http%3A%2F%2Farchive.stsci.edu%2Fprepds%2Fgems'}],
+                                                           u'title': u'Mikulski Archive for Space Telescopes',
+                                                           u'url': u'http://archive.stsci.edu'},
+                                                          {u'data': [{u'link_type': u'DATA|MAST',
+                                                                      u'title': u'MAST References (HST)',
+                                                                      u'url': u'/2004astro.ph..1427R/DATA|MAST/https%3A%2F%2Farchive.stsci.edu%2Fmastbibref.php%3Fbibcode%3D2004ApJS..152..163R'}],
+                                                           u'title': u'Mikulski Archive for Space Telescopes',
+                                                           u'url': u'http://archive.stsci.edu'}]},
+                                             u'service': u''})
 
 
 if __name__ == '__main__':

@@ -187,3 +187,15 @@ RESOLVER_DATA_SOURCES = {
         "url": "https://www.bav-astro.eu",
     },
 }
+
+# to allow for case insensitive search
+RESOLVER_DATA_TYPES = {
+    'AcA'.upper():'AcA', 'ALMA':'ALMA', 'ARI':'ARI', 'Astroverse'.upper():'Astroverse', 'ATNF':'ATNF',
+    'Author'.upper():'Author', 'BAVJ':'BAVJ', 'BICEP2':'BICEP2', 'CADC':'CADC', 'CDS':'CDS',
+    'Chandra'.upper():'Chandra', 'Dryad'.upper():'Dryad', 'ESA':'ESA', 'ESO':'ESO', 'Figshare'.upper():'Figshare',
+    'GCPD':'GCPD', 'Gemini'.upper():'Gemini', 'Github'.upper():'Github', 'GTC':'GTC', 'HEASARC':'HEASARC',
+    'Herschel'.upper():'Herschel', 'IBVS':'IBVS', 'INES':'INES', 'IRSA':'IRSA', 'ISO':'ISO', 'JWST':'JWST', 'KOA':'KOA',
+    'MAST':'MAST', 'NED':'NED', 'NExScI'.upper():'NExScI', 'NOAO':'NOAO', 'PANGAEA':'PANGAEA', 'PASA':'PASA',
+    'PDG':'PDG', 'PDS':'PDS', 'protocols'.upper():'protocols', 'SIMBAD':'SIMBAD', 'Spitzer'.upper():'Spitzer',
+    'TNS':'TNS', 'Vizier'.upper():'Vizier', 'XMM':'XMM', 'Zenodo'.upper():'Zenodo'
+}
