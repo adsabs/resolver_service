@@ -64,12 +64,8 @@ class LinkRequest():
         ]
 
         # data sub types
-        self.data = [
-            'ARI', 'SIMBAD', 'NED', 'CDS', 'Vizier', 'GCPD', 'Author', 'PDG', 'MAST', 'HEASARC', 'INES', 'IBVS',
-            'Astroverse', 'ESA', 'NExScI', 'PDS', 'AcA', 'ISO', 'ESO', 'Chandra', 'NOAO', 'XMM', 'Spitzer', 'PASA',
-            'ATNF', 'KOA', 'Herschel', 'GTC', 'BICEP2', 'ALMA', 'CADC', 'Zenodo', 'TNS', 'IRSA', 'Github', 'Dryad',
-            'Figshare', 'protocols', 'JWST', 'PANGAEA', 'BAVJ'
-        ]
+        # case discrepancy for some of the types, hence a dict, to get a match from db
+        self.data = current_app.config['RESOLVER_DATA_TYPES']
 
         # identification link type
         self.identification = {
@@ -110,13 +106,6 @@ class LinkRequest():
         :param link_type:
         :return:
         """
-        # data sub types that are not upper case, need to keep them this way to get a match from db
-        data_exceptions = {'Vizier'.upper():'Vizier', 'Author'.upper():'Author', 'Astroverse'.upper():'Astroverse',
-                           'NExScI'.upper():'NExScI', 'AcA'.upper():'AcA', 'Spitzer'.upper():'Spitzer',
-                           'Herschel'.upper():'Herschel', 'Zenodo'.upper():'Zenodo', 'Chandra'.upper():'Chandra',
-                           'Github'.upper():'Github', 'Dryad'.upper():'Dryad', 'Figshare'.upper():'Figshare',
-                           'protocols'.upper():'protocols'}
-
         # if link_type has been specified
         if (link_type in self.link_types):
             self.link_type = link_type
@@ -126,12 +115,9 @@ class LinkRequest():
         elif (link_type in self.esource):
             self.link_type = 'ESOURCE'
             self.link_sub_type = link_type
-        elif (link_type in self.data):
+        elif (link_type.upper() in self.data.keys()):
             self.link_type = 'DATA'
-            self.link_sub_type = link_type
-        elif (link_type in data_exceptions.keys()):
-            self.link_type = 'DATA'
-            self.link_sub_type = data_exceptions[link_type]
+            self.link_sub_type = self.data[link_type.upper()]
         elif ('|' in link_type):
             # init to unknown, then if found valid types, reset it
             self.link_type = '?'
@@ -139,7 +125,7 @@ class LinkRequest():
             parts = link_type.split('|')
             if len(parts) == 2:
                 if (parts[0] == 'ESOURCE' and parts[1] in self.esource) or \
-                   (parts[0] == 'DATA' and parts[1] in self.data + data_exceptions.keys()):
+                   (parts[0] == 'DATA' and parts[1] in self.data.keys()):
                     self.link_type = parts[0]
                     self.link_sub_type = parts[1]
         # if link_type is empty treated as we are having only a bibcode and shall return all records for
