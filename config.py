@@ -189,13 +189,16 @@ RESOLVER_DATA_SOURCES = {
 }
 
 # to allow for case insensitive search
+# add any new data subtype as follows:
+# if all upper case then key and value listed all upper case
+# if case sensitive key is upper case and value is case senstive so list as new_sub_type.upper():new_sub_type
 RESOLVER_DATA_TYPES = {
     'AcA'.upper():'AcA', 'ALMA':'ALMA', 'ARI':'ARI', 'Astroverse'.upper():'Astroverse', 'ATNF':'ATNF',
     'Author'.upper():'Author', 'BAVJ':'BAVJ', 'BICEP2':'BICEP2', 'CADC':'CADC', 'CDS':'CDS',
     'Chandra'.upper():'Chandra', 'Dryad'.upper():'Dryad', 'ESA':'ESA', 'ESO':'ESO', 'Figshare'.upper():'Figshare',
     'GCPD':'GCPD', 'Gemini'.upper():'Gemini', 'Github'.upper():'Github', 'GTC':'GTC', 'HEASARC':'HEASARC',
     'Herschel'.upper():'Herschel', 'IBVS':'IBVS', 'INES':'INES', 'IRSA':'IRSA', 'ISO':'ISO', 'JWST':'JWST', 'KOA':'KOA',
-    'MAST':'MAST', 'NED':'NED', 'NExScI'.upper():'NExScI', 'NOAO':'NOAO', 'PANGAEA':'PANGAEA', 'PASA':'PASA',
+    'LPL':'LPL', 'MAST':'MAST', 'NED':'NED', 'NExScI'.upper():'NExScI', 'NOAO':'NOAO', 'PANGAEA':'PANGAEA', 'PASA':'PASA',
     'PDG':'PDG', 'PDS':'PDS', 'protocols'.upper():'protocols', 'SIMBAD':'SIMBAD', 'Spitzer'.upper():'Spitzer',
     'TNS':'TNS', 'Vizier'.upper():'Vizier', 'XMM':'XMM', 'Zenodo'.upper():'Zenodo'
 }
