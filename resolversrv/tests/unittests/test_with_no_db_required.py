@@ -41,7 +41,7 @@ class test_with_no_database_required(TestCase):
         """
         response = LinkRequest(bibcode='', link_type='PRESENTATION').process_request()
         self.assertEqual(response._status_code, 400)
-        self.assertEqual(response.response[0], '{"error": "no bibcode received"}')
+        self.assertEqual(eval(response.response[0]), {"error": "no bibcode received"})
 
     def test_link_no_url(self):
         """
@@ -50,7 +50,7 @@ class test_with_no_database_required(TestCase):
         """
         response = LinkRequest(bibcode='2017MNRAS.467.3556B', link_type='PRESENTATION').request_link_type_single_url(None)
         self.assertEqual(response._status_code, 404)
-        self.assertEqual(response.response[0], '{"error": "did not find any records"}')
+        self.assertEqual(eval(response.response[0]), {"error": "did not find any records"})
 
 
     def test_link_url_KeyError(self):
@@ -67,7 +67,7 @@ class test_with_no_database_required(TestCase):
                     }]
         response = LinkRequest(bibcode='2017MNRAS.467.3556B', link_type='PRESENTATION').request_link_type_single_url(results)
         self.assertEqual(response._status_code, 400)
-        self.assertEqual(response.response[0], '{"error": "requested information for bibcode=2017MNRAS.467.3556B and link_type=PRESENTATION is missing"}')
+        self.assertEqual(eval(response.response[0]), {"error": "requested information for bibcode=2017MNRAS.467.3556B and link_type=PRESENTATION is missing"})
 
 
     def test_link_url_IndexError(self):
@@ -84,7 +84,7 @@ class test_with_no_database_required(TestCase):
                     }]
         response = LinkRequest(bibcode='2017MNRAS.467.3556B', link_type='PRESENTATION').request_link_type_single_url(results)
         self.assertEqual(response._status_code, 400)
-        self.assertEqual(response.response[0], '{"error": "requested information for bibcode=2017MNRAS.467.3556B and link_type=PRESENTATION is missing"}')
+        self.assertEqual(eval(response.response[0]), {"error": "requested information for bibcode=2017MNRAS.467.3556B and link_type=PRESENTATION is missing"})
 
 
     def test_link_type_single_url(self):
@@ -101,7 +101,7 @@ class test_with_no_database_required(TestCase):
                     }]
         response = LinkRequest(bibcode='2017MNRAS.467.3556B', link_type='PRESENTATION').request_link_type_single_url(results)
         self.assertEqual(response._status_code, 200)
-        self.assertEqual(response.response[0], '{"action": "redirect", "link": "http://www.astro.lu.se/~alexey/animations.html", "link_type": "PRESENTATION", "service": "http://www.astro.lu.se/~alexey/animations.html"}')
+        self.assertDictEqual(eval(response.response[0]), {"action": "redirect", "link": "http://www.astro.lu.se/~alexey/animations.html", "link_type": "PRESENTATION", "service": "http://www.astro.lu.se/~alexey/animations.html"})
 
 
     def test_link_presentation_error_link_type(self):
@@ -126,7 +126,7 @@ class test_with_no_database_required(TestCase):
                     }]
         response = LinkRequest(bibcode='1971ATsir.615....4D', link_type='ASSOCIATED').request_link_type_associated(results)
         self.assertEqual(response._status_code, 400)
-        self.assertEqual(response.response[0], '{"error": "requested information for bibcode=1971ATsir.615....4D and link_type=ASSOCIATED is missing"}')
+        self.assertEqual(eval(response.response[0]), {"error": "requested information for bibcode=1971ATsir.615....4D and link_type=ASSOCIATED is missing"})
 
 
     def test_link_associated_IndexError(self):
@@ -143,7 +143,7 @@ class test_with_no_database_required(TestCase):
                     }]
         response = LinkRequest(bibcode='1971ATsir.615....4D', link_type='ASSOCIATED').request_link_type_associated(results)
         self.assertEqual(response._status_code, 400)
-        self.assertEqual(response.response[0], '{"error": "requested information for bibcode=1971ATsir.615....4D and link_type=ASSOCIATED is missing"}')
+        self.assertEqual(eval(response.response[0]), {"error": "requested information for bibcode=1971ATsir.615....4D and link_type=ASSOCIATED is missing"})
 
 
     def test_link_esource_KeyError(self):
@@ -159,7 +159,7 @@ class test_with_no_database_required(TestCase):
                     'itemCount': 0}]
         response = LinkRequest(bibcode='2013MNRAS.435.1904', link_type='ESOURCE').request_link_type_esource(results)
         self.assertEqual(response._status_code, 400)
-        self.assertEqual(response.response[0], '{"error": "requested information for bibcode=2013MNRAS.435.1904 and link_type=ESOURCE is missing"}')
+        self.assertEqual(eval(response.response[0]), {"error": "requested information for bibcode=2013MNRAS.435.1904 and link_type=ESOURCE is missing"})
 
 
     def test_link_no_url_esource(self):
@@ -175,7 +175,7 @@ class test_with_no_database_required(TestCase):
                     'itemCount': 0}]
         response = LinkRequest(bibcode='2013MNRAS.435.1904', link_type='ESOURCE').request_link_type_esource(results)
         self.assertEqual(response._status_code, 404)
-        self.assertEqual(response.response[0], '{"error": "did not find any records"}')
+        self.assertEqual(eval(response.response[0]), {"error": "did not find any records"})
 
     def test_link_esource_multiple_urls(self):
         """
@@ -213,7 +213,7 @@ class test_with_no_database_required(TestCase):
                     'itemCount': 3}]
         response = LinkRequest(bibcode='2013MNRAS.435.1904', link_type='PUB_PDF').request_link_type_data(results)
         self.assertEqual(response._status_code, 400)
-        self.assertEqual(response.response[0], '{"error": "requested information for bibcode=2013MNRAS.435.1904 and link_type=ESOURCE is missing"}')
+        self.assertEqual(eval(response.response[0]), {"error": "requested information for bibcode=2013MNRAS.435.1904 and link_type=ESOURCE is missing"})
 
 
     def test_link_data_IndexError(self):
@@ -229,7 +229,7 @@ class test_with_no_database_required(TestCase):
                     'itemCount': 3}]
         response = LinkRequest(bibcode='2013MNRAS.435.1904M', link_type='MAST').request_link_type_data(results)
         self.assertEqual(response._status_code, 404)
-        self.assertEqual(response.response[0], '{"error": "did not find any records"}')
+        self.assertEqual(eval(response.response[0]), {"error": "did not find any records"})
 
 
     def test_process_request_no_payload(self):
@@ -239,7 +239,7 @@ class test_with_no_database_required(TestCase):
         """
         response = PopulateRequest().process_request(None)
         self.assertEqual(response._status_code, 400)
-        self.assertEqual(response.response[0], '{"error": "no data received"}')
+        self.assertEqual(eval(response.response[0]), {"error": "no data received"})
 
 
     def test_process_request_error_msg_code_payload(self):
@@ -249,7 +249,7 @@ class test_with_no_database_required(TestCase):
         """
         response = PopulateRequest().process_request('empty')
         self.assertEqual(response._status_code, 400)
-        self.assertEqual(response.response[0], '{"error": "unable to extract data from protobuf structure -- Failed to parse datalinks_records field: repeated field datalinks_records must be in [] which is empty."}')
+        self.assertEqual(eval(response.response[0]), {"error": "unable to extract data from protobuf structure -- Failed to parse datalinks_records field: repeated field datalinks_records must be in [] which is empty.."})
 
 
     def test_process_request_empty_msg_payload(self):
@@ -259,7 +259,7 @@ class test_with_no_database_required(TestCase):
         """
         response = PopulateRequest().process_request(MessageToDict(DataLinksRecordList(), True, True))
         self.assertEqual(response._status_code, 400)
-        self.assertEqual(response.response[0], '{"error": "unable to extract data from protobuf structure -- Failed to parse datalinks_records field: repeated field datalinks_records must be in [] which is {u\'status\': u\'active\', u\'datalinks_records\': []}."}')
+        self.assertEqual(eval(response.response[0]), {"error": "unable to extract data from protobuf structure -- Failed to parse datalinks_records field: repeated field datalinks_records must be in [] which is {\'datalinks_records\': [], \'status\': \'active\'}.."})
 
 
     def test_link_indentifications(self):
@@ -269,11 +269,11 @@ class test_with_no_database_required(TestCase):
         """
         response = LinkRequest(bibcode='2010ApJ...713L.103B', link_type='DOI', id='10.1088/2041-8205/713/2/L103').process_request()
         self.assertEqual(response._status_code, 200)
-        self.assertEqual(response.response[0], '{"action": "redirect", "link": "https://doi.org/10.1088/2041-8205/713/2/L103", "link_type": "DOI", "service": "https://doi.org/10.1088/2041-8205/713/2/L103"}')
+        self.assertDictEqual(eval(response.response[0]), {"action": "redirect", "link": "https://doi.org/10.1088/2041-8205/713/2/L103", "link_type": "DOI", "service": "https://doi.org/10.1088/2041-8205/713/2/L103"})
 
         response = LinkRequest(bibcode='2018arXiv180303598K', link_type='ARXIV', id='1803.03598').process_request()
         self.assertEqual(response._status_code, 200)
-        self.assertEqual(response.response[0], '{"action": "redirect", "link": "http://arxiv.org/abs/1803.03598", "link_type": "ARXIV", "service": "http://arxiv.org/abs/1803.03598"}')
+        self.assertDictEqual(eval(response.response[0]), {"action": "redirect", "link": "http://arxiv.org/abs/1803.03598", "link_type": "ARXIV", "service": "http://arxiv.org/abs/1803.03598"})
 
 
     def test_datalinks(self):

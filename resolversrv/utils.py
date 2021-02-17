@@ -1,4 +1,6 @@
 
+from builtins import str
+from builtins import range
 from flask import current_app
 from sqlalchemy.exc import SQLAlchemyError, DBAPIError
 from sqlalchemy import and_

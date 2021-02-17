@@ -22,19 +22,19 @@ class test_resolver(TestCase):
     def test_fetchingAbstract(self):
         response = LinkRequest('1987gady.book.....B', 'ABSTRACT').process_request()
         self.assertEqual(response._status_code, 200)
-        self.assertEqual(response.response[0], '{"action": "redirect", "link": "/abs/1987gady.book.....B/abstract", "link_type": "ABSTRACT", "service": "/abs/1987gady.book.....B/abstract"}')
+        self.assertDictEqual(eval(response.response[0]), {"action": "redirect", "link": "/abs/1987gady.book.....B/abstract", "link_type": "ABSTRACT", "service": "/abs/1987gady.book.....B/abstract"})
     def test_fetchingCitations(self):
         response = LinkRequest('1987gady.book.....B', 'CITATIONS').process_request()
         self.assertEqual(response._status_code, 200)
-        self.assertEqual(response.response[0], '{"action": "redirect", "link": "/abs/1987gady.book.....B/citations", "link_type": "CITATIONS", "service": "/abs/1987gady.book.....B/citations"}')
+        self.assertDictEqual(eval(response.response[0]), {"action": "redirect", "link": "/abs/1987gady.book.....B/citations", "link_type": "CITATIONS", "service": "/abs/1987gady.book.....B/citations"})
     def test_fetchingCoRead(self):
         response = LinkRequest('1987gady.book.....B', 'COREADS').process_request()
         self.assertEqual(response._status_code, 200)
-        self.assertEqual(response.response[0], '{"action": "redirect", "link": "/abs/1987gady.book.....B/coreads", "link_type": "COREADS", "service": "/abs/1987gady.book.....B/coreads"}')
+        self.assertDictEqual(eval(response.response[0]), {"action": "redirect", "link": "/abs/1987gady.book.....B/coreads", "link_type": "COREADS", "service": "/abs/1987gady.book.....B/coreads"})
     def test_fetchingReferences(self):
         response = LinkRequest('1998ARA&A..36..189K', 'REFERENCES').process_request()
         self.assertEqual(response._status_code, 200)
-        self.assertEqual(response.response[0], '{"action": "redirect", "link": "/abs/1998ARA&A..36..189K/references", "link_type": "REFERENCES", "service": "/abs/1998ARA&A..36..189K/references"}')
+        self.assertDictEqual(eval(response.response[0]), {"action": "redirect", "link": "/abs/1998ARA&A..36..189K/references", "link_type": "REFERENCES", "service": "/abs/1998ARA&A..36..189K/references"})
 
 
     # the following three tests support of legacy type EJOURNAL
@@ -134,7 +134,7 @@ class test_resolver(TestCase):
     def test_publicMethodLinkRequest1(self):
         response = LinkRequest('1987gady.book.....B', 'ABSTRACT').request_link_type_deterministic_single_url_toJSON('')
         self.assertEqual(response._status_code, 404)
-        self.assertEqual(response.response[0], '{"error": "did not find any records"}')
+        self.assertEqual(response.response[0], b'{"error": "did not find any records"}')
 
     def test_route(self):
         """
