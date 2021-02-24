@@ -1,5 +1,8 @@
 # -*- coding: utf-8 -*-
 
+from builtins import str
+from builtins import range
+from builtins import object
 import json
 
 from flask import current_app, request, Blueprint
@@ -15,7 +18,7 @@ from resolversrv.utils import get_records, add_records, del_records
 
 bp = Blueprint('resolver_service', __name__)
 
-class LinkRequest():
+class LinkRequest(object):
 
     def __init__(self, bibcode, link_type='', id=None):
         """
@@ -73,7 +76,7 @@ class LinkRequest():
             'ARXIV': current_app.config['RESOLVER_ARXIV_LINK_BASEURL'],
         }
         
-        self.link_types = self.on_the_fly.keys() + ['ESOURCE', 'DATA', 'INSPIRE', 'LIBRARYCATALOG', 'PRESENTATION', 'ASSOCIATED'] + self.identification.keys()
+        self.link_types = list(self.on_the_fly.keys()) + ['ESOURCE', 'DATA', 'INSPIRE', 'LIBRARYCATALOG', 'PRESENTATION', 'ASSOCIATED'] + list(self.identification.keys())
 
 
     def __backward_compatibility(self, link_type):
@@ -115,7 +118,7 @@ class LinkRequest():
         elif (link_type in self.esource):
             self.link_type = 'ESOURCE'
             self.link_sub_type = link_type
-        elif (link_type.upper() in self.data.keys()):
+        elif (link_type.upper() in list(self.data.keys())):
             self.link_type = 'DATA'
             self.link_sub_type = self.data[link_type.upper()]
         elif ('|' in link_type):
@@ -125,7 +128,7 @@ class LinkRequest():
             parts = link_type.split('|')
             if len(parts) == 2:
                 if (parts[0] == 'ESOURCE' and parts[1] in self.esource) or \
-                   (parts[0] == 'DATA' and parts[1] in self.data.keys()):
+                   (parts[0] == 'DATA' and parts[1] in list(self.data.keys())):
                     self.link_type = parts[0]
                     self.link_sub_type = parts[1]
         # if link_type is empty treated as we are having only a bibcode and shall return all records for
@@ -219,7 +222,7 @@ class LinkRequest():
         :return:
         """
         # on the fly links or identification links are only 1
-        if (link_type != 'TOC' and link_type in self.on_the_fly.keys()) or link_type in self.identification.keys():
+        if (link_type != 'TOC' and link_type in list(self.on_the_fly.keys())) or link_type in list(self.identification.keys()):
             return 1
         # query db
         results = get_records(bibcode=self.bibcode, link_type=link_type)
@@ -513,7 +516,7 @@ class LinkRequest():
             return self.request_link_type_all()
 
         # for these link types, we only need to format the deterministic link and return it
-        if (self.link_type in self.on_the_fly.keys()):
+        if (self.link_type in list(self.on_the_fly.keys())):
             return self.request_link_type_on_the_fly()
 
         # the rest of the link types query the db
@@ -537,7 +540,7 @@ class LinkRequest():
             return self.request_link_type_data(get_records(bibcode=self.bibcode, link_type=self.link_type, link_sub_type=self.link_sub_type))
 
         # for these link types, we only need to format the deterministic link, attach the id to it, and return it
-        if (self.link_type in self.identification.keys()):
+        if (self.link_type in list(self.identification.keys())):
             return self.request_link_type_identification()
 
         # we did not recognize the link_type, so return an error
@@ -554,7 +557,7 @@ class LinkRequest():
         return self.__return_response({'error': 'unrecognizable link_type'}, 400)
 
 
-class PopulateRequest():
+class PopulateRequest(object):
     def __init__(self):
         """
         """
@@ -607,7 +610,7 @@ class PopulateRequest():
         current_app.logger.info('failed to populate db with %d records' % (len(records)))
         return self.__return_response({'error': text}, 400)
 
-class DeleteRequest():
+class DeleteRequest(object):
     def __init__(self):
         """
         """
