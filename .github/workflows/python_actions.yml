@@ -1,4 +1,4 @@
-name: Python CI actions
+name: GitHub Actions CI
 
 on: [pull_request]
 env:
