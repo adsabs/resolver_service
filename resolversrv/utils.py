@@ -6,8 +6,6 @@ from sqlalchemy.exc import SQLAlchemyError, DBAPIError
 from sqlalchemy import and_
 from sqlalchemy.dialects.postgresql import insert
 
-from adsmsg import DataLinksRecord, DataLinksRecordList
-
 from resolversrv.models import DataLinks
 
 def get_records(bibcode, link_type=None, link_sub_type=None):

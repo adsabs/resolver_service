@@ -2,7 +2,6 @@
 
 from builtins import str
 from builtins import range
-from builtins import object
 import json
 
 from flask import current_app, request, Blueprint
@@ -10,6 +9,9 @@ from flask_discoverer import advertise
 from flask import Response
 from requests.utils import quote
 
+# keep these two lines until adsmsg is fixed 3/30/2021
+import warnings
+warnings.filterwarnings("ignore", category=DeprecationWarning)
 from adsmsg import DataLinksRecordList
 from google.protobuf.json_format import Parse, ParseError
 
