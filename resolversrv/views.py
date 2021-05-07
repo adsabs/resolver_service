@@ -3,6 +3,7 @@
 from builtins import str
 from builtins import range
 import json
+import re
 
 from flask import current_app, request, Blueprint
 from flask_discoverer import advertise
@@ -21,6 +22,8 @@ from resolversrv.utils import get_records, add_records, del_records
 bp = Blueprint('resolver_service', __name__)
 
 class LinkRequest(object):
+
+    re_bibcode = re.compile(r"^([12][09]\d\d[A-Za-z\.]{5}[A-Za-z0-9\.]{9}[A-Z])$")
 
     def __init__(self, bibcode, link_type='', id=None):
         """
@@ -404,10 +407,15 @@ class LinkRequest(object):
                     links['link_type'] = self.link_type
                     records = []
                     for idx in range(len(result['url'])):
-                        bibcode = result['url'][idx]
-                        encodeURL = ':' + quote(link_format_str.format(baseurl=self.baseurl, bibcode=bibcode), safe='')
-                        redirectURL = self.gateway_redirect_url.format(bibcode=bibcode, link_type=self.link_type.lower(),
-                                                                 url=encodeURL)
+                        if self.re_bibcode.match(result['url'][idx]):
+                            bibcode = result['url'][idx]
+                            encodeURL = ':' + quote(link_format_str.format(baseurl=self.baseurl, bibcode=bibcode), safe='')
+                            redirectURL = self.gateway_redirect_url.format(bibcode=self.bibcode, link_type=self.link_type.lower(), url=encodeURL)
+                            print('.....redirectURL',redirectURL)
+                        else:
+                            # this is an outside link, so display it as is
+                            bibcode = self.bibcode
+                            redirectURL = result['url'][idx]
                         record = {}
                         record['bibcode'] = bibcode
                         record['title'] = result['title'][idx]
