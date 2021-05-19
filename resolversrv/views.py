@@ -203,6 +203,24 @@ class LinkRequest(object):
         return link_url
 
 
+    def __get_associated_redirect_url(self, url):
+        """
+        
+        :param url: 
+        :return: 
+        """
+        link_format_str = self.on_the_fly['ABSTRACT']
+        if self.re_bibcode.match(url):
+            bibcode = url
+            encodeURL = ':' + quote(link_format_str.format(baseurl=self.baseurl, bibcode=bibcode), safe='')
+            redirectURL = self.gateway_redirect_url.format(bibcode=self.bibcode, link_type=self.link_type.lower(), url=encodeURL)
+        else:
+            # this is an outside link, so display it as is
+            bibcode = self.bibcode
+            redirectURL = url
+            
+        return bibcode, redirectURL
+
     def __return_response(self, results, status):
         """
         
@@ -235,7 +253,10 @@ class LinkRequest(object):
             return 0
         count = 0
         for result in results:
-            count += max(1, result['itemCount'] if 'itemCount' in result else 0)
+            if result['url']:
+                count += len(result['url'])
+            else:
+                count += max(1, result['itemCount'] if 'itemCount' in result else 0)
         return count
 
 
@@ -400,22 +421,13 @@ class LinkRequest(object):
         """
         try:
             if (results is not None):
-                link_format_str = self.on_the_fly['ABSTRACT']
                 for result in results:
                     links = {}
                     links['count'] = len(result['url'])
                     links['link_type'] = self.link_type
                     records = []
                     for idx in range(len(result['url'])):
-                        if self.re_bibcode.match(result['url'][idx]):
-                            bibcode = result['url'][idx]
-                            encodeURL = ':' + quote(link_format_str.format(baseurl=self.baseurl, bibcode=bibcode), safe='')
-                            redirectURL = self.gateway_redirect_url.format(bibcode=self.bibcode, link_type=self.link_type.lower(), url=encodeURL)
-                            print('.....redirectURL',redirectURL)
-                        else:
-                            # this is an outside link, so display it as is
-                            bibcode = self.bibcode
-                            redirectURL = result['url'][idx]
+                        bibcode, redirectURL = self.__get_associated_redirect_url(result['url'][idx])
                         record = {}
                         record['bibcode'] = bibcode
                         record['title'] = result['title'][idx]
