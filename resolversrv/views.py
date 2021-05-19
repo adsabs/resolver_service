@@ -251,14 +251,21 @@ class LinkRequest(object):
         results = get_records(bibcode=self.bibcode, link_type=link_type)
         if (results is None):
             return 0
+        if link_type == 'DATA':
+            count = 0
+            for result in results:
+                count += result['itemCount']
+            return count
+        if link_type in ['ESOURCE', 'ASSOCIATED']:
+            count = 0
+            for result in results:
+                count += len(result['url'])
+            return count
         count = 0
         for result in results:
-            if result['url']:
-                count += len(result['url'])
-            else:
-                count += max(1, result['itemCount'] if 'itemCount' in result else 0)
+            # get the maximum of
+            count += max(1, result['itemCount'] if 'itemCount' in result else 0)
         return count
-
 
     def request_link_type_deterministic_single_url_toJSON(self, url):
         """
