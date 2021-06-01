@@ -172,5 +172,17 @@ class test_resolver(TestCase):
             self.assertEqual(link_request.link_sub_type, db)
 
 
+    def test_associated_redirect_url(self):
+        """
+
+        """
+        link_request = LinkRequest('1990A&AS...83...71D', 'ASSOCIATED')
+        bibcode, redirectURL = link_request._LinkRequest__get_associated_redirect_url(url='1987A&A...179...60C')
+        print(bibcode)
+        print(redirectURL)
+        self.assertEqual(bibcode, '1987A&A...179...60C')
+        self.assertEqual(redirectURL, 'http://localhost:5050/link_gateway/1990A&AS...83...71D/associated/:%2Fabs%2F1987A%26A...179...60C%2Fabstract')
+
+
 if __name__ == '__main__':
   unittest.main()
