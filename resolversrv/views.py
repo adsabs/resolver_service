@@ -23,7 +23,7 @@ bp = Blueprint('resolver_service', __name__)
 
 class LinkRequest(object):
 
-    re_bibcode = re.compile(r"^([12][09]\d\d[A-Za-z\.&]{5}[A-Za-z0-9\.]{9}[A-Z])$")
+    re_bibcode = re.compile(r"^([12]\d\d\d[A-Za-z\.&]{5}[A-Za-z0-9\.]{9}[A-Z])$")
 
     def __init__(self, bibcode, link_type='', id=None):
         """
