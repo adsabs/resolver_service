@@ -217,8 +217,9 @@ class LinkRequest(object):
         else:
             # this is an outside link, so display it as is
             bibcode = self.bibcode
-            redirectURL = url
-            
+            encodeURL = ':' + quote(url, safe='')
+            redirectURL = self.gateway_redirect_url.format(bibcode=self.bibcode, link_type=self.link_type.lower(), url=encodeURL)
+
         return bibcode, redirectURL
 
     def __return_response(self, results, status):
