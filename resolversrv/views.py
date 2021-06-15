@@ -3,6 +3,7 @@
 from builtins import str
 from builtins import range
 import json
+import urllib.parse
 import re
 
 from flask import current_app, request, Blueprint
@@ -268,6 +269,7 @@ class LinkRequest(object):
             count += max(1, result['itemCount'] if 'itemCount' in result else 0)
         return count
 
+
     def request_link_type_deterministic_single_url_toJSON(self, url):
         """
         single url to JSON code transformation
@@ -526,7 +528,6 @@ class LinkRequest(object):
         return self.request_link_type_identification_single_url_toJSON(url)
 
 
-
     def process_request(self):
         """
         process the request
@@ -580,11 +581,31 @@ class LinkRequest(object):
     def check(self):
         """
         verify that link_type is valid
+
         :return:
         """
         if self.link_type is not None and self.link_type != '?':
             return self.__return_response({'status': 'OK'}, 200)
         return self.__return_response({'error': 'unrecognizable link_type'}, 400)
+
+
+    def verify_url(self, url):
+        """
+        verify that url is in db
+
+        :param bibcode:
+        :param url:
+        :return:
+        """
+        parsed_url = urllib.parse.urlparse(url)
+        results = get_records(bibcode=self.bibcode)
+        for result in results:
+            for a_url in result['url']:
+                parsed_url_db = urllib.parse.urlparse(a_url)
+                if parsed_url.netloc == parsed_url_db.netloc:
+                    return self.__return_response({'link': 'verified'}, 200)
+        return self.__return_response({'link': 'not found'}, 200)
+
 
 
 class PopulateRequest(object):
@@ -720,6 +741,17 @@ def resolver_id(bibcode, link_type, id):
     """
     return LinkRequest(bibcode, link_type.upper(), id).process_request()
 
+
+@advertise(scopes=[], rate_limit=[1000, 3600 * 24])
+@bp.route('/<bibcode>/<path:url>', methods=['GET'])
+def verity_url(bibcode, url):
+    """
+    endpoint for verifying outside url
+    :param bibcode:
+    :param link_type:
+    :return:
+    """
+    return LinkRequest(bibcode).verify_url(url)
 
 @advertise(scopes=['ads:resolver-service'], rate_limit=[1000, 3600 * 24])
 @bp.route('/update', methods=['PUT'])
