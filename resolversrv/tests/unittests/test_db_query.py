@@ -43,6 +43,7 @@ class test_database(TestCaseDatabase):
                         ('2017MNRAS.467.3556B', 'PRESENTATION', '',            ['http://www.astro.lu.se/~alexey/animations.html'], [''], 0),
                         ('1943RvMP...15....1C', 'INSPIRE',      '',            ['http://inspirehep.net/search?p=find+j+RMPHA,15,1'], [''], 0),
                         ('1971ATsir.615....4D', 'ASSOCIATED',   '',            ['1971ATsir.615....4D', '1974Afz....10..315D', '1971ATsir.621....7D', '1976Afz....12..665D', '1971ATsir.624....1D', '1983Afz....19..229D', '1983Ap.....19..134D', '1973ATsir.759....6D', '1984Afz....20..525D', '1984Ap.....20..290D', '1974ATsir.809....1D', '1974ATsir.809....2D', '1974ATsir.837....2D'], ['Part  1', 'Part  2', 'Part  3', 'Part  4', 'Part  5', 'Part  6', 'Part  7', 'Part  8', 'Part  9', 'Part 10', 'Part 11', 'Part 12', 'Part 13'], 0),
+                        ('1514temg.book.....V', 'ASSOCIATED',   '',            ['1514temg.book.....V', 'https://www.si.edu/object/siris_sil_154413'], ['Main Paper', 'Supplementary Material'], 0),
                         ('2007ASPC..368...27R', 'ESOURCE',      'ADS_PDF',     ['http://articles.adsabs.harvard.edu/pdf/2007ASPC..368...27R'], [''], 0),
                         ('2007ASPC..368...27R', 'ESOURCE',      'ADS_SCAN',    ['http://articles.adsabs.harvard.edu/full/2007ASPC..368...27R'], [''], 0),
                         ('2007ASPC..368...27R', 'ESOURCE',      'EPRINT_HTML', ['https://arxiv.org/abs/astro-ph/0703637'], [''], 0),
@@ -432,6 +433,18 @@ class test_database(TestCaseDatabase):
                                                            u'url': u'http://archive.stsci.edu'}]},
                                              u'service': u''})
 
+
+    def test_verify_url(self):
+        """
+
+        :return:
+        """
+        self.add_stub_data()
+        headers = {'Content-type': 'application/json', 'Accept': 'text/plain'}
+        response = self.client.get('/1514temg.book.....V/https%3A%2F%2Fwww.si.edu%2Fobject%2Fsiris_sil_154413', headers=headers)
+        self.assertEqual(response.json, {'link': 'verified'})
+        response = self.client.get('/1514temg.book.....V/https%3A%2F%2Fwww.google.com', headers=headers)
+        self.assertEqual(response.json, {'link': 'not found'})
 
 if __name__ == '__main__':
     unittest.main()
