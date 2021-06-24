@@ -589,7 +589,7 @@ class LinkRequest(object):
         return self.__return_response({'error': 'unrecognizable link_type'}, 400)
 
 
-    def verify_url_not_in_db(self, domain):
+    def __verify_url_not_in_db(self, domain):
         """
         there are urls that the domain is not in database, we have placeholder for the domain in db,
         ie, $SIMBAD$, then look them, and use the provider's domain, replace the placeholder with that
@@ -614,8 +614,8 @@ class LinkRequest(object):
         :param url:
         :return:
         """
-        parsed_url = urllib.parse.urlparse(url)
-        if (self.verify_url_not_in_db(parsed_url.netloc)):
+        parsed_url = urllib.parse.urlparse(urllib.parse.unquote(url))
+        if (self.__verify_url_not_in_db(parsed_url.netloc)):
             return self.__return_response({'link': 'verified'}, 200)
         results = get_records(bibcode=self.bibcode)
         for result in results:
