@@ -589,6 +589,23 @@ class LinkRequest(object):
         return self.__return_response({'error': 'unrecognizable link_type'}, 400)
 
 
+    def verify_url_not_in_db(self, domain):
+        """
+        there are urls that the domain is not in database, we have placeholder for the domain in db,
+        ie, $SIMBAD$, then look them, and use the provider's domain, replace the placeholder with that
+        so check to see if we have one of those, and compare with provider's domain name
+
+        :param domain:
+        :return:
+        """
+        data_resources = current_app.config['RESOLVER_DATA_SOURCES']
+        for name, info in data_resources.items():
+            if name in ["SIMBAD", "NED", "Vizier", "CDS"]:
+                if info["url"].split('://', 1)[-1] == domain:
+                    return True
+        return False
+
+
     def verify_url(self, url):
         """
         verify that url is in db
@@ -598,6 +615,8 @@ class LinkRequest(object):
         :return:
         """
         parsed_url = urllib.parse.urlparse(url)
+        if (self.verify_url_not_in_db(parsed_url.netloc)):
+            return self.__return_response({'link': 'verified'}, 200)
         results = get_records(bibcode=self.bibcode)
         for result in results:
             for a_url in result['url']:
