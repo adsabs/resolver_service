@@ -623,7 +623,7 @@ class LinkRequest(object):
                 parsed_url_db = urllib.parse.urlparse(a_url)
                 if parsed_url.netloc == parsed_url_db.netloc:
                     return self.__return_response({'link': 'verified'}, 200)
-        return self.__return_response({'link': 'not found'}, 200)
+        return self.__return_response({'link': 'not found','url':url, 'parsed':parsed_url.netloc}, 200)
 
 
 
