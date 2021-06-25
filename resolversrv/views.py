@@ -606,24 +606,23 @@ class LinkRequest(object):
         return False
 
 
-    def verify_url(self, url):
+    def verify_url(self, netloc):
         """
         verify that url is in db
 
         :param bibcode:
-        :param url:
+        :param netloc:
         :return:
         """
-        parsed_url = urllib.parse.urlparse(url)
-        if (self.__verify_url_not_in_db(parsed_url.netloc)):
+        if (self.__verify_url_not_in_db(netloc)):
             return self.__return_response({'link': 'verified'}, 200)
         results = get_records(bibcode=self.bibcode)
         for result in results:
             for a_url in result['url']:
                 parsed_url_db = urllib.parse.urlparse(a_url)
-                if parsed_url.netloc == parsed_url_db.netloc:
+                if netloc == parsed_url_db.netloc:
                     return self.__return_response({'link': 'verified'}, 200)
-        return self.__return_response({'link': 'not found','url':url, 'parsed':parsed_url.netloc}, 200)
+        return self.__return_response({'link': 'not found'}, 200)
 
 
 
@@ -762,15 +761,15 @@ def resolver_id(bibcode, link_type, id):
 
 
 @advertise(scopes=[], rate_limit=[1000, 3600 * 24])
-@bp.route('/<bibcode>:<path:url>', methods=['GET'])
-def verity_url(bibcode, url):
+@bp.route('/<bibcode>:<path:id>', methods=['GET'])
+def verity_url(bibcode, id):
     """
     endpoint for verifying outside url
     :param bibcode:
-    :param link_type:
+    :param id:
     :return:
     """
-    return LinkRequest(bibcode).verify_url(url)
+    return LinkRequest(bibcode).verify_url(id)
 
 @advertise(scopes=['ads:resolver-service'], rate_limit=[1000, 3600 * 24])
 @bp.route('/update', methods=['PUT'])
