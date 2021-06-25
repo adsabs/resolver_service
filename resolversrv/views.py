@@ -614,7 +614,7 @@ class LinkRequest(object):
         :param url:
         :return:
         """
-        parsed_url = urllib.parse.urlparse(urllib.parse.unquote(url))
+        parsed_url = urllib.parse.urlparse(url)
         if (self.__verify_url_not_in_db(parsed_url.netloc)):
             return self.__return_response({'link': 'verified'}, 200)
         results = get_records(bibcode=self.bibcode)
@@ -762,7 +762,7 @@ def resolver_id(bibcode, link_type, id):
 
 
 @advertise(scopes=[], rate_limit=[1000, 3600 * 24])
-@bp.route('/<bibcode>/<path:url>', methods=['GET'])
+@bp.route('/<bibcode>:<path:url>', methods=['GET'])
 def verity_url(bibcode, url):
     """
     endpoint for verifying outside url
