@@ -136,7 +136,7 @@ class test_resolver(TestCase):
         self.assertEqual(response._status_code, 404)
         self.assertEqual(response.response[0], b'{"error": "did not find any records"}')
     def test_publicMethodLinkRequest2(self):
-        response = LinkRequest('2003MNRAS.342.1117M', 'CD').verify_url('vizier.u-strasbg.fr')
+        response = LinkRequest('2003MNRAS.342.1117M', 'CD').verify_url('http%3A%2Fvizier.u-strasbg.fr%2Fviz-bin%2FVizieR%3F-source%3DIV%2F26')
         self.assertEqual(response._status_code, 200)
         self.assertEqual(response.response[0], b'{"link": "verified"}')
 
