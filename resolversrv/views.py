@@ -601,7 +601,7 @@ class LinkRequest(object):
         data_resources = current_app.config['RESOLVER_DATA_SOURCES']
         for name, info in data_resources.items():
             if name in ["SIMBAD", "NED", "Vizier", "CDS"]:
-                if info["url"].split('://', 1)[-1] == domain:
+                if info["url"].split('://', 1)[-1].strip('/') == domain:
                     return True
         return False
 
@@ -614,7 +614,7 @@ class LinkRequest(object):
         :param url:
         :return:
         """
-        parsed_url = urllib.parse.urlparse(url)
+        parsed_url = urllib.parse.urlparse(urllib.parse.unquote(url))
         if (self.__verify_replaced_url_not_in_db(parsed_url.netloc)):
             return self.__return_response({'link': 'verified'}, 200)
         results = get_records(bibcode=self.bibcode)
