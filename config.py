@@ -54,7 +54,7 @@ RESOLVER_DATA_SOURCES = {
     },
     "CDS": {
         "name": "Strasbourg Astronomical Data Center",
-        "url": "http://cdsweb.u-strasbg.fr/",
+        "url": "http://cdsweb.u-strasbg.fr",
     },
     "ESA": {
         "name": "ESAC Science Data Center",
