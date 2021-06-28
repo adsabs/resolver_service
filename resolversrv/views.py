@@ -204,6 +204,22 @@ class LinkRequest(object):
         return link_url
 
 
+    def __verify_replaced_url_not_in_db(self, domain):
+        """
+        there are urls that the domain is not in database, we have placeholder for the domain in db,
+        ie, $SIMBAD$, we use the provider's domain, and replace the placeholder with that
+        so check to see if we have one of those, and compare with provider's domain name
+
+        :param domain:
+        :return:
+        """
+        data_resources = current_app.config['RESOLVER_DATA_SOURCES']
+        for name in ["SIMBAD", "NED", "Vizier", "CDS"]:
+            if data_resources[name]['url'].split('://', 1)[-1] == domain:
+                return True
+        return False
+
+
     def __get_associated_redirect_url(self, url):
         """
         
@@ -587,23 +603,6 @@ class LinkRequest(object):
         if self.link_type is not None and self.link_type != '?':
             return self.__return_response({'status': 'OK'}, 200)
         return self.__return_response({'error': 'unrecognizable link_type'}, 400)
-
-
-    def __verify_replaced_url_not_in_db(self, domain):
-        """
-        there are urls that the domain is not in database, we have placeholder for the domain in db,
-        ie, $SIMBAD$, then look them, and use the provider's domain, replace the placeholder with that
-        so check to see if we have one of those, and compare with provider's domain name
-
-        :param domain:
-        :return:
-        """
-        data_resources = current_app.config['RESOLVER_DATA_SOURCES']
-        for name, info in data_resources.items():
-            if name in ["SIMBAD", "NED", "Vizier", "CDS"]:
-                if info["url"].split('://', 1)[-1].strip('/') == domain:
-                    return True
-        return False
 
 
     def verify_url(self, url):
