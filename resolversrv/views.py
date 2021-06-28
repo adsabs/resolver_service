@@ -589,7 +589,7 @@ class LinkRequest(object):
         return self.__return_response({'error': 'unrecognizable link_type'}, 400)
 
 
-    def __verify_url_not_in_db(self, domain):
+    def __verify_replaced_url_not_in_db(self, domain):
         """
         there are urls that the domain is not in database, we have placeholder for the domain in db,
         ie, $SIMBAD$, then look them, and use the provider's domain, replace the placeholder with that
@@ -606,21 +606,22 @@ class LinkRequest(object):
         return False
 
 
-    def verify_url(self, netloc):
+    def verify_url(self, url):
         """
         verify that url is in db
 
         :param bibcode:
-        :param netloc:
+        :param url:
         :return:
         """
-        if (self.__verify_url_not_in_db(netloc)):
+        parsed_url = urllib.parse.urlparse(url)
+        if (self.__verify_replaced_url_not_in_db(parsed_url.netloc)):
             return self.__return_response({'link': 'verified'}, 200)
         results = get_records(bibcode=self.bibcode)
         for result in results:
             for a_url in result['url']:
                 parsed_url_db = urllib.parse.urlparse(a_url)
-                if netloc == parsed_url_db.netloc:
+                if parsed_url.netloc == parsed_url_db.netloc:
                     return self.__return_response({'link': 'verified'}, 200)
         return self.__return_response({'link': 'not found'}, 200)
 
@@ -755,21 +756,13 @@ def resolver_id(bibcode, link_type, id):
     endpoint for identification link types: doi and arXiv
     :param bibcode:
     :param link_type:
-    :return:
-    """
-    return LinkRequest(bibcode, link_type.upper(), id).process_request()
-
-
-@advertise(scopes=[], rate_limit=[1000, 3600 * 24])
-@bp.route('/<bibcode>:<path:id>', methods=['GET'])
-def verity_url(bibcode, id):
-    """
-    endpoint for verifying outside url
-    :param bibcode:
     :param id:
     :return:
     """
-    return LinkRequest(bibcode).verify_url(id)
+    if link_type == 'verify_url':
+        return LinkRequest(bibcode).verify_url(id)
+    return LinkRequest(bibcode, link_type.upper(), id).process_request()
+
 
 @advertise(scopes=['ads:resolver-service'], rate_limit=[1000, 3600 * 24])
 @bp.route('/update', methods=['PUT'])
