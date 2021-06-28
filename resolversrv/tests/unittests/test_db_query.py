@@ -441,9 +441,9 @@ class test_database(TestCaseDatabase):
         """
         self.add_stub_data()
         headers = {'Content-type': 'application/json', 'Accept': 'text/plain'}
-        response = self.client.get('/1514temg.book.....V:www.si.edu', headers=headers)
+        response = self.client.get('/1514temg.book.....V/verify_url:https%3A%2F%2Fwww.si.edu%2Fobject%2Fsiris_sil_154413', headers=headers)
         self.assertEqual(response.json, {'link': 'verified'})
-        response = self.client.get('/1514temg.book.....V:www.google.com', headers=headers)
+        response = self.client.get('/1514temg.book.....V/verify_url:http%3A%2F%2Fwww.google.com', headers=headers)
         self.assertEqual(response.json, {'link': 'not found'})
 
 if __name__ == '__main__':
