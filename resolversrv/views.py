@@ -199,8 +199,7 @@ class LinkRequest(object):
         if (link_sub_type == 'NED') or (link_sub_type == 'SIMBAD'):
             return link_url.replace('${}$'.format(link_sub_type), self.__get_url_hostname(data_source_url))
         if (link_sub_type == 'Vizier') or (link_sub_type == 'CDS'):
-            _, url = self.__get_data_source_title_url(link_sub_type='Vizier', default_url='')
-            return link_url.replace('$VIZIER$', self.__get_url_hostname(url))
+            return link_url.replace('$VIZIER$', self.__get_url_hostname(data_source_url))
         return link_url
 
 
