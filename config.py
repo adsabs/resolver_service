@@ -25,237 +25,336 @@ RESOLVER_ARXIV_LINK_BASEURL = 'http://arxiv.org/abs/{id}'
 
 RESOLVER_DATA_SOURCES = {
     "4TU.ResearchData": {
-      "name": '4TU.ResearchData',
-      "url": 'International data repository for science, engineering and design',
+      "name": "4TU.ResearchData",
+      "url": "https://data.4tu.nl/",
     },
     "AcA": {
-      "name": 'AcA',
-      "url": 'Acta Astronomica Data Files',
+      "name": "AcA",
+      "url": "ftp://ftp.astrouw.edu.pl",
+    },
+    "AHED": {
+      "name": "AHED",
+      "url": "https://ahed.nasa.gov/",
     },
     "ALMA": {
-      "name": 'ALMA',
-      "url": 'Atacama Large Millimeter/submillimeter Array',
+      "name": "ALMA",
+      "url": "https://almascience.org/",
     },
     "ArcticData": {
-      "name": 'ArcticData',
-      "url": 'Arctic Data Center',
+      "name": "ArcticData",
+      "url": "https://arcticdata.io/",
     },
     "ARI": {
-      "name": 'ARI',
-      "url": 'Astronomisches Rechen-Institut',
+      "name": "ARI",
+      "url": "https://zah.uni-heidelberg.de/institutes/ari/",
+    },
+    "ARTEMIS": {
+      "name": "ARTEMIS",
+      "url": "http://artemis.ssl.berkeley.edu/",
     },
     "AstroGeo": {
-      "name": 'AstroGeo',
-      "url": 'USGS Astrogeology Science Center',
-    },
-    "Astroverse": {
-      "name": 'Astroverse',
-      "url": 'CfA Dataverse',
+      "name": "AstroGeo",
+      "url": "https://www.usgs.gov/centers/astrogeology-science-center",
     },
     "ASU": {
-      "name": 'ASU',
-      "url": 'Arizona State University',
+      "name": "ASU",
+      "url": "",
+    },
+    "Astroverse": {
+      "name": "Astroverse",
+      "url": "https://dataverse.harvard.edu/dataverse/cfa",
     },
     "ATNF": {
-      "name": 'ATNF',
-      "url": 'Australia Telescope Online Archive',
+      "name": "ATNF",
+      "url": "https://atoa.atnf.csiro.au",
     },
     "Author": {
-      "name": 'Author',
-      "url": 'Author Hosted Dataset',
+      "name": "Author",
+      "url": "",
     },
     "BAS": {
-      "name": 'BAS',
-      "url": 'British Antarctic Survey',
+      "name": "BAS",
+      "url": "https://data.bas.ac.uk/",
     },
     "BAVJ": {
-      "name": 'BAVJ',
-      "url": 'Data of the German Association for Variable Stars',
+      "name": "BAVJ",
+      "url": "https://www.bav-astro.eu",
     },
     "BICEP2": {
-      "name": 'BICEP2',
-      "url": 'BICEP/Keck Data',
+      "name": "BICEP2",
+      "url": "http://bicepkeck.org",
     },
     "CADC": {
-      "name": 'CADC',
-      "url": 'Canadian Astronomy Data Center',
+      "name": "CADC",
+      "url": "http://www.canfar.phys.uvic.ca/en",
     },
     "Caltech": {
-      "name": 'Caltech',
-      "url": 'California Institute of Technology',
+      "name": "Caltech",
+      "url": "https://data.caltech.edu",
     },
     "CDS": {
-      "name": 'CDS',
-      "url": 'Strasbourg Astronomical Data Center',
-    },
-    "CMDN": {
-      "name": 'CMDN',
-      "url": 'China Meteorological Data Service Centre',
+      "name": "CDS",
+      "url": "http://cdsweb.u-strasbg.fr",
     },
     "Chandra": {
-      "name": 'Chandra',
-      "url": 'Chandra X-Ray Observatory',
+      "name": "Chandra",
+      "url": "http://cxc.harvard.edu/cda",
     },
     "ClimateDataStore": {
-      "name": 'ClimateDataStore',
-      "url": 'Climate Data Store',
+      "name": "ClimateDataStore",
+      "url": "https://cds.climate.copernicus.eu/#!/home",
+    },
+    "CMDN": {
+      "name": "CMDN",
+      "url": "http://data.cma.cn/en",
+    },
+    "CXO": {
+      "name": "CXO",
+      "url": "https://cxc.harvard.edu/cda/",
     },
     "DARTS": {
-      "name": 'DARTS',
-      "url": 'Data ARchives and Transmission System',
+      "name": "DARTS",
+      "url": "https://darts.isas.jaxa.jp/",
     },
     "Dataverse": {
-      "name": 'Dataverse',
-      "url": 'Dataverse Project',
+      "name": "Dataverse",
+      "url": "",
     },
     "Dryad": {
-      "name": 'Dryad',
-      "url": 'International Repository of Research Data',
+      "name": "Dryad",
+      "url": "https://datadryad.org",
+    },
+    "dryad": {
+      "name": "dryad",
+      "url": "https://datadryad.org",
     },
     "EARTHCHEM": {
-      "name": 'EARTHCHEM',
-      "url": 'Open-access repository for geochemical datasets',
+      "name": "EARTHCHEM",
+      "url": "https://www.earthchem.org/",
     },
     "ECMWF": {
-      "name": 'ECMWF',
-      "url": 'European Centre for Medium-Range Weather Forecasts',
+      "name": "ECMWF",
+      "url": "https://www.ecmwf.int/",
     },
     "EMFISIS": {
-      "name": 'EMFISIS',
-      "url": 'An instrument suite on the Van Allen Probes',
+      "name": "EMFISIS",
+      "url": "https://emfisis.physics.uiowa.edu/",
     },
     "ERGSC": {
-      "name": 'ERGSC',
-      "url": 'ERG Science Center',
+      "name": "ERGSC",
+      "url": "https://ergsc.isee.nagoya-u.ac.jp/",
     },
     "ESA": {
-      "name": 'ESA',
-      "url": 'ESAC Science Data Center',
+      "name": "ESA",
+      "url": "http://archives.esac.esa.int",
     },
     "ESGF": {
-      "name": 'ESGF',
-      "url": 'Earth System Grid Federation',
+      "name": "ESGF",
+      "url": "https://esgf-node.llnl.gov/projects/esgf-llnl/",
     },
     "ESO": {
-      "name": 'ESO',
-      "url": 'European Southern Observatory',
+      "name": "ESO",
+      "url": "http://archive.eso.org",
+    },
+    "ETHZ": {
+      "name": "ETHZ",
+      "url": "https://www.research-collection.ethz.ch/",
+    },
+    "FDSN": {
+      "name": "FDSN",
+      "url": "https://www.fdsn.org/",
     },
     "Figshare": {
-      "name": 'Figshare',
-      "url": 'Online Open Access Repository',
+      "name": "Figshare",
+      "url": "https://figshare.com",
+    },
+    "figshare": {
+      "name": "figshare",
+      "url": "https://figshare.com",
     },
     "GCPD": {
-      "name": 'GCPD',
-      "url": 'The General Catalogue of Photometric Data',
+      "name": "GCPD",
+      "url": "http://obswww.unige.ch/gcpd/",
+    },
+    "Gemini": {
+      "name": "Gemini",
+      "url": "https://archive.gemini.edu/searchform",
     },
     "Github": {
-      "name": 'Github',
-      "url":
-        'Web-based version-control and collaboration platform for software developers.',
+      "name": "Github",
+      "url": "https://github.com",
     },
     "GRAS": {
-      "name": 'GRAS',
-      "url": 'Lunar and Planet Exploration Program Ground Application System',
+      "name": "GRAS",
+      "url": "http://moon.bao.ac.cn",
     },
     "GTC": {
-      "name": 'GTC',
-      "url": 'Gran Telescopio CANARIAS Public Archive',
+      "name": "GTC",
+      "url": "http://gtc.sdc.cab.inta-csic.es/gtc/",
     },
     "HEASARC": {
-      "name": 'HEASARC',
-      "url":
-        "NASA's High Energy Astrophysics Science Archive Research Center",
+      "name": "HEASARC",
+      "url": "https://heasarc.gsfc.nasa.gov/",
     },
     "Herschel": {
-      "name": 'Herschel',
-      "url": 'Herschel Science Center',
+      "name": "Herschel",
+      "url": "https://www.cosmos.esa.int/web/herschel/home",
     },
     "IBVS": {
-      "name": 'IBVS',
-      "url": 'Information Bulletin on Variable Stars',
+      "name": "IBVS",
+      "url": "http://ibvs.konkoly.hu/IBVS/IBVS.html",
     },
     "INES": {
-      "name": 'INES',
-      "url": 'IUE Newly Extracted Spectra',
+      "name": "INES",
+      "url": "http://sdc.cab.inta-csic.es/ines/",
+    },
+    "IRIS": {
+      "name": "IRIS",
+      "url": "https://ds.iris.edu/ds/",
     },
     "IRSA": {
-      "name": 'IRSA',
-      "url": 'NASA/IPAC Infrared Science Archive',
+      "name": "IRSA",
+      "url": "https://irsa.ipac.caltech.edu/frontpage/",
     },
     "ISO": {
-      "name": 'ISO',
-      "url": 'Infrared Space Observatory',
+      "name": "ISO",
+      "url": "https://www.cosmos.esa.int/web/iso",
+    },
+    "JOSS": {
+      "name": "JOSS",
+      "url": "https://joss.theoj.org/",
     },
     "JWST": {
-      "name": 'JWST',
-      "url": 'JWST Proposal Info',
+      "name": "JWST",
+      "url": "http://www.stsci.edu/jwst",
     },
     "KOA": {
-      "name": 'KOA',
-      "url": 'Keck Observatory Archive',
+      "name": "KOA",
+      "url": "https://koa.ipac.caltech.edu",
+    },
+    "LAADS": {
+      "name": "LAADS",
+      "url": "https://ladsweb.modaps.eosdis.nasa.gov/",
+    },
+    "LASP": {
+      "name": "LASP",
+      "url": "https://lasp.colorado.edu/home/",
+    },
+    "LPL": {
+      "name": "LPL",
+      "url": "https://www.lpl.arizona.edu/",
     },
     "MAST": {
-      "name": 'MAST',
-      "url": 'Mikulski Archive for Space Telescopes',
+      "name": "MAST",
+      "url": "http://archive.stsci.edu",
+    },
+    "MetOffice": {
+      "name": "MetOffice",
+      "url": "https://www.metoffice.gov.uk/",
+    },
+    "MIT": {
+      "name": "MIT",
+      "url": "https://web.mit.edu/",
+    },
+    "NASA": {
+      "name": "NASA",
+      "url": "https://data.nas.nasa.gov",
+    },
+    "NCAR": {
+      "name": "NCAR",
+      "url": "https://ncar.ucar.edu/",
     },
     "NED": {
-      "name": 'NED',
-      "url": 'NASA/IPAC Extragalactic Database',
+      "name": "NED",
+      "url": "https://ned.ipac.caltech.edu",
     },
     "NExScI": {
-      "name": 'NExScI',
-      "url": 'NASA Exoplanet Archive',
+      "name": "NExScI",
+      "url": "https://exoplanetarchive.ipac.caltech.edu",
+    },
+    "NOAA": {
+      "name": "NOAA",
+      "url": "https://www.ncdc.noaa.gov/",
     },
     "NOAO": {
-      "name": 'NOAO',
-      "url": 'National Optical Astronomy Observatory',
+      "name": "NOAO",
+      "url": "https://www.noao.edu",
+    },
+    "OSF": {
+      "name": "OSF",
+      "url": "https://osf.io/",
     },
     "PANGAEA": {
-      "name": 'PANGAEA',
-      "url":
-        'Digital Data Library and a Data Publisher for Earth System Science',
+      "name": "PANGAEA",
+      "url": "https://www.pangaea.de",
+    },
+    "pangaea": {
+      "name": "pangaea",
+      "url": "https://www.pangaea.de",
     },
     "PASA": {
-      "name": 'PASA',
-      "url":
-        'Publication of the Astronomical Society of Australia Datasets',
+      "name": "PASA",
+      "url": "http://www.publish.csiro.au",
     },
     "PDG": {
-      "name": 'PDG',
-      "url": 'Particle Data Group',
+      "name": "PDG",
+      "url": "http://pdglive.lbl.gov",
     },
     "PDS": {
-      "name": 'PDS',
-      "url": 'The NASA Planetary Data System',
+      "name": "PDS",
+      "url": "https://pds.jpl.nasa.gov",
+    },
+    "PDSS": {
+      "name": "PDSS",
+      "url": "https://pds.jpl.nasa.gov",
+    },
+    "PIK": {
+      "name": "PIK",
+      "url": "https://dataservices.gfz-potsdam.de/portal/",
     },
     "protocols": {
-      "name": 'protocols',
-      "url":
-        'Collaborative Platform and Preprint Server for Science Methods and Protocols',
+      "name": "protocols",
+      "url": "https://www.protocols.io",
+    },
+    "ScienceBase": {
+      "name": "ScienceBase",
+      "url": "https://www.sciencebase.gov/catalog/",
     },
     "SIMBAD": {
-      "name": 'SIMBAD',
-      "url": 'SIMBAD Database at the CDS',
+      "name": "SIMBAD",
+      "url": "http://simbad.u-strasbg.fr",
     },
     "Spitzer": {
-      "name": 'Spitzer',
-      "url": 'Spitzer Space Telescope',
+      "name": "Spitzer",
+      "url": "https://irsa.ipac.caltech.edu/Missions/spitzer.html",
+    },
+    "TDR": {
+      "name": "TDR",
+      "url": "https://dataverse.tdl.org/",
+    },
+    "THEMIS": {
+      "name": "THEMIS",
+      "url": "http://themis.ssl.berkeley.edu/index.shtml",
     },
     "TNS": {
-      "name": 'TNS',
-      "url": 'Transient Name Server',
+      "name": "TNS",
+      "url": "https://wis-tns.weizmann.ac.il",
+    },
+    "UNAVCO": {
+      "name": "UNAVCO",
+      "url": "https://www.unavco.org/",
     },
     "Vizier": {
-      "name": 'VizieR',
-      "url": 'VizieR Catalog Service',
+      "name": "Vizier",
+      "url": "http://vizier.u-strasbg.fr",
     },
     "XMM": {
-      "name": 'XMM',
-      "url": 'XMM Newton Science Archive',
+      "name": "XMM",
+      "url": "http://nxsa.esac.esa.int",
     },
     "Zenodo": {
-      "name": 'Zenodo',
-      "url": 'Zenodo Archive',
+      "name": "Zenodo",
+      "url": "https://zenodo.org",
     },
 }
 
