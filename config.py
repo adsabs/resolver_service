@@ -123,10 +123,6 @@ RESOLVER_DATA_SOURCES = {
       "name": "International Repository of Research Data",
       "url": "https://datadryad.org",
     },
-    "dryad": {
-      "name": "International Repository of Research Data",
-      "url": "https://datadryad.org",
-    },
     "EARTHCHEM": {
       "name": "Open-access repository for geochemical datasets",
       "url": "https://www.earthchem.org/",
