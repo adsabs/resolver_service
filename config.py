@@ -163,10 +163,6 @@ RESOLVER_DATA_SOURCES = {
       "name": "Online Open Access Repository",
       "url": "https://figshare.com",
     },
-    "figshare": {
-      "name": "Online Open Access Repository",
-      "url": "https://figshare.com",
-    },
     "GCPD": {
       "name": "The General Catalogue of Photometric Data",
       "url": "http://obswww.unige.ch/gcpd/",
@@ -280,10 +276,6 @@ RESOLVER_DATA_SOURCES = {
       "url": "https://osf.io/",
     },
     "PANGAEA": {
-      "name": "Digital Data Library and a Data Publisher for Earth System Science",
-      "url": "https://www.pangaea.de",
-    },
-    "pangaea": {
       "name": "Digital Data Library and a Data Publisher for Earth System Science",
       "url": "https://www.pangaea.de",
     },
