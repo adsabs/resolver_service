@@ -24,167 +24,337 @@ RESOLVER_DOI_LINK_BASEURL = 'https://doi.org/{id}'
 RESOLVER_ARXIV_LINK_BASEURL = 'http://arxiv.org/abs/{id}'
 
 RESOLVER_DATA_SOURCES = {
-    "SIMBAD": {
-        "name": "SIMBAD Database at the CDS",
-        "url": "http://simbad.u-strasbg.fr",
-    },
-    "XMM": {
-        "name": "XMM Newton Science Archive",
-        "url": "http://nxsa.esac.esa.int",
-    },
-    "NED": {
-        "name": "NASA/IPAC Extragalactic Database",
-        "url": "https://ned.ipac.caltech.edu",
-    },
-    "MAST": {
-        "name": "Mikulski Archive for Space Telescopes",
-        "url": "http://archive.stsci.edu",
-    },
-    "ISO": {
-        "name": "Infrared Space Observatory",
-        "url": "https://www.cosmos.esa.int/web/iso",
-    },
-    "Vizier": {
-        "name": "VizieR Catalog Service",
-	    "url": "http://vizier.u-strasbg.fr",
-    },
-    "HEASARC": {
-        "name": "NASA's High Energy Astrophysics Science Archive Research Center",
-        "url": "https://heasarc.gsfc.nasa.gov/",
-    },
-    "CDS": {
-        "name": "Strasbourg Astronomical Data Center",
-        "url": "http://cdsweb.u-strasbg.fr",
-    },
-    "ESA": {
-        "name": "ESAC Science Data Center",
-        "url": "http://archives.esac.esa.int",
-    },
-    "Chandra": {
-        "name": "Chandra X-Ray Observatory",
-        "url": "http://cxc.harvard.edu/cda",
-    },
-    "ESO": {
-        "name": "European Southern Observatory",
-        "url": "http://archive.eso.org",
-    },
-    "PDG": {
-        "name": "Particle Data Group",
-        "url": "http://pdglive.lbl.gov",
-    },
-    "KOA": {
-        "name": "Keck Observatory Archive",
-        "url": " https://koa.ipac.caltech.edu",
-    },
-    "NOAO": {
-        "name": "National Optical Astronomy Observatory",
-        "url": " https://www.noao.edu",
-    },
-    "Herschel": {
-        "name": "Herschel Science Center",
-        "url": "https://www.cosmos.esa.int/web/herschel/home",
-    },
-    "GCPD": {
-        "name": "The General Catalogue of Photometric Data",
-        "url": "http://obswww.unige.ch/gcpd/",
-    },
-    "TNS": {
-        "name": "Transient Name Server",
-        "url": " https://wis-tns.weizmann.ac.il",
-    },
-    "Spitzer": {
-        "name": "Spitzer Space Telescope",
-        "url": "https://irsa.ipac.caltech.edu/Missions/spitzer.html",
-    },
-    "INES": {
-        "name": "IUE Newly Extracted Spectra",
-        "url": "http://sdc.cab.inta-csic.es/ines/",
-    },
-    "PDS": {
-        "name": "The NASA Planetary Data System",
-        "url": " https://pds.jpl.nasa.gov",
-    },
-    "ATNF": {
-        "name": "Australia Telescope Online Archive",
-        "url": " https://atoa.atnf.csiro.au",
-    },
-    "IBVS": {
-        "name": "Information Bulletin on Variable Stars",
-        "url": "http://ibvs.konkoly.hu/IBVS/IBVS.html",
-    },
-    "ARI": {
-        "name": "Astronomisches Rechen-Institut",
-        "url": "https://zah.uni-heidelberg.de/institutes/ari/",
-    },
-    "NExScI": {
-        "name": "NASA Exoplanet Archive",
-        "url": " https://exoplanetarchive.ipac.caltech.edu",
-    },
-    "ALMA": {
-        "name": "Atacama Large Millimeter/submillimeter Array",
-        "url": "https://almascience.org/",
-    },
-    "Author": {
-        "name": "Author Hosted Dataset",
-    },
-    "GTC": {
-        "name": "Gran Telescopio CANARIAS Public Archive",
-        "url": "http://gtc.sdc.cab.inta-csic.es/gtc/",
-    },
-    "Astroverse": {
-        "name": "CfA Dataverse",
-        "url": "https://dataverse.harvard.edu/dataverse/cfa",
+    "4TU.ResearchData": {
+      "name": "4TU.ResearchData",
+      "url": "https://data.4tu.nl/",
     },
     "AcA": {
-        "name": "Acta Astronomica Data Files",
+      "name": "AcA",
+      "url": "ftp://ftp.astrouw.edu.pl",
     },
-    "BICEP2": {
-        "name": "BICEP/Keck Data",
-        "url": " http://bicepkeck.org",
+    "AHED": {
+      "name": "AHED",
+      "url": "https://ahed.nasa.gov/",
     },
-    "Zenodo": {
-        "name": "Zenodo Archive",
-        "url": "https://zenodo.org",
+    "ALMA": {
+      "name": "ALMA",
+      "url": "https://almascience.org/",
     },
-    "PASA": {
-        "name": "Publication of the Astronomical Society of Australia Datasets",
-        "url": "http://www.publish.csiro.au",
+    "ArcticData": {
+      "name": "ArcticData",
+      "url": "https://arcticdata.io/",
     },
-    "CADC": {
-        "name": "Canadian Astronomy Data Center",
-        "url": "http://www.canfar.phys.uvic.ca/en",
+    "ARI": {
+      "name": "ARI",
+      "url": "https://zah.uni-heidelberg.de/institutes/ari/",
     },
-    "IRSA": {
-        "name": "NASA/IPAC Infrared Science Archive",
-        "url": "https://irsa.ipac.caltech.edu/frontpage/",
+    "ARTEMIS": {
+      "name": "ARTEMIS",
+      "url": "http://artemis.ssl.berkeley.edu/",
     },
-    "Github": {
-        "name": "Git Repository Hosting Service",
-        "url": "https://github.com",
+    "AstroGeo": {
+      "name": "AstroGeo",
+      "url": "https://www.usgs.gov/centers/astrogeology-science-center",
     },
-    "Dryad": {
-        "name": "International Repository of Research Data",
-        "url": "https://datadryad.org",
+    "ASU": {
+      "name": "ASU",
+      "url": "",
     },
-    "Figshare": {
-        "name": "Online Open Access Repository",
-        "url": "https://figshare.com",
+    "Astroverse": {
+      "name": "Astroverse",
+      "url": "https://dataverse.harvard.edu/dataverse/cfa",
     },
-    "JWST": {
-        "name": "JWST Proposal Info",
-        "url": "http://www.stsci.edu/jwst",
+    "ATNF": {
+      "name": "ATNF",
+      "url": "https://atoa.atnf.csiro.au",
     },
-    "PANGAEA": {
-        "name": "Digital Data Library and a Data Publisher for Earth System Science",
-        "url": "https://www.pangaea.de",
+    "Author": {
+      "name": "Author",
+      "url": "",
     },
-    "protocols": {
-        "name": "Collaborative Platform and Preprint Server for Science Methods and Protocols",
-        "url": "https://www.protocols.io",
+    "BAS": {
+      "name": "BAS",
+      "url": "https://data.bas.ac.uk/",
     },
     "BAVJ": {
-        "name": "Data of the German Association for Variable Stars",
-        "url": "https://www.bav-astro.eu",
+      "name": "BAVJ",
+      "url": "https://www.bav-astro.eu",
+    },
+    "BICEP2": {
+      "name": "BICEP2",
+      "url": "http://bicepkeck.org",
+    },
+    "CADC": {
+      "name": "CADC",
+      "url": "http://www.canfar.phys.uvic.ca/en",
+    },
+    "Caltech": {
+      "name": "Caltech",
+      "url": "https://data.caltech.edu",
+    },
+    "CDS": {
+      "name": "CDS",
+      "url": "http://cdsweb.u-strasbg.fr",
+    },
+    "Chandra": {
+      "name": "Chandra",
+      "url": "http://cxc.harvard.edu/cda",
+    },
+    "ClimateDataStore": {
+      "name": "ClimateDataStore",
+      "url": "https://cds.climate.copernicus.eu/#!/home",
+    },
+    "CMDN": {
+      "name": "CMDN",
+      "url": "http://data.cma.cn/en",
+    },
+    "CXO": {
+      "name": "CXO",
+      "url": "https://cxc.harvard.edu/cda/",
+    },
+    "DARTS": {
+      "name": "DARTS",
+      "url": "https://darts.isas.jaxa.jp/",
+    },
+    "Dataverse": {
+      "name": "Dataverse",
+      "url": "",
+    },
+    "Dryad": {
+      "name": "Dryad",
+      "url": "https://datadryad.org",
+    },
+    "dryad": {
+      "name": "dryad",
+      "url": "https://datadryad.org",
+    },
+    "EARTHCHEM": {
+      "name": "EARTHCHEM",
+      "url": "https://www.earthchem.org/",
+    },
+    "ECMWF": {
+      "name": "ECMWF",
+      "url": "https://www.ecmwf.int/",
+    },
+    "EMFISIS": {
+      "name": "EMFISIS",
+      "url": "https://emfisis.physics.uiowa.edu/",
+    },
+    "ERGSC": {
+      "name": "ERGSC",
+      "url": "https://ergsc.isee.nagoya-u.ac.jp/",
+    },
+    "ESA": {
+      "name": "ESA",
+      "url": "http://archives.esac.esa.int",
+    },
+    "ESGF": {
+      "name": "ESGF",
+      "url": "https://esgf-node.llnl.gov/projects/esgf-llnl/",
+    },
+    "ESO": {
+      "name": "ESO",
+      "url": "http://archive.eso.org",
+    },
+    "ETHZ": {
+      "name": "ETHZ",
+      "url": "https://www.research-collection.ethz.ch/",
+    },
+    "FDSN": {
+      "name": "FDSN",
+      "url": "https://www.fdsn.org/",
+    },
+    "Figshare": {
+      "name": "Figshare",
+      "url": "https://figshare.com",
+    },
+    "figshare": {
+      "name": "figshare",
+      "url": "https://figshare.com",
+    },
+    "GCPD": {
+      "name": "GCPD",
+      "url": "http://obswww.unige.ch/gcpd/",
+    },
+    "Gemini": {
+      "name": "Gemini",
+      "url": "https://archive.gemini.edu/searchform",
+    },
+    "Github": {
+      "name": "Github",
+      "url": "https://github.com",
+    },
+    "GRAS": {
+      "name": "GRAS",
+      "url": "http://moon.bao.ac.cn",
+    },
+    "GTC": {
+      "name": "GTC",
+      "url": "http://gtc.sdc.cab.inta-csic.es/gtc/",
+    },
+    "HEASARC": {
+      "name": "HEASARC",
+      "url": "https://heasarc.gsfc.nasa.gov/",
+    },
+    "Herschel": {
+      "name": "Herschel",
+      "url": "https://www.cosmos.esa.int/web/herschel/home",
+    },
+    "IBVS": {
+      "name": "IBVS",
+      "url": "http://ibvs.konkoly.hu/IBVS/IBVS.html",
+    },
+    "INES": {
+      "name": "INES",
+      "url": "http://sdc.cab.inta-csic.es/ines/",
+    },
+    "IRIS": {
+      "name": "IRIS",
+      "url": "https://ds.iris.edu/ds/",
+    },
+    "IRSA": {
+      "name": "IRSA",
+      "url": "https://irsa.ipac.caltech.edu/frontpage/",
+    },
+    "ISO": {
+      "name": "ISO",
+      "url": "https://www.cosmos.esa.int/web/iso",
+    },
+    "JOSS": {
+      "name": "JOSS",
+      "url": "https://joss.theoj.org/",
+    },
+    "JWST": {
+      "name": "JWST",
+      "url": "http://www.stsci.edu/jwst",
+    },
+    "KOA": {
+      "name": "KOA",
+      "url": "https://koa.ipac.caltech.edu",
+    },
+    "LAADS": {
+      "name": "LAADS",
+      "url": "https://ladsweb.modaps.eosdis.nasa.gov/",
+    },
+    "LASP": {
+      "name": "LASP",
+      "url": "https://lasp.colorado.edu/home/",
+    },
+    "LPL": {
+      "name": "LPL",
+      "url": "https://www.lpl.arizona.edu/",
+    },
+    "MAST": {
+      "name": "MAST",
+      "url": "http://archive.stsci.edu",
+    },
+    "MetOffice": {
+      "name": "MetOffice",
+      "url": "https://www.metoffice.gov.uk/",
+    },
+    "MIT": {
+      "name": "MIT",
+      "url": "https://web.mit.edu/",
+    },
+    "NASA": {
+      "name": "NASA",
+      "url": "https://data.nas.nasa.gov",
+    },
+    "NCAR": {
+      "name": "NCAR",
+      "url": "https://ncar.ucar.edu/",
+    },
+    "NED": {
+      "name": "NED",
+      "url": "https://ned.ipac.caltech.edu",
+    },
+    "NExScI": {
+      "name": "NExScI",
+      "url": "https://exoplanetarchive.ipac.caltech.edu",
+    },
+    "NOAA": {
+      "name": "NOAA",
+      "url": "https://www.ncdc.noaa.gov/",
+    },
+    "NOAO": {
+      "name": "NOAO",
+      "url": "https://www.noao.edu",
+    },
+    "OSF": {
+      "name": "OSF",
+      "url": "https://osf.io/",
+    },
+    "PANGAEA": {
+      "name": "PANGAEA",
+      "url": "https://www.pangaea.de",
+    },
+    "pangaea": {
+      "name": "pangaea",
+      "url": "https://www.pangaea.de",
+    },
+    "PASA": {
+      "name": "PASA",
+      "url": "http://www.publish.csiro.au",
+    },
+    "PDG": {
+      "name": "PDG",
+      "url": "http://pdglive.lbl.gov",
+    },
+    "PDS": {
+      "name": "PDS",
+      "url": "https://pds.jpl.nasa.gov",
+    },
+    "PDSS": {
+      "name": "PDSS",
+      "url": "https://pds.jpl.nasa.gov",
+    },
+    "PIK": {
+      "name": "PIK",
+      "url": "https://dataservices.gfz-potsdam.de/portal/",
+    },
+    "protocols": {
+      "name": "protocols",
+      "url": "https://www.protocols.io",
+    },
+    "ScienceBase": {
+      "name": "ScienceBase",
+      "url": "https://www.sciencebase.gov/catalog/",
+    },
+    "SIMBAD": {
+      "name": "SIMBAD",
+      "url": "http://simbad.u-strasbg.fr",
+    },
+    "Spitzer": {
+      "name": "Spitzer",
+      "url": "https://irsa.ipac.caltech.edu/Missions/spitzer.html",
+    },
+    "TDR": {
+      "name": "TDR",
+      "url": "https://dataverse.tdl.org/",
+    },
+    "THEMIS": {
+      "name": "THEMIS",
+      "url": "http://themis.ssl.berkeley.edu/index.shtml",
+    },
+    "TNS": {
+      "name": "TNS",
+      "url": "https://wis-tns.weizmann.ac.il",
+    },
+    "UNAVCO": {
+      "name": "UNAVCO",
+      "url": "https://www.unavco.org/",
+    },
+    "Vizier": {
+      "name": "Vizier",
+      "url": "http://vizier.u-strasbg.fr",
+    },
+    "XMM": {
+      "name": "XMM",
+      "url": "http://nxsa.esac.esa.int",
+    },
+    "Zenodo": {
+      "name": "Zenodo",
+      "url": "https://zenodo.org",
     },
 }
 
