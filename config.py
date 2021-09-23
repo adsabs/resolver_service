@@ -49,7 +49,7 @@ RESOLVER_DATA_SOURCES = {
       "url": "https://zah.uni-heidelberg.de/institutes/ari/",
     },
     "ARTEMIS": {
-      "name": "Acceleration Reconnection Turbulence & Electrodynamics of Moon"s Interaction with the Sun",
+      "name": "Acceleration Reconnection Turbulence & Electrodynamics of Moon Interaction with the Sun",
       "url": "http://artemis.ssl.berkeley.edu/",
     },
     "AstroGeo": {
@@ -193,7 +193,7 @@ RESOLVER_DATA_SOURCES = {
       "url": "http://gtc.sdc.cab.inta-csic.es/gtc/",
     },
     "HEASARC": {
-      "name": "NASA"s High Energy Astrophysics Science Archive Research Center",
+      "name": "NASA High Energy Astrophysics Science Archive Research Center",
       "url": "https://heasarc.gsfc.nasa.gov/",
     },
     "Herschel": {
