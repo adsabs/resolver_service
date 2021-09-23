@@ -192,7 +192,7 @@ RESOLVER_DATA_SOURCES = {
       "url": "http://gtc.sdc.cab.inta-csic.es/gtc/",
     },
     "HEASARC": {
-      "name": "NASA High Energy Astrophysics Science Archive Research Center",
+      "name": "NASA's High Energy Astrophysics Science Archive Research Center",
       "url": "https://heasarc.gsfc.nasa.gov/",
     },
     "Herschel": {
