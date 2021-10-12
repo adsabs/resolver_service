@@ -9,6 +9,7 @@ from flask_testing import TestCase
 import unittest
 
 import resolversrv.app as app
+from resolversrv.tests.unittests.base import TestCaseDatabase
 from resolversrv.views import LinkRequest
 
 TestCase.maxDiff = None
@@ -186,9 +187,12 @@ class TestResolver(TestCase):
         self.assertEqual(redirectURL, 'http://localhost:5050/link_gateway/1990A&AS...83...71D/associated/:%2Fabs%2F1987A%26A...179...60C%2Fabstract')
 
 
-class TestResolverNew(TestCase):
+class TestResolverNew(TestCaseDatabase):
     def create_app(self):
-        self.current_app = app.create_app()
+        '''Start the wsgi application'''
+        self.current_app = app.create_app(**{
+            'SQLALCHEMY_DATABASE_URI': self.postgresql_url,
+           })
         return self.current_app
 
     # the following four types' links are created on the fly
