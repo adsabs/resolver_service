@@ -19,7 +19,8 @@ from resolversrv.views import LinkRequest, PopulateRequest
 
 TestCase.maxDiff = None
 
-class test_with_no_database_required(TestCase):
+
+class TestWithNoDatabase(TestCase):
 
     def create_app(self):
         self.current_app = app.create_app()
@@ -295,8 +296,7 @@ class test_with_no_database_required(TestCase):
                                               'link_type': 'ESOURCE'})
 
 
-
-class test_with_no_database_required_new(TestCase):
+class TestWithNoDatabaseNew(TestCase):
 
     def create_app(self):
         self.current_app = app.create_app()

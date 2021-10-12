@@ -13,7 +13,7 @@ from resolversrv.views import LinkRequest, PopulateRequest
 
 from adsmsg import DocumentRecords
 
-class test_database(TestCaseDatabase):
+class TestDatabase(TestCaseDatabase):
 
     def create_app(self):
         '''Start the wsgi application'''
@@ -448,7 +448,8 @@ class test_database(TestCaseDatabase):
         response = self.client.get('/1514temg.book.....V/verify_url:http%3A%2F%2Fwww.google.com', headers=headers)
         self.assertEqual(response.json, {'link': 'not found'})
 
-class test_database_new(TestCaseDatabase):
+
+class TestDatabaseNew(TestCaseDatabase):
 
     def create_app(self):
         '''Start the wsgi application'''

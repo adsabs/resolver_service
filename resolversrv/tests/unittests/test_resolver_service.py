@@ -13,7 +13,7 @@ from resolversrv.views import LinkRequest
 
 TestCase.maxDiff = None
 
-class test_resolver(TestCase):
+class TestResolver(TestCase):
     def create_app(self):
         self.current_app = app.create_app()
         return self.current_app
@@ -186,7 +186,7 @@ class test_resolver(TestCase):
         self.assertEqual(redirectURL, 'http://localhost:5050/link_gateway/1990A&AS...83...71D/associated/:%2Fabs%2F1987A%26A...179...60C%2Fabstract')
 
 
-class test_resolver_new(TestCase):
+class TestResolverNew(TestCase):
     def create_app(self):
         self.current_app = app.create_app()
         return self.current_app

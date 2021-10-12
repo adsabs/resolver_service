@@ -22,6 +22,16 @@ from resolversrv.utils import get_records, get_records_new, add_records, add_rec
 
 bp = Blueprint('resolver_service', __name__)
 
+class JsonResponse(Response):
+
+    default_mimetype = 'application/json'
+
+    def __init__(self, results, status):
+        response = json.dumps(results)
+        current_app.logger.info('sending response status=%s' % (status))
+        current_app.logger.info('sending response text=%s' % (response))
+        Response.__init__(self, response=response, status=status)
+
 class LinkRequest(object):
 
     re_bibcode = re.compile(r"^([12]\d\d\d[A-Za-z\.&]{5}[A-Za-z0-9\.]{9}[A-Z\.])$")
@@ -239,23 +249,6 @@ class LinkRequest(object):
 
         return bibcode, redirectURL
 
-    def __return_response(self, results, status):
-        """
-        
-        :param results: results in a dict
-        :param status: status code
-        :return: 
-        """
-        response = json.dumps(results)
-
-        current_app.logger.info('sending response status=%s' % (status))
-        current_app.logger.info('sending response text=%s' % (response))
-
-        r = Response(response=response, status=status)
-        r.headers['content-type'] = 'application/json'
-        return r
-
-
     def get_link_type_count(self, link_type):
         """
 
@@ -331,8 +324,8 @@ class LinkRequest(object):
             response['action'] = 'redirect'
             response['link'] = url
             response['link_type'] = self.link_type + ('' if self.link_sub_type == None else '|' + self.link_sub_type)
-            return self.__return_response(response, 200)
-        return self.__return_response({'error': 'did not find any records'}, 404)
+            return JsonResponse(response, 200)
+        return JsonResponse({'error': 'did not find any records'}, 404)
 
 
     def request_link_type_single_url(self, results):
@@ -344,13 +337,13 @@ class LinkRequest(object):
         :return:
         """
         if (results is None):
-            return self.__return_response({'error': 'did not find any records'}, 404)
+            return JsonResponse({'error': 'did not find any records'}, 404)
 
         try:
             return self.request_link_type_deterministic_single_url_toJSON(results[0]['url'][0])
         except (KeyError, IndexError):
             error_message = 'requested information for bibcode=%s and link_type=%s is missing' % (self.bibcode, self.link_type)
-            return self.__return_response({'error': error_message}, 400)
+            return JsonResponse({'error': error_message}, 400)
 
 
     def request_link_type_identification_single_url_toJSON(self, url):
@@ -366,8 +359,8 @@ class LinkRequest(object):
             response['action'] = 'redirect'
             response['link'] = url
             response['link_type'] = self.link_type + ('' if self.link_sub_type == None else '|' + self.link_sub_type)
-            return self.__return_response(response, 200)
-        return self.__return_response({'error': 'did not find any records'}, 404)
+            return JsonResponse(response, 200)
+        return JsonResponse({'error': 'did not find any records'}, 404)
 
 
 
@@ -399,7 +392,7 @@ class LinkRequest(object):
         response['service'] = ''
         response['action'] = 'display'
         response['links'] = links
-        return self.__return_response(response, 200)
+        return JsonResponse(response, 200)
 
 
     def request_link_type_all_new(self):
@@ -430,7 +423,7 @@ class LinkRequest(object):
         response['service'] = ''
         response['action'] = 'display'
         response['links'] = links
-        return self.__return_response(response, 200)
+        return JsonResponse(response, 200)
 
 
     def request_link_type_on_the_fly(self):
@@ -460,7 +453,7 @@ class LinkRequest(object):
                             if (result['link_sub_type'] == esource) and (len(result['url']) == 1):
                                 self.link_sub_type = esource
                                 return self.request_link_type_deterministic_single_url_toJSON(result['url'][0])
-                    return self.__return_response({'error': 'did not find any records'}, 404)
+                    return JsonResponse({'error': 'did not find any records'}, 404)
 
                 if (len(results) == 1):
                     result = results[0]
@@ -488,12 +481,12 @@ class LinkRequest(object):
                         response['service'] = ''
                         response['action'] = 'display'
                         response['links'] = links
-                        return self.__return_response(response, 200)
-            return self.__return_response({'error': 'did not find any records'}, 404)
+                        return JsonResponse(response, 200)
+            return JsonResponse({'error': 'did not find any records'}, 404)
         except (KeyError, IndexError):
             error_message = 'requested information for bibcode=%s and link_type=%s is missing' % (
             self.bibcode, self.link_type)
-            return self.__return_response({'error': error_message}, 400)
+            return JsonResponse({'error': error_message}, 400)
 
     def request_link_type_associated(self, results):
         """
@@ -522,11 +515,11 @@ class LinkRequest(object):
                 response['service'] = '{baseurl}/{bibcode}/associated'.format(baseurl=self.baseurl, bibcode=self.bibcode)
                 response['action'] = 'display'
                 response['links'] = links
-                return self.__return_response(response, 200)
-            return self.__return_response({'error': 'did not find any records'}, 404)
+                return JsonResponse(response, 200)
+            return JsonResponse({'error': 'did not find any records'}, 404)
         except (KeyError, IndexError):
             error_message = 'requested information for bibcode=%s and link_type=%s is missing' %(self.bibcode, self.link_type)
-            return self.__return_response({'error': error_message}, 400)
+            return JsonResponse({'error': error_message}, 400)
 
 
     def request_link_type_data(self, results):
@@ -584,11 +577,11 @@ class LinkRequest(object):
                         response['service'] = ''
                         response['action'] = 'display'
                         response['links'] = links
-                        return self.__return_response(response, 200)
-            return self.__return_response({'error': 'did not find any records'}, 404)
+                        return JsonResponse(response, 200)
+            return JsonResponse({'error': 'did not find any records'}, 404)
         except (KeyError, IndexError):
             error_message = 'requested information for bibcode=%s and link_type=%s is missing' % (self.bibcode, self.link_type)
-            return self.__return_response({'error': error_message}, 400)
+            return JsonResponse({'error': error_message}, 400)
 
 
     def request_link_type_identification(self):
@@ -613,7 +606,7 @@ class LinkRequest(object):
                                  self.link_sub_type if self.link_sub_type is not None else '*'))
 
         if (len(self.bibcode) == 0):
-            return self.__return_response({'error': 'no bibcode received'}, 400)
+            return JsonResponse({'error': 'no bibcode received'}, 400)
 
         # return all the link types
         if self.link_type is None:
@@ -626,7 +619,7 @@ class LinkRequest(object):
             if self.link_type == 'TOC':
                 results = get_records(bibcode=self.bibcode, link_type=self.link_type)
                 if (results is None):
-                    return self.__return_response({'error': 'did not find any records'}, 404)
+                    return JsonResponse({'error': 'did not find any records'}, 404)
             return self.request_link_type_on_the_fly()
 
         # the rest of the link types query the db
@@ -654,7 +647,7 @@ class LinkRequest(object):
             return self.request_link_type_identification()
 
         # we did not recognize the link_type, so return an error
-        return self.__return_response({'error': 'unrecognizable link type:`{link_type}`'.format(link_type=self.link_type)}, 400)
+        return JsonResponse({'error': 'unrecognizable link type:`{link_type}`'.format(link_type=self.link_type)}, 400)
 
 
     def process_request_new(self):
@@ -669,7 +662,7 @@ class LinkRequest(object):
                                  self.link_sub_type if self.link_sub_type is not None else '*'))
 
         if (len(self.bibcode) == 0):
-            return self.__return_response({'error': 'no bibcode received'}, 400)
+            return JsonResponse({'error': 'no bibcode received'}, 400)
 
         # return all the link types
         if self.link_type is None:
@@ -708,7 +701,7 @@ class LinkRequest(object):
             return self.request_link_type_identification()
 
         # we did not recognize the link_type, so return an error
-        return self.__return_response({'error': 'unrecognizable link type:`{link_type}`'.format(link_type=self.link_type)}, 400)
+        return JsonResponse({'error': 'unrecognizable link type:`{link_type}`'.format(link_type=self.link_type)}, 400)
 
 
     def check(self):
@@ -718,8 +711,8 @@ class LinkRequest(object):
         :return:
         """
         if self.link_type is not None and self.link_type != '?':
-            return self.__return_response({'status': 'OK'}, 200)
-        return self.__return_response({'error': 'unrecognizable link_type'}, 400)
+            return JsonResponse({'status': 'OK'}, 200)
+        return JsonResponse({'error': 'unrecognizable link_type'}, 400)
 
 
     def verify_url(self, url):
@@ -732,14 +725,14 @@ class LinkRequest(object):
         """
         parsed_url = urllib.parse.urlparse(urllib.parse.unquote(url))
         if (self.__verify_replaced_url_not_in_db(parsed_url.netloc)):
-            return self.__return_response({'link': 'verified'}, 200)
+            return JsonResponse({'link': 'verified'}, 200)
         results = get_records(bibcode=self.bibcode)
         for result in results:
             for a_url in result['url']:
                 parsed_url_db = urllib.parse.urlparse(a_url)
                 if parsed_url.netloc == parsed_url_db.netloc:
-                    return self.__return_response({'link': 'verified'}, 200)
-        return self.__return_response({'link': 'not found'}, 200)
+                    return JsonResponse({'link': 'verified'}, 200)
+        return JsonResponse({'link': 'not found'}, 200)
 
 
     def verify_url_new(self, url):
@@ -752,15 +745,14 @@ class LinkRequest(object):
         """
         parsed_url = urllib.parse.urlparse(urllib.parse.unquote(url))
         if (self.__verify_replaced_url_not_in_db(parsed_url.netloc)):
-            return self.__return_response({'link': 'verified'}, 200)
+            return JsonResponse({'link': 'verified'}, 200)
         results = get_records_new(bibcode=self.bibcode)
         for result in results:
             for a_url in result['url']:
                 parsed_url_db = urllib.parse.urlparse(a_url)
                 if parsed_url.netloc == parsed_url_db.netloc:
-                    return self.__return_response({'link': 'verified'}, 200)
-        return self.__return_response({'link': 'not found'}, 200)
-
+                    return JsonResponse({'link': 'verified'}, 200)
+        return JsonResponse({'link': 'not found'}, 200)
 
 
 class PopulateRequest(object):
@@ -768,23 +760,6 @@ class PopulateRequest(object):
         """
         """
         pass
-
-    def __return_response(self, results, status):
-        """
-
-        :param results: results in a dict
-        :param status: status code
-        :return:
-        """
-        response = json.dumps(results)
-
-        current_app.logger.info('sending response status=%s' % (status))
-        current_app.logger.info('sending response text=%s' % (response))
-
-        r = Response(response=response, status=status)
-        r.headers['content-type'] = 'application/json'
-        return r
-
 
     def process_request(self, records):
         """
@@ -794,27 +769,27 @@ class PopulateRequest(object):
         :return: json code of the result or error
         """
         if not records:
-            return self.__return_response({'error': 'no data received'}, 400)
+            return JsonResponse({'error': 'no data received'}, 400)
 
         if len(records) == 0:
-            return self.__return_response({'error': 'no records received'}, 400)
+            return JsonResponse({'error': 'no records received'}, 400)
 
         if len(records) > current_app.config['RESOLVER_MAX_RECORDS_ADD']:
-            return self.__return_response({'error': 'too many records to add to db at one time, received %s records while the limit is %s'%(len(records), current_app.config['RESOLVER_MAX_RECORDS_ADD'])}, 400)
+            return JsonResponse({'error': 'too many records to add to db at one time, received %s records while the limit is %s'%(len(records), current_app.config['RESOLVER_MAX_RECORDS_ADD'])}, 400)
 
         current_app.logger.info('received request to populate db with %d records' % (len(records)))
 
         try:
             data = Parse(json.dumps({"status": 2, "datalinks_records": records}), DataLinksRecordList())
         except ParseError as e:
-            return self.__return_response({'error': 'unable to extract data from protobuf structure -- %s' % (e)}, 400)
+            return JsonResponse({'error': 'unable to extract data from protobuf structure -- %s' % (e)}, 400)
 
         status, text = add_records(data)
         if status == True:
             current_app.logger.info('completed request to populate db with %d records' % (len(records)))
-            return self.__return_response({'status': text}, 200)
+            return JsonResponse({'status': text}, 200)
         current_app.logger.info('failed to populate db with %d records' % (len(records)))
-        return self.__return_response({'error': text}, 400)
+        return JsonResponse({'error': text}, 400)
 
 
     def process_request_new(self, records):
@@ -825,27 +800,27 @@ class PopulateRequest(object):
         :return: json code of the result or error
         """
         if not records:
-            return self.__return_response({'error': 'no data received'}, 400)
+            return JsonResponse({'error': 'no data received'}, 400)
 
         if len(records) == 0:
-            return self.__return_response({'error': 'no records received'}, 400)
+            return JsonResponse({'error': 'no records received'}, 400)
 
         if len(records) > current_app.config['RESOLVER_MAX_RECORDS_ADD']:
-            return self.__return_response({'error': 'too many records to add to db at one time, received %s records while the limit is %s'%(len(records), current_app.config['RESOLVER_MAX_RECORDS_ADD'])}, 400)
+            return JsonResponse({'error': 'too many records to add to db at one time, received %s records while the limit is %s'%(len(records), current_app.config['RESOLVER_MAX_RECORDS_ADD'])}, 400)
 
         current_app.logger.info('received request to populate db with %d records' % (len(records)))
 
         try:
             data = Parse(json.dumps({"status": 2, "document_records": records}), DocumentRecords())
         except ParseError as e:
-            return self.__return_response({'error': 'unable to extract data from protobuf structure -- %s' % (e)}, 400)
+            return JsonResponse({'error': 'unable to extract data from protobuf structure -- %s' % (e)}, 400)
 
         status, text = add_records_new(data)
         if status == True:
             current_app.logger.info('completed request to populate db with %d records' % (len(records)))
-            return self.__return_response({'status': text}, 200)
+            return JsonResponse({'status': text}, 200)
         current_app.logger.info('failed to populate db with %d records' % (len(records)))
-        return self.__return_response({'error': text}, 400)
+        return JsonResponse({'error': text}, 400)
 
 
 class DeleteRequest(object):
@@ -853,23 +828,6 @@ class DeleteRequest(object):
         """
         """
         pass
-
-    def __return_response(self, results, status):
-        """
-
-        :param results: results in a dict
-        :param status: status code
-        :return:
-        """
-        response = json.dumps(results)
-
-        current_app.logger.info('sending response status=%s' % (status))
-        current_app.logger.info('sending response text=%s' % (response))
-
-        r = Response(response=response, status=status)
-        r.headers['content-type'] = 'application/json'
-        return r
-
 
     def process_request(self, payload):
         """
@@ -880,26 +838,26 @@ class DeleteRequest(object):
         """
 
         if not payload:
-            return self.__return_response({'error': 'no information received'}, 400)
+            return JsonResponse({'error': 'no information received'}, 400)
         if 'bibcode' not in payload:
-            return self.__return_response({'error': 'no bibcode found in payload (parameter name is `bibcode`)'}, 400)
+            return JsonResponse({'error': 'no bibcode found in payload (parameter name is `bibcode`)'}, 400)
 
         bibcodes = payload['bibcode']
 
         if len(bibcodes) == 0:
-            return self.__return_response({'error': 'no bibcode received'}, 400)
+            return JsonResponse({'error': 'no bibcode received'}, 400)
 
         if len(bibcodes) > current_app.config['RESOLVER_MAX_RECORDS_DEL']:
-            return self.__return_response({'error': 'too many records to delete to db at one time, received %s records while the limit is %s'%(len(bibcodes), current_app.config['RESOLVER_MAX_RECORDS_DEL'])}, 400)
+            return JsonResponse({'error': 'too many records to delete to db at one time, received %s records while the limit is %s'%(len(bibcodes), current_app.config['RESOLVER_MAX_RECORDS_DEL'])}, 400)
 
         current_app.logger.info('received request to delete from db %d bibcodes' % (len(bibcodes)))
 
         status, count, text = del_records(bibcodes)
         if status == True:
             current_app.logger.info('completed request to delete from db total of %d records' % (count))
-            return self.__return_response({'status': text}, 200)
+            return JsonResponse({'status': text}, 200)
         current_app.logger.info('failed to delete from db %d bibcodes' % (len(bibcodes)))
-        return self.__return_response({'error': text}, 400)
+        return JsonResponse({'error': text}, 400)
 
 
     def process_request_new(self, payload):
@@ -911,52 +869,36 @@ class DeleteRequest(object):
         """
 
         if not payload:
-            return self.__return_response({'error': 'no information received'}, 400)
+            return JsonResponse({'error': 'no information received'}, 400)
         if 'bibcode' not in payload:
-            return self.__return_response({'error': 'no bibcode found in payload (parameter name is `bibcode`)'}, 400)
+            return JsonResponse({'error': 'no bibcode found in payload (parameter name is `bibcode`)'}, 400)
 
         bibcodes = payload['bibcode']
 
         if len(bibcodes) == 0:
-            return self.__return_response({'error': 'no bibcode received'}, 400)
+            return JsonResponse({'error': 'no bibcode received'}, 400)
 
         if len(bibcodes) > current_app.config['RESOLVER_MAX_RECORDS_DEL']:
-            return self.__return_response({'error': 'too many records to delete to db at one time, received %s records while the limit is %s' % (len(bibcodes), current_app.config['RESOLVER_MAX_RECORDS_DEL'])}, 400)
+            return JsonResponse({'error': 'too many records to delete to db at one time, received %s records while the limit is %s' % (len(bibcodes), current_app.config['RESOLVER_MAX_RECORDS_DEL'])}, 400)
 
         current_app.logger.info('received request to delete from db %d bibcodes' % (len(bibcodes)))
 
         status, count, text = del_records_new(bibcodes)
         if status == True:
             current_app.logger.info('completed request to delete from db total of %d records' % (count))
-            return self.__return_response({'status': text}, 200)
+            return JsonResponse({'status': text}, 200)
         current_app.logger.info('failed to delete from db %d bibcodes' % (len(bibcodes)))
-        return self.__return_response({'error': text}, 400)
+        return JsonResponse({'error': text}, 400)
 
 
 class ReconciliationRequest(object):
 
-    re_id_cleanup = re.compile(r"https://doi.org/|doi[:/s]+", re.IGNORECASE)
+    re_id_cleanup = re.compile(r"https://doi.org/|doi[:\s]+", re.IGNORECASE)
 
     def __init__(self):
         """
         """
         pass
-
-    def __return_response(self, results, status):
-        """
-
-        :param results: results in a dict
-        :param status: status code
-        :return:
-        """
-        response = json.dumps(results)
-
-        current_app.logger.info('sending response status=%s' % (status))
-        current_app.logger.info('sending response text=%s' % (response))
-
-        r = Response(response=response, status=status)
-        r.headers['content-type'] = 'application/json'
-        return r
 
     def find_match(self, id, results):
         """
@@ -982,17 +924,17 @@ class ReconciliationRequest(object):
         """
 
         if not payload:
-            return self.__return_response({'error': 'no information received'}, 400)
+            return JsonResponse({'error': 'no information received'}, 400)
         if 'identifier' not in payload:
-            return self.__return_response({'error': 'no identifier found in payload (parameter name is `identifier`)'}, 400)
+            return JsonResponse({'error': 'no identifier found in payload (parameter name is `identifier`)'}, 400)
 
         identifier = payload['identifier']
 
         if len(identifier) == 0:
-            return self.__return_response({'error': 'no identifier received'}, 400)
+            return JsonResponse({'error': 'no identifier received'}, 400)
 
         if len(identifier) > current_app.config['RESOLVER_MAX_RECORDS_RECON']:
-            return self.__return_response({'error': 'too many identifiers to match with bibcodes at one time, received %s identifiers while the limit is %s' % (len(identifier), current_app.config['RESOLVER_MAX_RECORDS_RECON'])}, 400)
+            return JsonResponse({'error': 'too many identifiers to match with bibcodes at one time, received %s identifiers while the limit is %s' % (len(identifier), current_app.config['RESOLVER_MAX_RECORDS_RECON'])}, 400)
 
         current_app.logger.info('received request to find canonical bibcodes from db for %d identifiers' % (len(identifier)))
 
@@ -1000,16 +942,16 @@ class ReconciliationRequest(object):
         # we accept arXiv ids in the form of arXiv:2106.01477
         # we need to normalize dois to be able to find matches for them
         for i in range(len(identifier)):
-            identifier[i] = self.re_id_cleanup.sub("", identifier[i])
+            identifier[i] = self.re_id_cleanup.sub("", identifier[i].strip())
         results, text = get_ids(identifier)
         if results:
             ids = []
             for id in identifier:
                 ids.append((id, self.find_match(id, results)))
             current_app.logger.info('completed request to find canonical bibcodes from db total of %d identifiers' % len(ids))
-            return self.__return_response({'ids': ids}, 200)
+            return JsonResponse({'ids': ids}, 200)
         current_app.logger.info('failed to find canonical bibcodes in db %d identifiers' % (len(identifier)))
-        return self.__return_response({'error': text}, 400)
+        return JsonResponse({'error': text}, 400)
 
 
 @advertise(scopes=[], rate_limit=[1000, 3600 * 24])

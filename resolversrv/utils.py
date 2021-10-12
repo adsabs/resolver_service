@@ -19,42 +19,39 @@ def get_records(bibcode, link_type=None, link_sub_type=None):
     :param link_sub_type:
     :return: list of json records or None
     """
-    try:
-        with current_app.session_scope() as session:
+    with current_app.session_scope() as session:
+        if link_type is None:
+            rows = session.query(DataLinks).filter(and_(DataLinks.bibcode == bibcode)).all()
+            current_app.logger.info("Fetched records for bibcode = %s."  % (bibcode))
+        elif link_sub_type is None:
+            rows = session.query(DataLinks).filter(and_(DataLinks.bibcode == bibcode, DataLinks.link_type == link_type)).all()
+            current_app.logger.info("Fetched records for bibcode = %s and link type = %s." % (bibcode, link_type))
+        elif '%' in link_sub_type:
+            rows = session.query(DataLinks).filter(and_(DataLinks.bibcode == bibcode, DataLinks.link_type == link_type,
+                                                        DataLinks.link_sub_type.match(link_sub_type))).all()
+            current_app.logger.info("Fetched records for bibcode = %s, link type = %s and link sub type = %s." %
+                                    (bibcode, link_type, link_sub_type))
+        else:
+            rows = session.query(DataLinks).filter(and_(DataLinks.bibcode == bibcode, DataLinks.link_type == link_type,
+                                                        DataLinks.link_sub_type == link_sub_type)).all()
+            current_app.logger.info("Fetched records for bibcode = %s, link type = %s and link sub type = %s." %
+                                    (bibcode, link_type, link_sub_type))
+
+        if len(rows) == 0:
             if link_type is None:
-                rows = session.query(DataLinks).filter(and_(DataLinks.bibcode == bibcode)).all()
-                current_app.logger.info("Fetched records for bibcode = %s."  % (bibcode))
+                current_app.logger.error("No records found for bibcode = %s." % (bibcode))
             elif link_sub_type is None:
-                rows = session.query(DataLinks).filter(and_(DataLinks.bibcode == bibcode, DataLinks.link_type == link_type)).all()
-                current_app.logger.info("Fetched records for bibcode = %s and link type = %s." % (bibcode, link_type))
-            elif '%' in link_sub_type:
-                rows = session.query(DataLinks).filter(and_(DataLinks.bibcode == bibcode, DataLinks.link_type == link_type,
-                                                            DataLinks.link_sub_type.match(link_sub_type))).all()
-                current_app.logger.info("Fetched records for bibcode = %s, link type = %s and link sub type = %s." %
-                                        (bibcode, link_type, link_sub_type))
+                current_app.logger.error("No records found for bibcode = %s and link type = %s." % (bibcode, link_type))
             else:
-                rows = session.query(DataLinks).filter(and_(DataLinks.bibcode == bibcode, DataLinks.link_type == link_type,
-                                                            DataLinks.link_sub_type == link_sub_type)).all()
-                current_app.logger.info("Fetched records for bibcode = %s, link type = %s and link sub type = %s." %
-                                        (bibcode, link_type, link_sub_type))
+                current_app.logger.error("No records found for bibcode = %s, link type = %s and link sub type = %s." %
+                                         (bibcode, link_type, link_sub_type))
+            return None
 
-            if len(rows) == 0:
-                if link_type is None:
-                    current_app.logger.error("No records found for bibcode = %s." % (bibcode))
-                elif link_sub_type is None:
-                    current_app.logger.error("No records found for bibcode = %s and link type = %s." % (bibcode, link_type))
-                else:
-                    current_app.logger.error("No records found for bibcode = %s, link type = %s and link sub type = %s." %
-                                             (bibcode, link_type, link_sub_type))
-                return None
-
-            results = []
-            for row in rows:
-                results.append(row.toJSON())
-            return results
-    except SQLAlchemyError as e:
-        current_app.logger.error('SQLAlchemy: ' + str(e))
-        return None
+        results = []
+        for row in rows:
+            results.append(row.toJSON())
+        return results
+    return None
 
 
 def get_records_new(bibcode, link_type=None, link_sub_type=None):
@@ -66,57 +63,54 @@ def get_records_new(bibcode, link_type=None, link_sub_type=None):
     :param link_sub_type:
     :return: list of json records or None
     """
-    try:
-        with current_app.session_scope() as session:
-            # just bibcode was passed in
-            if link_type is None:
-                row = session.query(Documents).filter(Documents.bibcode == bibcode).one()
-                current_app.logger.info("Fetched records for bibcode = %s."  % (bibcode))
-            # query on bibcocd and link_type
-            elif link_sub_type is None:
-                row = session.query(Documents.links[link_type].label('links')).filter(Documents.bibcode == bibcode).one()
-                if row:
-                    row = Documents(bibcode, [], {link_type: row[0]})
-                current_app.logger.info("Fetched records for bibcode = %s and link type = %s." % (bibcode, link_type))
-            # query on all three bibcode, link_type, and link_sub_type (with or without wildcard)
-            elif '%' in link_sub_type:
-                # get all the records for link_type and go through them to determine if they match wildcard string
-                row = session.query(Documents.links[link_type].label('links')).filter(Documents.bibcode == bibcode).one()
-                partial_link_sub_type = link_sub_type.replace('%', '')
-                try:
-                    link_sub_type_wildcard = {}
-                    for key, value in row[0].items():
-                        if partial_link_sub_type in key:
-                            link_sub_type_wildcard.update({key: value})
-                    if len(link_sub_type_wildcard) > 0:
-                        row = Documents(bibcode, [], {link_type: link_sub_type_wildcard})
-                    else:
-                        row = {}
-                except (KeyError, AttributeError):
-                    row = {}
-                current_app.logger.info("Fetched records for bibcode = %s, link type = %s and link sub type = %s." %
-                                        (bibcode, link_type, link_sub_type))
-            else:
-                row = session.query(Documents.links[link_type][link_sub_type].label('links')).filter(Documents.bibcode == bibcode).one()
-                if row:
-                    row = Documents(bibcode, [], {link_type: {link_sub_type: row[0]}})
-                current_app.logger.info("Fetched records for bibcode = %s, link type = %s and link sub type = %s." %
-                                        (bibcode, link_type, link_sub_type))
-
-            if not row:
-                if link_type is None:
-                    current_app.logger.error("No records found for bibcode = %s." % (bibcode))
-                elif link_sub_type is None:
-                    current_app.logger.error("No records found for bibcode = %s and link type = %s." % (bibcode, link_type))
+    with current_app.session_scope() as session:
+        # just bibcode was passed in
+        if link_type is None:
+            row = session.query(Documents).filter(Documents.bibcode == bibcode).first()
+            current_app.logger.info("Fetched records for bibcode = %s."  % (bibcode))
+        # query on bibcocd and link_type
+        elif link_sub_type is None:
+            row = session.query(Documents.links[link_type].label('links')).filter(Documents.bibcode == bibcode).first()
+            if row:
+                row = Documents(bibcode, [], {link_type: row[0]})
+            current_app.logger.info("Fetched records for bibcode = %s and link type = %s." % (bibcode, link_type))
+        # query on all three bibcode, link_type, and link_sub_type (with or without wildcard)
+        elif '%' in link_sub_type:
+            # get all the records for link_type and go through them to determine if they match wildcard string
+            row = session.query(Documents.links[link_type].label('links')).filter(Documents.bibcode == bibcode).first()
+            partial_link_sub_type = link_sub_type.replace('%', '')
+            try:
+                link_sub_type_wildcard = {}
+                for key, value in row[0].items():
+                    if partial_link_sub_type in key:
+                        link_sub_type_wildcard.update({key: value})
+                if len(link_sub_type_wildcard) > 0:
+                    row = Documents(bibcode, [], {link_type: link_sub_type_wildcard})
                 else:
-                    current_app.logger.error("No records found for bibcode = %s, link type = %s and link sub type = %s." %
-                                             (bibcode, link_type, link_sub_type))
-                return None
+                    row = {}
+            except (KeyError, AttributeError):
+                row = {}
+            current_app.logger.info("Fetched records for bibcode = %s, link type = %s and link sub type = %s." %
+                                    (bibcode, link_type, link_sub_type))
+        else:
+            row = session.query(Documents.links[link_type][link_sub_type].label('links')).filter(Documents.bibcode == bibcode).first()
+            if row:
+                row = Documents(bibcode, [], {link_type: {link_sub_type: row[0]}})
+            current_app.logger.info("Fetched records for bibcode = %s, link type = %s and link sub type = %s." %
+                                    (bibcode, link_type, link_sub_type))
 
-            return row.toJSON()
-    except SQLAlchemyError as e:
-        current_app.logger.error('SQLAlchemy: ' + str(e))
-        return None
+        if not row:
+            if link_type is None:
+                current_app.logger.error("No records found for bibcode = %s." % (bibcode))
+            elif link_sub_type is None:
+                current_app.logger.error("No records found for bibcode = %s and link type = %s." % (bibcode, link_type))
+            else:
+                current_app.logger.error("No records found for bibcode = %s, link type = %s and link sub type = %s." %
+                                         (bibcode, link_type, link_sub_type))
+            return None
+
+        return row.toJSON()
+    return None
 
 
 def add_records(datalinks_records_list):
@@ -193,6 +187,7 @@ def add_records_new(documents):
             current_app.logger.info('updated db with new data successfully')
             return True, 'updated db with new data successfully'
         except SQLAlchemyError as e:
+            session.rollback()
             current_app.logger.error('SQLAlchemy: ' + str(e))
             return False, 'SQLAlchemy: ' + str(e)
     return False, 'unable to add records to the database'
@@ -211,6 +206,7 @@ def del_records(bibcode_list):
                 count += session.query(DataLinks).filter(DataLinks.bibcode == bibcode).delete(synchronize_session=False)
             session.commit()
     except SQLAlchemyError as e:
+        session.rollback()
         current_app.logger.error('SQLAlchemy: ' + str(e))
         return False, 'SQLAlchemy: ' + str(e)
     return True, count, 'removed ' + str(count) + ' records of ' + str(len(bibcode_list)) + ' bibcodes'
@@ -229,6 +225,7 @@ def del_records_new(bibcode_list):
                 count += session.query(Documents).filter(Documents.bibcode == bibcode).delete(synchronize_session=False)
             session.commit()
     except SQLAlchemyError as e:
+        session.rollback()
         current_app.logger.error('SQLAlchemy: ' + str(e))
         return False, 'SQLAlchemy: ' + str(e)
     return True, count, 'removed ' + str(count) + ' records of ' + str(len(bibcode_list)) + ' bibcodes'
@@ -241,15 +238,12 @@ def get_ids(identifier_list):
     :param identifier_list:
     :return:
     """
-    try:
-        query = "SELECT bibcode,identifier FROM documents WHERE identifier && '{\"%s\"}';"%('","'.join(identifier_list))
-        with current_app.session_scope() as session:
-            rows = session.execute(query)
-            if rows.rowcount > 0:
-                message = "Fetched %d records for %d inputted identifiers." % (len(identifier_list), rows.rowcount)
-                current_app.logger.info(message)
-                return [dict(row) for row in rows], message
-            raise SQLAlchemyError('no matches found in database')
-    except SQLAlchemyError as e:
-        current_app.logger.error('SQLAlchemy: ' + str(e))
-        return None, 'SQLAlchemy: ' + str(e)
+    query = "SELECT bibcode,identifier FROM documents WHERE identifier && '{\"%s\"}';"%('","'.join(identifier_list))
+    with current_app.session_scope() as session:
+        rows = session.execute(query)
+        if rows.rowcount > 0:
+            message = "Fetched %d records for %d inputted identifiers." % (len(identifier_list), rows.rowcount)
+            current_app.logger.info(message)
+            return [dict(row) for row in rows], message
+        current_app.logger.error('no matches found in database')
+    return None, 'no matches found in database'
