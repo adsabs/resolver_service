@@ -184,11 +184,9 @@ def add_records_new(documents):
         try:
             with current_app.session_scope() as session:
                 session.execute(on_conflict_stmt)
-            current_app.logger.info('updated db with new data successfully')
             return True, 'updated db with new data successfully'
         except SQLAlchemyError as e:
             session.rollback()
-            current_app.logger.error('SQLAlchemy: ' + str(e))
             return False, 'SQLAlchemy: ' + str(e)
     return False, 'unable to add records to the database'
 
