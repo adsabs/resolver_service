@@ -4,7 +4,7 @@
 LOG_STDOUT = True
 
 # db config
-SQLALCHEMY_DATABASE_URI = 'url to db'
+SQLALCHEMY_DATABASE_URI = 'postgresql://postgres:postgres@localhost:5432/test'
 SQLALCHEMY_TRACK_MODIFICATIONS = False
 SQLALCHEMY_ECHO = False
 
@@ -12,6 +12,8 @@ SQLALCHEMY_ECHO = False
 RESOLVER_MAX_RECORDS_ADD = 100
 # number of records that can be deleted in one call
 RESOLVER_MAX_RECORDS_DEL = 100
+# number of records that can be matched (reconciled) in one call
+RESOLVER_MAX_RECORDS_RECON = 100
 
 # This is the URL to communicate with resolver_gateway api
 RESOLVER_GATEWAY_URL = 'http://localhost:5050/link_gateway/{bibcode}/{link_type}/{url}'

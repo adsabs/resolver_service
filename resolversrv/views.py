@@ -14,13 +14,23 @@ from requests.utils import quote
 # keep these two lines until adsmsg is fixed 3/30/2021
 import warnings
 warnings.filterwarnings("ignore", category=DeprecationWarning)
-from adsmsg import DataLinksRecordList
+from adsmsg import DataLinksRecordList, DocumentRecords
 from google.protobuf.json_format import Parse, ParseError
 
-from resolversrv.utils import get_records, add_records, del_records
+from resolversrv.utils import get_records, get_records_new, add_records, add_records_new, del_records, del_records_new, get_ids
 
 
 bp = Blueprint('resolver_service', __name__)
+
+class JsonResponse(Response):
+
+    default_mimetype = 'application/json'
+
+    def __init__(self, results, status):
+        response = json.dumps(results)
+        current_app.logger.info('sending response status=%s' % (status))
+        current_app.logger.info('sending response text=%s' % (response))
+        Response.__init__(self, response=response, status=status)
 
 class LinkRequest(object):
 
@@ -239,24 +249,7 @@ class LinkRequest(object):
 
         return bibcode, redirectURL
 
-    def __return_response(self, results, status):
-        """
-        
-        :param results: results in a dict
-        :param status: status code
-        :return: 
-        """
-        response = json.dumps(results)
-
-        current_app.logger.info('sending response status=%s' % (status))
-        current_app.logger.info('sending response text=%s' % (response))
-
-        r = Response(response=response, status=status)
-        r.headers['content-type'] = 'application/json'
-        return r
-
-
-    def __get_link_type_count(self, link_type):
+    def get_link_type_count(self, link_type):
         """
 
         :param link_type:
@@ -269,6 +262,38 @@ class LinkRequest(object):
         results = get_records(bibcode=self.bibcode, link_type=link_type)
         if (results is None):
             return 0
+        if link_type == 'DATA':
+            count = 0
+            for result in results:
+                count += result['itemCount']
+            return count
+        if link_type in ['ESOURCE', 'ASSOCIATED']:
+            count = 0
+            for result in results:
+                count += len(result['url'])
+            return count
+        count = 0
+        for result in results:
+            # get the maximum of
+            count += max(1, result['itemCount'] if 'itemCount' in result else 0)
+        return count
+
+
+    def get_link_type_count_new(self, link_type):
+        """
+
+        :param link_type:
+        :return:
+        """
+        # query db
+        results = get_records_new(bibcode=self.bibcode, link_type=link_type)
+        if (results is None):
+            return 0
+        if link_type == 'TOC':
+            return int(len(results) > 0)
+        # on the fly links or identification links are only 1
+        if link_type in list(self.on_the_fly.keys()) or link_type in list(self.identification.keys()):
+            return 1
         if link_type == 'DATA':
             count = 0
             for result in results:
@@ -299,8 +324,8 @@ class LinkRequest(object):
             response['action'] = 'redirect'
             response['link'] = url
             response['link_type'] = self.link_type + ('' if self.link_sub_type == None else '|' + self.link_sub_type)
-            return self.__return_response(response, 200)
-        return self.__return_response({'error': 'did not find any records'}, 404)
+            return JsonResponse(response, 200)
+        return JsonResponse({'error': 'did not find any records'}, 404)
 
 
     def request_link_type_single_url(self, results):
@@ -312,13 +337,13 @@ class LinkRequest(object):
         :return:
         """
         if (results is None):
-            return self.__return_response({'error': 'did not find any records'}, 404)
+            return JsonResponse({'error': 'did not find any records'}, 404)
 
         try:
             return self.request_link_type_deterministic_single_url_toJSON(results[0]['url'][0])
         except (KeyError, IndexError):
             error_message = 'requested information for bibcode=%s and link_type=%s is missing' % (self.bibcode, self.link_type)
-            return self.__return_response({'error': error_message}, 400)
+            return JsonResponse({'error': error_message}, 400)
 
 
     def request_link_type_identification_single_url_toJSON(self, url):
@@ -334,8 +359,8 @@ class LinkRequest(object):
             response['action'] = 'redirect'
             response['link'] = url
             response['link_type'] = self.link_type + ('' if self.link_sub_type == None else '|' + self.link_sub_type)
-            return self.__return_response(response, 200)
-        return self.__return_response({'error': 'did not find any records'}, 404)
+            return JsonResponse(response, 200)
+        return JsonResponse({'error': 'did not find any records'}, 404)
 
 
 
@@ -353,7 +378,7 @@ class LinkRequest(object):
             redirectURL = self.gateway_redirect_url.format(bibcode=bibcode, link_type=link_type, url='')
             redirectURL = redirectURL[:-1]
             record = {}
-            count = self.__get_link_type_count(link_type)
+            count = self.get_link_type_count(link_type)
             if count > 0:
                 record['bibcode'] = bibcode
                 record['title'] = link_type + ' (' + str(count) + ')'
@@ -367,7 +392,38 @@ class LinkRequest(object):
         response['service'] = ''
         response['action'] = 'display'
         response['links'] = links
-        return self.__return_response(response, 200)
+        return JsonResponse(response, 200)
+
+
+    def request_link_type_all_new(self):
+        """
+
+        :return: all the link types for the requested bibcode
+        """
+        links = {}
+        links['count'] = len(self.link_types)
+        links['link_type'] = 'all'
+        records = []
+        for link_type in self.link_types:
+            bibcode = self.bibcode
+            redirectURL = self.gateway_redirect_url.format(bibcode=bibcode, link_type=link_type, url='')
+            redirectURL = redirectURL[:-1]
+            record = {}
+            count = self.get_link_type_count_new(link_type)
+            if count > 0:
+                record['bibcode'] = bibcode
+                record['title'] = link_type + ' (' + str(count) + ')'
+                record['url'] = redirectURL
+                record['type'] = link_type.lower()
+                record['count'] = count
+                records.append(record)
+        links['records'] = records
+        response = {}
+        # when we have multiple sources of links elements there is no url to log (no service)
+        response['service'] = ''
+        response['action'] = 'display'
+        response['links'] = links
+        return JsonResponse(response, 200)
 
 
     def request_link_type_on_the_fly(self):
@@ -376,12 +432,6 @@ class LinkRequest(object):
 
         :return:
         """
-        # as of 3/27/2019 we should have bibcodes with TOC in db, so check to see if for this bibcode
-        # there is an entry, and return accordingly
-        if self.link_type == 'TOC':
-            results = get_records(bibcode=self.bibcode, link_type=self.link_type)
-            if (results is None):
-                return self.__return_response({'error': 'did not find any records'}, 404)
         url = self.on_the_fly[self.link_type].format(baseurl=self.baseurl, bibcode=self.bibcode)
         return self.request_link_type_deterministic_single_url_toJSON(url)
 
@@ -403,7 +453,7 @@ class LinkRequest(object):
                             if (result['link_sub_type'] == esource) and (len(result['url']) == 1):
                                 self.link_sub_type = esource
                                 return self.request_link_type_deterministic_single_url_toJSON(result['url'][0])
-                    return self.__return_response({'error': 'did not find any records'}, 404)
+                    return JsonResponse({'error': 'did not find any records'}, 404)
 
                 if (len(results) == 1):
                     result = results[0]
@@ -431,12 +481,12 @@ class LinkRequest(object):
                         response['service'] = ''
                         response['action'] = 'display'
                         response['links'] = links
-                        return self.__return_response(response, 200)
-            return self.__return_response({'error': 'did not find any records'}, 404)
+                        return JsonResponse(response, 200)
+            return JsonResponse({'error': 'did not find any records'}, 404)
         except (KeyError, IndexError):
             error_message = 'requested information for bibcode=%s and link_type=%s is missing' % (
             self.bibcode, self.link_type)
-            return self.__return_response({'error': error_message}, 400)
+            return JsonResponse({'error': error_message}, 400)
 
     def request_link_type_associated(self, results):
         """
@@ -465,11 +515,11 @@ class LinkRequest(object):
                 response['service'] = '{baseurl}/{bibcode}/associated'.format(baseurl=self.baseurl, bibcode=self.bibcode)
                 response['action'] = 'display'
                 response['links'] = links
-                return self.__return_response(response, 200)
-            return self.__return_response({'error': 'did not find any records'}, 404)
+                return JsonResponse(response, 200)
+            return JsonResponse({'error': 'did not find any records'}, 404)
         except (KeyError, IndexError):
             error_message = 'requested information for bibcode=%s and link_type=%s is missing' %(self.bibcode, self.link_type)
-            return self.__return_response({'error': error_message}, 400)
+            return JsonResponse({'error': error_message}, 400)
 
 
     def request_link_type_data(self, results):
@@ -527,11 +577,11 @@ class LinkRequest(object):
                         response['service'] = ''
                         response['action'] = 'display'
                         response['links'] = links
-                        return self.__return_response(response, 200)
-            return self.__return_response({'error': 'did not find any records'}, 404)
+                        return JsonResponse(response, 200)
+            return JsonResponse({'error': 'did not find any records'}, 404)
         except (KeyError, IndexError):
             error_message = 'requested information for bibcode=%s and link_type=%s is missing' % (self.bibcode, self.link_type)
-            return self.__return_response({'error': error_message}, 400)
+            return JsonResponse({'error': error_message}, 400)
 
 
     def request_link_type_identification(self):
@@ -556,7 +606,7 @@ class LinkRequest(object):
                                  self.link_sub_type if self.link_sub_type is not None else '*'))
 
         if (len(self.bibcode) == 0):
-            return self.__return_response({'error': 'no bibcode received'}, 400)
+            return JsonResponse({'error': 'no bibcode received'}, 400)
 
         # return all the link types
         if self.link_type is None:
@@ -564,6 +614,12 @@ class LinkRequest(object):
 
         # for these link types, we only need to format the deterministic link and return it
         if (self.link_type in list(self.on_the_fly.keys())):
+            # as of 3/27/2019 we should have bibcodes with TOC in db, so check to see if for this bibcode
+            # there is an entry, and return accordingly
+            if self.link_type == 'TOC':
+                results = get_records(bibcode=self.bibcode, link_type=self.link_type)
+                if (results is None):
+                    return JsonResponse({'error': 'did not find any records'}, 404)
             return self.request_link_type_on_the_fly()
 
         # the rest of the link types query the db
@@ -591,7 +647,61 @@ class LinkRequest(object):
             return self.request_link_type_identification()
 
         # we did not recognize the link_type, so return an error
-        return self.__return_response({'error': 'unrecognizable link type:`{link_type}`'.format(link_type=self.link_type)}, 400)
+        return JsonResponse({'error': 'unrecognizable link type:`{link_type}`'.format(link_type=self.link_type)}, 400)
+
+
+    def process_request_new(self):
+        """
+        process the request
+
+        :return: json code of the result or error
+        """
+        current_app.logger.info('received request with bibcode=%s, link_type=%s and link_sub_type=%s' %
+                                (self.bibcode,
+                                 self.link_type if self.link_type is not None else '*',
+                                 self.link_sub_type if self.link_sub_type is not None else '*'))
+
+        if (len(self.bibcode) == 0):
+            return JsonResponse({'error': 'no bibcode received'}, 400)
+
+        # return all the link types
+        if self.link_type is None:
+            return self.request_link_type_all_new()
+
+        # for the following link types we have a single url, and shall be wrapped in a JSON code as well
+        if self.link_type in list(self.on_the_fly.keys()) + ['INSPIRE', 'LIBRARYCATALOG', 'PRESENTATION']:
+            record = get_records_new(bibcode=self.bibcode)
+            if record and len(record) > 0:
+                # for these link types, as long as we have bibcode, we can format the deterministic link and return it
+                if self.link_type in ['ABSTRACT', 'SIMILAR']:
+                    return self.request_link_type_on_the_fly()
+                # for the other on the fly types, we need to have a record to format the deterministic link and return it
+                if self.link_type in list(self.on_the_fly.keys()) and record[0]['link_type'] == self.link_type:
+                    return self.request_link_type_on_the_fly()
+                # queried on bibcode, but need to have links only for link_type
+                record = [rec for rec in record if rec.get('link_type', None) == self.link_type]
+            return self.request_link_type_single_url(record)
+
+        # for the following link type the return value is specific to the type
+        if (self.link_type == 'ASSOCIATED'):
+            return self.request_link_type_associated(get_records_new(bibcode=self.bibcode, link_type=self.link_type))
+
+        # for BBB we have defined more specifically the source of full text resources and
+        # have divided them into 7 sub types, defined in Solr field esource
+        if (self.link_type == 'ESOURCE'):
+            return self.request_link_type_esource(get_records_new(bibcode=self.bibcode, link_type=self.link_type, link_sub_type=self.link_sub_type))
+
+        # for BBB we have defined more specifically the type of data and
+        # have divided them into 30+ sub types, defined in Solr field data
+        if (self.link_type == 'DATA'):
+            return self.request_link_type_data(get_records_new(bibcode=self.bibcode, link_type=self.link_type, link_sub_type=self.link_sub_type))
+
+        # for these link types, we only need to format the deterministic link, attach the id to it, and return it
+        if (self.link_type in list(self.identification.keys())):
+            return self.request_link_type_identification()
+
+        # we did not recognize the link_type, so return an error
+        return JsonResponse({'error': 'unrecognizable link type:`{link_type}`'.format(link_type=self.link_type)}, 400)
 
 
     def check(self):
@@ -601,8 +711,8 @@ class LinkRequest(object):
         :return:
         """
         if self.link_type is not None and self.link_type != '?':
-            return self.__return_response({'status': 'OK'}, 200)
-        return self.__return_response({'error': 'unrecognizable link_type'}, 400)
+            return JsonResponse({'status': 'OK'}, 200)
+        return JsonResponse({'error': 'unrecognizable link_type'}, 400)
 
 
     def verify_url(self, url):
@@ -615,15 +725,34 @@ class LinkRequest(object):
         """
         parsed_url = urllib.parse.urlparse(urllib.parse.unquote(url))
         if (self.__verify_replaced_url_not_in_db(parsed_url.netloc)):
-            return self.__return_response({'link': 'verified'}, 200)
+            return JsonResponse({'link': 'verified'}, 200)
         results = get_records(bibcode=self.bibcode)
         for result in results:
             for a_url in result['url']:
                 parsed_url_db = urllib.parse.urlparse(a_url)
                 if parsed_url.netloc == parsed_url_db.netloc:
-                    return self.__return_response({'link': 'verified'}, 200)
-        return self.__return_response({'link': 'not found'}, 200)
+                    return JsonResponse({'link': 'verified'}, 200)
+        return JsonResponse({'link': 'not found'}, 200)
 
+
+    def verify_url_new(self, url):
+        """
+        verify that url is in db
+
+        :param bibcode:
+        :param url:
+        :return:
+        """
+        parsed_url = urllib.parse.urlparse(urllib.parse.unquote(url))
+        if (self.__verify_replaced_url_not_in_db(parsed_url.netloc)):
+            return JsonResponse({'link': 'verified'}, 200)
+        results = get_records_new(bibcode=self.bibcode)
+        for result in results:
+            for a_url in result['url']:
+                parsed_url_db = urllib.parse.urlparse(a_url)
+                if parsed_url.netloc == parsed_url_db.netloc:
+                    return JsonResponse({'link': 'verified'}, 200)
+        return JsonResponse({'link': 'not found'}, 200)
 
 
 class PopulateRequest(object):
@@ -631,23 +760,6 @@ class PopulateRequest(object):
         """
         """
         pass
-
-    def __return_response(self, results, status):
-        """
-
-        :param results: results in a dict
-        :param status: status code
-        :return:
-        """
-        response = json.dumps(results)
-
-        current_app.logger.info('sending response status=%s' % (status))
-        current_app.logger.info('sending response text=%s' % (response))
-
-        r = Response(response=response, status=status)
-        r.headers['content-type'] = 'application/json'
-        return r
-
 
     def process_request(self, records):
         """
@@ -657,50 +769,65 @@ class PopulateRequest(object):
         :return: json code of the result or error
         """
         if not records:
-            return self.__return_response({'error': 'no data received'}, 400)
+            return JsonResponse({'error': 'no data received'}, 400)
 
         if len(records) == 0:
-            return self.__return_response({'error': 'no records received'}, 400)
+            return JsonResponse({'error': 'no records received'}, 400)
 
         if len(records) > current_app.config['RESOLVER_MAX_RECORDS_ADD']:
-            return self.__return_response({'error': 'too many records to add to db at one time, received %s records while the limit is %s'%(len(records), current_app.config['RESOLVER_MAX_RECORDS_ADD'])}, 400)
+            return JsonResponse({'error': 'too many records to add to db at one time, received %s records while the limit is %s'%(len(records), current_app.config['RESOLVER_MAX_RECORDS_ADD'])}, 400)
 
         current_app.logger.info('received request to populate db with %d records' % (len(records)))
 
         try:
             data = Parse(json.dumps({"status": 2, "datalinks_records": records}), DataLinksRecordList())
         except ParseError as e:
-            return self.__return_response({'error': 'unable to extract data from protobuf structure -- %s' % (e)}, 400)
+            return JsonResponse({'error': 'unable to extract data from protobuf structure -- %s' % (e)}, 400)
 
         status, text = add_records(data)
         if status == True:
             current_app.logger.info('completed request to populate db with %d records' % (len(records)))
-            return self.__return_response({'status': text}, 200)
+            return JsonResponse({'status': text}, 200)
         current_app.logger.info('failed to populate db with %d records' % (len(records)))
-        return self.__return_response({'error': text}, 400)
+        return JsonResponse({'error': text}, 400)
+
+
+    def process_request_new(self, records):
+        """
+        process the request
+
+        :param records:
+        :return: json code of the result or error
+        """
+        if not records:
+            return JsonResponse({'error': 'no data received'}, 400)
+
+        if len(records) == 0:
+            return JsonResponse({'error': 'no records received'}, 400)
+
+        if len(records) > current_app.config['RESOLVER_MAX_RECORDS_ADD']:
+            return JsonResponse({'error': 'too many records to add to db at one time, received %s records while the limit is %s'%(len(records), current_app.config['RESOLVER_MAX_RECORDS_ADD'])}, 400)
+
+        current_app.logger.info('received request to populate db with %d records' % (len(records)))
+
+        try:
+            data = Parse(json.dumps({"status": 2, "document_records": records}), DocumentRecords())
+        except ParseError as e:
+            return JsonResponse({'error': 'unable to extract data from protobuf structure -- %s' % (e)}, 400)
+
+        status, text = add_records_new(data)
+        if status == True:
+            current_app.logger.info('completed request to populate db with %d records' % (len(records)))
+            return JsonResponse({'status': text}, 200)
+        current_app.logger.info('failed to populate db with %d records' % (len(records)))
+        return JsonResponse({'error': text}, 400)
+
 
 class DeleteRequest(object):
     def __init__(self):
         """
         """
         pass
-
-    def __return_response(self, results, status):
-        """
-
-        :param results: results in a dict
-        :param status: status code
-        :return:
-        """
-        response = json.dumps(results)
-
-        current_app.logger.info('sending response status=%s' % (status))
-        current_app.logger.info('sending response text=%s' % (response))
-
-        r = Response(response=response, status=status)
-        r.headers['content-type'] = 'application/json'
-        return r
-
 
     def process_request(self, payload):
         """
@@ -711,26 +838,120 @@ class DeleteRequest(object):
         """
 
         if not payload:
-            return self.__return_response({'error': 'no information received'}, 400)
+            return JsonResponse({'error': 'no information received'}, 400)
         if 'bibcode' not in payload:
-            return self.__return_response({'error': 'no bibcode found in payload (parameter name is `bibcode`)'}, 400)
+            return JsonResponse({'error': 'no bibcode found in payload (parameter name is `bibcode`)'}, 400)
 
         bibcodes = payload['bibcode']
 
         if len(bibcodes) == 0:
-            return self.__return_response({'error': 'no bibcode received'}, 400)
+            return JsonResponse({'error': 'no bibcode received'}, 400)
 
         if len(bibcodes) > current_app.config['RESOLVER_MAX_RECORDS_DEL']:
-            return self.__return_response({'error': 'too many records to delete to db at one time, received %s records while the limit is %s'%(len(records), current_app.config['RESOLVER_MAX_RECORDS_DEL'])}, 400)
+            return JsonResponse({'error': 'too many records to delete to db at one time, received %s records while the limit is %s'%(len(bibcodes), current_app.config['RESOLVER_MAX_RECORDS_DEL'])}, 400)
 
         current_app.logger.info('received request to delete from db %d bibcodes' % (len(bibcodes)))
 
         status, count, text = del_records(bibcodes)
         if status == True:
             current_app.logger.info('completed request to delete from db total of %d records' % (count))
-            return self.__return_response({'status': text}, 200)
+            return JsonResponse({'status': text}, 200)
         current_app.logger.info('failed to delete from db %d bibcodes' % (len(bibcodes)))
-        return self.__return_response({'error': text}, 400)
+        return JsonResponse({'error': text}, 400)
+
+
+    def process_request_new(self, payload):
+        """
+        process the request
+
+        :param payload:
+        :return: json code of the result or error
+        """
+
+        if not payload:
+            return JsonResponse({'error': 'no information received'}, 400)
+        if 'bibcode' not in payload:
+            return JsonResponse({'error': 'no bibcode found in payload (parameter name is `bibcode`)'}, 400)
+
+        bibcodes = payload['bibcode']
+
+        if len(bibcodes) == 0:
+            return JsonResponse({'error': 'no bibcode received'}, 400)
+
+        if len(bibcodes) > current_app.config['RESOLVER_MAX_RECORDS_DEL']:
+            return JsonResponse({'error': 'too many records to delete to db at one time, received %s records while the limit is %s' % (len(bibcodes), current_app.config['RESOLVER_MAX_RECORDS_DEL'])}, 400)
+
+        current_app.logger.info('received request to delete from db %d bibcodes' % (len(bibcodes)))
+
+        status, count, text = del_records_new(bibcodes)
+        if status == True:
+            current_app.logger.info('completed request to delete from db total of %d records' % (count))
+            return JsonResponse({'status': text}, 200)
+        current_app.logger.info('failed to delete from db %d bibcodes' % (len(bibcodes)))
+        return JsonResponse({'error': text}, 400)
+
+
+class ReconciliationRequest(object):
+
+    re_id_cleanup = re.compile(r"https://doi.org/|doi[:\s]+", re.IGNORECASE)
+
+    def __init__(self):
+        """
+        """
+        pass
+
+    def find_match(self, id, results):
+        """
+
+        :param id:
+        :param results:
+        :return:
+        """
+        try:
+            for result in results:
+                if id in result['identifier']:
+                    return result['bibcode']
+        except KeyError:
+            pass
+        return "not in database"
+
+    def process_request(self, payload):
+        """
+        process the request
+
+        :param payload:
+        :return:
+        """
+
+        if not payload:
+            return JsonResponse({'error': 'no information received'}, 400)
+        if 'identifier' not in payload:
+            return JsonResponse({'error': 'no identifier found in payload (parameter name is `identifier`)'}, 400)
+
+        identifier = payload['identifier']
+
+        if len(identifier) == 0:
+            return JsonResponse({'error': 'no identifier received'}, 400)
+
+        if len(identifier) > current_app.config['RESOLVER_MAX_RECORDS_RECON']:
+            return JsonResponse({'error': 'too many identifiers to match with bibcodes at one time, received %s identifiers while the limit is %s' % (len(identifier), current_app.config['RESOLVER_MAX_RECORDS_RECON'])}, 400)
+
+        current_app.logger.info('received request to find canonical bibcodes from db for %d identifiers' % (len(identifier)))
+
+        # we accept DOIs in the form 10.xxx/yyy, in addition to https://doi.org/10.xxx/yyy, and doi:10.xxx/yyy
+        # we accept arXiv ids in the form of arXiv:2106.01477
+        # we need to normalize dois to be able to find matches for them
+        for i in range(len(identifier)):
+            identifier[i] = self.re_id_cleanup.sub("", identifier[i].strip())
+        results, text = get_ids(identifier)
+        if results:
+            ids = []
+            for id in identifier:
+                ids.append((id, self.find_match(id, results)))
+            current_app.logger.info('completed request to find canonical bibcodes from db total of %d identifiers' % len(ids))
+            return JsonResponse({'ids': ids}, 200)
+        current_app.logger.info('failed to find canonical bibcodes in db %d identifiers' % (len(identifier)))
+        return JsonResponse({'error': text}, 400)
 
 
 @advertise(scopes=[], rate_limit=[1000, 3600 * 24])
@@ -749,6 +970,21 @@ def resolver(bibcode, link_type):
 
 
 @advertise(scopes=[], rate_limit=[1000, 3600 * 24])
+@bp.route('/<bibcode>/new', defaults={'link_type': ''}, methods=['GET'])
+@bp.route('/<bibcode>/<link_type>/new', methods=['GET'])
+def resolver_new(bibcode, link_type):
+    """
+    endpoint, with required param bibcode and optional param link type, that could contain one of the link sub type values
+    :param bibcode:
+    :param link_type:
+    :return:
+    """
+    if bibcode == 'check_link_type':
+        return LinkRequest('', link_type.upper()).check()
+    return LinkRequest(bibcode, link_type.upper()).process_request_new()
+
+
+@advertise(scopes=[], rate_limit=[1000, 3600 * 24])
 @bp.route('/<bibcode>/<link_type>:<path:id>', methods=['GET'])
 def resolver_id(bibcode, link_type, id):
     """
@@ -763,6 +999,21 @@ def resolver_id(bibcode, link_type, id):
     return LinkRequest(bibcode, link_type.upper(), id).process_request()
 
 
+@advertise(scopes=[], rate_limit=[1000, 3600 * 24])
+@bp.route('/<bibcode>/<link_type>:<path:id>/new', methods=['GET'])
+def resolver_id_new(bibcode, link_type, id):
+    """
+    endpoint for identification link types: doi and arXiv
+    :param bibcode:
+    :param link_type:
+    :param id:
+    :return:
+    """
+    if link_type == 'verify_url':
+        return LinkRequest(bibcode).verify_url_new(id)
+    return LinkRequest(bibcode, link_type.upper(), id).process_request_new()
+
+
 @advertise(scopes=['ads:resolver-service'], rate_limit=[1000, 3600 * 24])
 @bp.route('/update', methods=['PUT'])
 def update():
@@ -775,6 +1026,20 @@ def update():
 
     return PopulateRequest().process_request(payload)
 
+
+@advertise(scopes=['ads:resolver-service'], rate_limit=[1000, 3600 * 24])
+@bp.route('/update_new', methods=['PUT'])
+def update_new():
+    """
+    """
+    try:
+        payload = request.get_json(force=True)  # post data in json
+    except:
+        payload = dict(request.form)  # post data in form encoding
+
+    return PopulateRequest().process_request_new(payload)
+
+
 @advertise(scopes=['ads:resolver-service'], rate_limit=[1000, 3600 * 24])
 @bp.route('/delete', methods=['DELETE'])
 def remove():
@@ -786,3 +1051,30 @@ def remove():
         payload = dict(request.form)  # post data in form encoding
 
     return DeleteRequest().process_request(payload)
+
+
+@advertise(scopes=['ads:resolver-service'], rate_limit=[1000, 3600 * 24])
+@bp.route('/delete_new', methods=['DELETE'])
+def remove_new():
+    """
+    """
+    try:
+        payload = request.get_json(force=True)  # post data in json
+    except:
+        payload = dict(request.form)  # post data in form encoding
+
+    return DeleteRequest().process_request_new(payload)
+
+@advertise(scopes=[], rate_limit=[1000, 3600 * 24])
+@bp.route('/reconciliation', methods=['POST'])
+def reconciliation():
+    """
+
+    :return:
+    """
+    try:
+        payload = request.get_json(force=True)  # post data in json
+    except:
+        payload = dict(request.form)  # post data in form encoding
+
+    return ReconciliationRequest().process_request(payload)
