@@ -133,6 +133,10 @@ RESOLVER_DATA_SOURCES = {
       "name": "European Centre for Medium-Range Weather Forecasts",
       "url": "https://www.ecmwf.int/",
     },
+    "EMAC": {
+          "name": "Exoplanet Modeling and Analysis Center",
+          "url": "https://emac.gsfc.nasa.gov",
+    },
     "EMFISIS": {
       "name": "An instrument suite on the Van Allen Probes",
       "url": "https://emfisis.physics.uiowa.edu/",

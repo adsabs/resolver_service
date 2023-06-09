@@ -1,4 +1,7 @@
 git+https://github.com/adsabs/ADSMicroserviceUtils.git@v1.2.0
 git+https://github.com/adsabs/ADSPipelineMsg.git@v1.3.2
 alembic==0.8.9
+itsdangerous==2.0.1
+jinja2==3.0.3
 psycopg2-binary==2.8.3
+werkzeug==2.0.2
