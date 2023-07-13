@@ -448,6 +448,17 @@ class TestDatabase(TestCaseDatabase):
         response = self.client.get('/1514temg.book.....V/verify_url:http%3A%2F%2Fwww.google.com', headers=headers)
         self.assertEqual(response.json, {'link': 'not found'})
 
+    def test_link_presentation_error_link_type(self):
+        """
+        return 400 for unrecognizable link type
+        :return:
+        """
+        response = LinkRequest(bibcode='2017MNRAS.467.3556B', link_type='errorlinktype').process_request()
+        # 7/13/23 this used to be an error and return 404, but since many DATA link sub types are added daily
+        # any sub types that are not recognized are marked as DATA link types, and are quarried to see if
+        # they are actual links or errors, so now it returns 404 not found
+        self.assertEqual(response._status_code, 404)
+
 
 class TestDatabaseNew(TestCaseDatabase):
 
@@ -1196,6 +1207,18 @@ class TestDatabaseNew(TestCaseDatabase):
             ['10.1086/420885', '2004ApJS..152..163R'],
             ['astro-ph/0703637', 'not in database']
         ]})
+
+    def test_link_presentation_error_link_type(self):
+        """
+        return 400 for unrecognizable link type
+        :return:
+        """
+        response = LinkRequest(bibcode='2017MNRAS.467.3556B', link_type='errorlinktype').process_request_new()
+        # 7/13/23 this used to be an error and return 404, but since many DATA link sub types are added daily
+        # any sub types that are not recognized are marked as DATA link types, and are quarried to see if
+        # they are actual links or errors, so now it returns 404 not found
+        self.assertEqual(response._status_code, 404)
+
 
 
 if __name__ == '__main__':
