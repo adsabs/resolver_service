@@ -25,6 +25,7 @@ RESOLVER_DETERMINISTIC_LINKS_BASEURL = '/abs'
 RESOLVER_DOI_LINK_BASEURL = 'https://doi.org/{id}'
 RESOLVER_ARXIV_LINK_BASEURL = 'http://arxiv.org/abs/{id}'
 
+
 RESOLVER_DATA_SOURCES = {
     "4TU.ResearchData": {
       "name": "International data repository for science, engineering and design",
@@ -58,13 +59,13 @@ RESOLVER_DATA_SOURCES = {
       "name": "USGS Astrogeology Science Center",
       "url": "https://www.usgs.gov/centers/astrogeology-science-center",
     },
-    "ASU": {
-      "name": "Arizona State University",
-      "url": "",
-    },
     "Astroverse": {
       "name": "CfA Dataverse",
       "url": "https://dataverse.harvard.edu/dataverse/cfa",
+    },
+    "ASU": {
+      "name": "Arizona State University",
+      "url": "",
     },
     "ATNF": {
       "name": "Australia Telescope Online Archive",
@@ -134,8 +135,8 @@ RESOLVER_DATA_SOURCES = {
       "url": "https://www.ecmwf.int/",
     },
     "EMAC": {
-          "name": "Exoplanet Modeling and Analysis Center",
-          "url": "https://emac.gsfc.nasa.gov",
+      "name": "Exoplanet Modeling and Analysis Center",
+      "url": "https://emac.gsfc.nasa.gov",
     },
     "EMFISIS": {
       "name": "An instrument suite on the Van Allen Probes",
@@ -184,6 +185,10 @@ RESOLVER_DATA_SOURCES = {
     "GRAS": {
       "name": "Lunar and Planet Exploration Program Ground Application System",
       "url": "http://moon.bao.ac.cn",
+    },
+    "GSFC": {
+      "name": "Goddard Space Flight Center",
+      "url": "https://www.nasa.gov/goddard",
     },
     "GTC": {
       "name": "Gran Telescopio CANARIAS Public Archive",
@@ -245,6 +250,10 @@ RESOLVER_DATA_SOURCES = {
       "name": "Mikulski Archive for Space Telescopes",
       "url": "http://archive.stsci.edu",
     },
+    "Mendeley": {
+      "name": "Mendeley Data",
+      "url": "https://data.mendeley.com/",
+    },
     "MetOffice": {
       "name": "Met Office",
       "url": "https://www.metoffice.gov.uk/",
@@ -276,6 +285,14 @@ RESOLVER_DATA_SOURCES = {
     "NOAO": {
       "name": "National Optical Astronomy Observatory",
       "url": "https://www.noao.edu",
+    },
+    "NRAO_prop": {
+      "name": "National Radio Astronomy Observatory",
+      "url": "https://data.nrao.edu/portal/#/",
+    },
+    "NSIDC": {
+      "name": "National Snow and Ice Data Center",
+      "url": "https://nsidc.org/home",
     },
     "OSF": {
       "name": "Open Science Foundation",
@@ -309,6 +326,10 @@ RESOLVER_DATA_SOURCES = {
       "name": "Collaborative Platform and Preprint Server for Science Methods and Protocols",
       "url": "https://www.protocols.io",
     },
+    "PSA": {
+      "name": "Planetary Science Archive",
+      "url": "",
+    },
     "ScienceBase": {
       "name": "ScienceBase",
       "url": "https://www.sciencebase.gov/catalog/",
@@ -337,6 +358,14 @@ RESOLVER_DATA_SOURCES = {
       "name": "UNAVCO",
       "url": "https://www.unavco.org/",
     },
+    "USGS": {
+      "name": "United States Geological Survey",
+      "url": "https://www.usgs.gov/",
+    },
+    "UW": {
+      "name": "University of Washington",
+      "url": "",
+    },
     "Vizier": {
       "name": "VizieR Catalog Service",
       "url": "http://vizier.u-strasbg.fr",
@@ -354,5 +383,5 @@ RESOLVER_DATA_SOURCES = {
 # to allow for case insensitive search
 # add any new data subtype as follows:
 # if all upper case then key and value listed all upper case
-# if case sensitive key is upper case and value is case senstive so list as new_sub_type.upper():new_sub_type
+# if case sensitive key is upper case and value is case sensitive so list as new_sub_type.upper():new_sub_type
 RESOLVER_DATA_TYPES = {label.upper():label for label in RESOLVER_DATA_SOURCES.keys()}

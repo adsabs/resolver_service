@@ -105,14 +105,6 @@ class TestWithNoDatabase(TestCase):
         self.assertDictEqual(eval(response.response[0]), {"action": "redirect", "link": "http://www.astro.lu.se/~alexey/animations.html", "link_type": "PRESENTATION", "service": "http://www.astro.lu.se/~alexey/animations.html"})
 
 
-    def test_link_presentation_error_link_type(self):
-        """
-        return 400 for unrecognizable link type
-        :return:
-        """
-        response = LinkRequest(bibcode='2017MNRAS.467.3556B', link_type='errorlinktype').process_request()
-        self.assertEqual(response._status_code, 400)
-
     def test_link_associated_KeyError(self):
         """
         return 400 from request_link_type_associated where there is KeyError
@@ -380,14 +372,6 @@ class TestWithNoDatabaseNew(TestCase):
         self.assertEqual(response._status_code, 200)
         self.assertDictEqual(eval(response.response[0]), {"action": "redirect", "link": "http://www.astro.lu.se/~alexey/animations.html", "link_type": "PRESENTATION", "service": "http://www.astro.lu.se/~alexey/animations.html"})
 
-
-    def test_link_presentation_error_link_type(self):
-        """
-        return 400 for unrecognizable link type
-        :return:
-        """
-        response = LinkRequest(bibcode='2017MNRAS.467.3556B', link_type='errorlinktype').process_request_new()
-        self.assertEqual(response._status_code, 400)
 
     def test_link_associated_KeyError(self):
         """

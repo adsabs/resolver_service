@@ -1,4 +1,4 @@
-git+https://github.com/adsabs/ADSMicroserviceUtils.git@v1.2.0
+git+https://github.com/adsabs/ADSMicroserviceUtils.git@v1.2.3
 git+https://github.com/adsabs/ADSPipelineMsg.git@v1.3.2
 alembic==0.8.9
 itsdangerous==2.0.1
