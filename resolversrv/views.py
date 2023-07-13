@@ -152,10 +152,12 @@ class LinkRequest(object):
         elif len(link_type) == 0:
             self.link_type = None
             self.link_sub_type = None
-        # but if non empty and we could not resolve the type then it is error
+        # but if non empty and we could not resolve the type
+        # it could be a new data type, hence, send it to database and let database
+        # decide if it is correct or not
         else:
-            self.link_type = '?'
-            self.link_sub_type = '?'
+            self.link_type = 'DATA'
+            self.link_sub_type = link_type
 
 
     def __get_url_hostname_with_protocol(self, url):

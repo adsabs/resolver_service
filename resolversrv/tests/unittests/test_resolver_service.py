@@ -72,8 +72,11 @@ class TestResolver(TestCase):
         self.assertEqual(link_request.link_sub_type, None)
     def test_linkTypeError(self):
         link_request = LinkRequest('1668RSPT....3..863M', 'ERROR', self.current_app.config['RESOLVER_GATEWAY_URL'])
-        self.assertEqual(link_request.link_type, '?')
-        self.assertEqual(link_request.link_sub_type, '?')
+        # 7/13/23 this used to be an error, but since many DATA link sub types are added daily
+        # any sub types that are not recognized are marked as DATA link types, and are quarried to see if
+        # they are actual links or errors
+        self.assertEqual(link_request.link_type, 'DATA')
+        self.assertEqual(link_request.link_sub_type, 'ERROR')
 
 
     # the following tests verify that private methods from class LinkRequest function properly
@@ -250,8 +253,11 @@ class TestResolverNew(TestCaseDatabase):
         self.assertEqual(link_request.link_sub_type, None)
     def test_linkTypeError(self):
         link_request = LinkRequest('1668RSPT....3..863M', 'ERROR', self.current_app.config['RESOLVER_GATEWAY_URL'])
-        self.assertEqual(link_request.link_type, '?')
-        self.assertEqual(link_request.link_sub_type, '?')
+        # 7/13/23 this used to be an error, but since many DATA link sub types are added daily
+        # any sub types that are not recognized are marked as DATA link types, and are quarried to see if
+        # they are actual links or errors
+        self.assertEqual(link_request.link_type, 'DATA')
+        self.assertEqual(link_request.link_sub_type, 'ERROR')
 
 
     # the following tests verify that private methods from class LinkRequest function properly

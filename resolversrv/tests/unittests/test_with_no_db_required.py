@@ -111,7 +111,10 @@ class TestWithNoDatabase(TestCase):
         :return:
         """
         response = LinkRequest(bibcode='2017MNRAS.467.3556B', link_type='errorlinktype').process_request()
-        self.assertEqual(response._status_code, 400)
+        # 7/13/23 this used to be an error and return 404, but since many DATA link sub types are added daily
+        # any sub types that are not recognized are marked as DATA link types, and are quarried to see if
+        # they are actual links or errors, so now it returns 404 not found
+        self.assertEqual(response._status_code, 404)
 
     def test_link_associated_KeyError(self):
         """
@@ -387,7 +390,10 @@ class TestWithNoDatabaseNew(TestCase):
         :return:
         """
         response = LinkRequest(bibcode='2017MNRAS.467.3556B', link_type='errorlinktype').process_request_new()
-        self.assertEqual(response._status_code, 400)
+        # 7/13/23 this used to be an error and return 404, but since many DATA link sub types are added daily
+        # any sub types that are not recognized are marked as DATA link types, and are quarried to see if
+        # they are actual links or errors, so now it returns 404 not found
+        self.assertEqual(response._status_code, 404)
 
     def test_link_associated_KeyError(self):
         """
