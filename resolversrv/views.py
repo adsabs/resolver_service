@@ -147,6 +147,9 @@ class LinkRequest(object):
                    (parts[0] == 'DATA' and parts[1] in list(self.data.keys())):
                     self.link_type = parts[0]
                     self.link_sub_type = parts[1]
+                elif parts[0] == 'DATA':
+                    self.link_type = parts[0]
+                    self.link_sub_type = '?'
         # if link_type is empty treated as we are having only a bibcode and shall return all records for
         # for the bibcode
         elif len(link_type) == 0:
