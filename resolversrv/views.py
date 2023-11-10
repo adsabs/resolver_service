@@ -970,8 +970,8 @@ def resolver(bibcode, link_type):
     :return:
     """
     if bibcode == 'check_link_type':
-        return LinkRequest('', link_type.upper()).check()
-    return LinkRequest(bibcode, link_type.upper()).process_request()
+        return LinkRequest('', link_type).check()
+    return LinkRequest(bibcode, link_type).process_request()
 
 
 @advertise(scopes=[], rate_limit=[1000, 3600 * 24])
@@ -985,8 +985,8 @@ def resolver_new(bibcode, link_type):
     :return:
     """
     if bibcode == 'check_link_type':
-        return LinkRequest('', link_type.upper()).check()
-    return LinkRequest(bibcode, link_type.upper()).process_request_new()
+        return LinkRequest('', link_type).check()
+    return LinkRequest(bibcode, link_type).process_request_new()
 
 
 @advertise(scopes=[], rate_limit=[1000, 3600 * 24])
@@ -1001,7 +1001,7 @@ def resolver_id(bibcode, link_type, id):
     """
     if link_type == 'verify_url':
         return LinkRequest(bibcode).verify_url(id)
-    return LinkRequest(bibcode, link_type.upper(), id).process_request()
+    return LinkRequest(bibcode, link_type, id).process_request()
 
 
 @advertise(scopes=[], rate_limit=[1000, 3600 * 24])
@@ -1016,7 +1016,7 @@ def resolver_id_new(bibcode, link_type, id):
     """
     if link_type == 'verify_url':
         return LinkRequest(bibcode).verify_url_new(id)
-    return LinkRequest(bibcode, link_type.upper(), id).process_request_new()
+    return LinkRequest(bibcode, link_type, id).process_request_new()
 
 
 @advertise(scopes=['ads:resolver-service'], rate_limit=[1000, 3600 * 24])
