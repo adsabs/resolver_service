@@ -126,14 +126,14 @@ class LinkRequest(object):
         :return:
         """
         # if link_type has been specified
-        if (link_type in self.link_types):
-            self.link_type = link_type
+        if (link_type.upper() in self.link_types):
+            self.link_type = link_type.upper()
             self.link_sub_type = None
         # see if link_sub_type has been passed in,
         # we have two sets of link sub types, so figure out which one, if any, it belongs to
-        elif (link_type in self.esource):
+        elif (link_type.upper() in self.esource):
             self.link_type = 'ESOURCE'
-            self.link_sub_type = link_type
+            self.link_sub_type = link_type.upper()
         elif (link_type.upper() in list(self.data.keys())):
             self.link_type = 'DATA'
             self.link_sub_type = self.data[link_type.upper()]
