@@ -79,7 +79,8 @@ class LinkRequest(object):
         # electronic journal sub types
         self.esource = [
             'PUB_PDF', 'EPRINT_PDF', 'AUTHOR_PDF', 'ADS_PDF',
-            'PUB_HTML', 'EPRINT_HTML', 'AUTHOR_HTML', 'ADS_SCAN'
+            'PUB_HTML', 'EPRINT_HTML', 'AUTHOR_HTML', 'ADS_SCAN',
+            'PMC_HTML', 'PMC_PDF'
         ]
 
         # data sub types
