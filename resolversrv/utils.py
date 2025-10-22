@@ -3,7 +3,7 @@ from builtins import str
 from builtins import range
 from flask import current_app
 from sqlalchemy.exc import SQLAlchemyError
-from sqlalchemy import and_
+from sqlalchemy import and_, func
 from sqlalchemy.dialects.postgresql import insert
 
 from google.protobuf import json_format
@@ -33,7 +33,7 @@ def get_records(bibcode, link_type=None, link_sub_type=None):
                                     (bibcode, link_type, link_sub_type))
         else:
             rows = session.query(DataLinks).filter(and_(DataLinks.bibcode == bibcode, DataLinks.link_type == link_type,
-                                                        DataLinks.link_sub_type == link_sub_type)).all()
+                                                        func.lower(DataLinks.link_sub_type) == link_sub_type.lower())).all()
             current_app.logger.info("Fetched records for bibcode = %s, link type = %s and link sub type = %s." %
                                     (bibcode, link_type, link_sub_type))
 
