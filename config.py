@@ -342,6 +342,10 @@ RESOLVER_DATA_SOURCES = {
       "name": "Spitzer Space Telescope",
       "url": "https://irsa.ipac.caltech.edu/Missions/spitzer.html",
     },
+    "StarGlass": {
+      "name": "Harvard College Observatory photographic plate via StarGlass",
+      "url":"https://starglass.cfa.harvard.edu",
+    },
     "TDR": {
       "name": "Texas Data Respository",
       "url": "https://dataverse.tdl.org/",
