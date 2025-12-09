@@ -121,7 +121,8 @@ class LinkRequest(object):
     def __get_user_facing_link_type(self, link_type):
         """
         Convert internal link_type to user-facing format for backward compatibility.
-        COREAD (singular, internal) -> COREADS (plural, user-facing)
+        New protobuf format: COREAD (singular, internal) 
+        Old version: COREADS (plural, user-facing)
         
         :param link_type: Internal link type
         :return: User-facing link type
@@ -137,8 +138,8 @@ class LinkRequest(object):
         :param link_type:
         :return:
         """
-        # Handle backward compatibility for COREADS -> COREAD
-        # (Note: actual mapping happens in __backward_compatibility, this just prevents it from being treated as DATA)
+        
+        # Note: actual mapping happens in __backward_compatibility, this just prevents it from being treated as DATA
         if (link_type.upper() == 'COREADS'):
             self.link_type = 'COREADS'
             self.link_sub_type = None
