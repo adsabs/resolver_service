@@ -75,13 +75,15 @@ class Documents(Base):
         docs = []
         for link_type, unknown in self.links.items():
             if isinstance(unknown, bool):
-                docs.append({
-                    'bibcode': self.bibcode,
-                    'link_type': link_type,
-                    'link_sub_type': '',
-                    'url': [''],
-                    'title': [''],
-                })
+                # Only create a record if the boolean is True
+                if unknown:
+                    docs.append({
+                        'bibcode': self.bibcode,
+                        'link_type': link_type,
+                        'link_sub_type': '',
+                        'url': [''],
+                        'title': [''],
+                    })
             # is doi or arxiv, so save the ids in url
             elif isinstance(unknown, list):
                 docs.append({
