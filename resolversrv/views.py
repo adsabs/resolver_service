@@ -66,7 +66,7 @@ class LinkRequest(object):
             'ABSTRACT': '{baseurl}/{bibcode}/abstract',
             'CITATIONS': '{baseurl}/{bibcode}/citations',
             'REFERENCES': '{baseurl}/{bibcode}/references',
-            'COREADS': '{baseurl}/{bibcode}/coreads',
+            'COREAD': '{baseurl}/{bibcode}/coreads',
             # 'COMMENTS': '???',
             'TOC': '{baseurl}/{bibcode}/toc',
             'OPENURL': '{baseurl}/{bibcode}/openurl',
@@ -115,6 +115,18 @@ class LinkRequest(object):
         elif (link_type == 'ARTICLE'):
             self.link_type = 'ESOURCE'
             self.link_sub_type = '%_PDF'
+        elif (link_type == 'COREADS'):
+            self.link_type = 'COREAD'
+
+    def __get_user_facing_link_type(self, link_type):
+        """
+        Convert internal link_type to user-facing format for backward compatibility.
+        COREAD (singular, internal) -> COREADS (plural, user-facing)
+        
+        :param link_type: Internal link type
+        :return: User-facing link type
+        """
+        return 'COREADS' if link_type == 'COREAD' else link_type
 
 
     def __set_major_minor_link_types(self, link_type):
@@ -125,8 +137,13 @@ class LinkRequest(object):
         :param link_type:
         :return:
         """
+        # Handle backward compatibility for COREADS -> COREAD
+        # (Note: actual mapping happens in __backward_compatibility, this just prevents it from being treated as DATA)
+        if (link_type.upper() == 'COREADS'):
+            self.link_type = 'COREADS'
+            self.link_sub_type = None
         # if link_type has been specified
-        if (link_type.upper() in self.link_types):
+        elif (link_type.upper() in self.link_types):
             self.link_type = link_type.upper()
             self.link_sub_type = None
         # see if link_sub_type has been passed in,
@@ -292,7 +309,14 @@ class LinkRequest(object):
         """
         # query db
         results = get_records_new(bibcode=self.bibcode, link_type=link_type)
-        if (results is None):
+        # Check for None OR empty list (empty list happens when boolean flags are False)
+        if not results:
+            # SIMILAR is always available
+            if link_type == 'SIMILAR':
+                # Check if the bibcode exists at all by querying without link_type
+                all_results = get_records_new(bibcode=self.bibcode)
+                if all_results:
+                    return 1
             return 0
         if link_type == 'TOC':
             return int(len(results) > 0)
@@ -328,7 +352,9 @@ class LinkRequest(object):
             response['service'] = url
             response['action'] = 'redirect'
             response['link'] = url
-            response['link_type'] = self.link_type + ('' if self.link_sub_type == None else '|' + self.link_sub_type)
+            # Use user-facing link_type for backward compatibility
+            user_facing_type = self.__get_user_facing_link_type(self.link_type)
+            response['link_type'] = user_facing_type + ('' if self.link_sub_type == None else '|' + self.link_sub_type)
             return JsonResponse(response, 200)
         return JsonResponse({'error': 'did not find any records'}, 404)
 
@@ -341,7 +367,8 @@ class LinkRequest(object):
         :param results: result from the query
         :return:
         """
-        if (results is None):
+        # Check for None OR empty list (empty list happens when boolean flags are False)
+        if not results:
             return JsonResponse({'error': 'did not find any records'}, 404)
 
         try:
@@ -363,7 +390,9 @@ class LinkRequest(object):
             response['service'] = url
             response['action'] = 'redirect'
             response['link'] = url
-            response['link_type'] = self.link_type + ('' if self.link_sub_type == None else '|' + self.link_sub_type)
+            # Use user-facing link_type for backward compatibility
+            user_facing_type = self.__get_user_facing_link_type(self.link_type)
+            response['link_type'] = user_facing_type + ('' if self.link_sub_type == None else '|' + self.link_sub_type)
             return JsonResponse(response, 200)
         return JsonResponse({'error': 'did not find any records'}, 404)
 
@@ -380,15 +409,17 @@ class LinkRequest(object):
         records = []
         for link_type in self.link_types:
             bibcode = self.bibcode
-            redirectURL = self.gateway_redirect_url.format(bibcode=bibcode, link_type=link_type, url='')
+            # Convert internal link_type to user-facing format
+            user_facing_type = self.__get_user_facing_link_type(link_type)
+            redirectURL = self.gateway_redirect_url.format(bibcode=bibcode, link_type=user_facing_type, url='')
             redirectURL = redirectURL[:-1]
             record = {}
             count = self.get_link_type_count(link_type)
             if count > 0:
                 record['bibcode'] = bibcode
-                record['title'] = link_type + ' (' + str(count) + ')'
+                record['title'] = user_facing_type + ' (' + str(count) + ')'
                 record['url'] = redirectURL
-                record['type'] = link_type.lower()
+                record['type'] = user_facing_type.lower()
                 record['count'] = count
                 records.append(record)
         links['records'] = records
@@ -411,15 +442,17 @@ class LinkRequest(object):
         records = []
         for link_type in self.link_types:
             bibcode = self.bibcode
-            redirectURL = self.gateway_redirect_url.format(bibcode=bibcode, link_type=link_type, url='')
+            # Convert internal link_type to user-facing format
+            user_facing_type = self.__get_user_facing_link_type(link_type)
+            redirectURL = self.gateway_redirect_url.format(bibcode=bibcode, link_type=user_facing_type, url='')
             redirectURL = redirectURL[:-1]
             record = {}
             count = self.get_link_type_count_new(link_type)
             if count > 0:
                 record['bibcode'] = bibcode
-                record['title'] = link_type + ' (' + str(count) + ')'
+                record['title'] = user_facing_type + ' (' + str(count) + ')'
                 record['url'] = redirectURL
-                record['type'] = link_type.lower()
+                record['type'] = user_facing_type.lower()
                 record['count'] = count
                 records.append(record)
         links['records'] = records
@@ -680,11 +713,12 @@ class LinkRequest(object):
                 # for these link types, as long as we have bibcode, we can format the deterministic link and return it
                 if self.link_type in ['ABSTRACT', 'SIMILAR']:
                     return self.request_link_type_on_the_fly()
-                # for the other on the fly types, we need to have a record to format the deterministic link and return it
-                if self.link_type in list(self.on_the_fly.keys()) and record[0]['link_type'] == self.link_type:
-                    return self.request_link_type_on_the_fly()
-                # queried on bibcode, but need to have links only for link_type
+                # for the other on the fly types (citations, references, coreads, toc, openurl, graphics, metrics)
+                # we need to have a record with the link_type to format the deterministic link and return it
                 record = [rec for rec in record if rec.get('link_type', None) == self.link_type]
+                if self.link_type in self.on_the_fly.keys() and record:
+                    return self.request_link_type_on_the_fly()
+            # inspire, librarycatalog, presentation
             return self.request_link_type_single_url(record)
 
         # for the following link type the return value is specific to the type

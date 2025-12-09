@@ -542,8 +542,13 @@ class TestDatabaseNew(TestCaseDatabase):
                             "title": ['']
                         }
                     },
+                    "ABSTRACT": True,
                     "CITATIONS": True,
-                    "REFERENCES": True
+                    "REFERENCES": True,
+                    "COREAD": True,
+                    "OPENURL": True,
+                    "GRAPHICS": True,
+                    "METRICS": True
                 }
             },
             {
@@ -1219,6 +1224,212 @@ class TestDatabaseNew(TestCaseDatabase):
         # they are actual links or errors, so now it returns 404 not found
         self.assertEqual(response._status_code, 404)
 
+    def test_boolean_flags_true(self):
+        """
+        Test that boolean flags set to True result in on-the-fly links appearing
+        """
+        headers = {'Content-type': 'application/json', 'Accept': 'text/plain'}
+        
+        # Create a record with all boolean flags set to True
+        document_record = {
+            "bibcode": "2020TEST.123..456T",
+            "identifier": ["2020TEST.123..456T"],
+            "links": {
+                "ABSTRACT": True,
+                "CITATIONS": True,
+                "REFERENCES": True,
+                "COREAD": True,
+                "TOC": True,
+                "OPENURL": True,
+                "GRAPHICS": True,
+                "METRICS": True
+            }
+        }
+        
+        # Insert the record
+        response = self.client.put('/update_new', data=json.dumps([document_record]), headers=headers)
+        self.assertEqual(response._status_code, 200)
+        
+        # Test each boolean flag individually
+        # CITATIONS
+        response = self.client.get('/2020TEST.123..456T/CITATIONS/new', headers=headers)
+        self.assertEqual(response._status_code, 200)
+        self.assertEqual(response.json['action'], 'redirect')
+        self.assertIn('citations', response.json['link'])
+        
+        # REFERENCES
+        response = self.client.get('/2020TEST.123..456T/REFERENCES/new', headers=headers)
+        self.assertEqual(response._status_code, 200)
+        self.assertEqual(response.json['action'], 'redirect')
+        self.assertIn('references', response.json['link'])
+        
+        # COREAD
+        response = self.client.get('/2020TEST.123..456T/COREAD/new', headers=headers)
+        self.assertEqual(response._status_code, 200)
+        self.assertEqual(response.json['action'], 'redirect')
+        self.assertIn('coreads', response.json['link'])
+        
+        # TOC
+        response = self.client.get('/2020TEST.123..456T/TOC/new', headers=headers)
+        self.assertEqual(response._status_code, 200)
+        self.assertEqual(response.json['action'], 'redirect')
+        self.assertIn('toc', response.json['link'])
+        
+        # OPENURL
+        response = self.client.get('/2020TEST.123..456T/OPENURL/new', headers=headers)
+        self.assertEqual(response._status_code, 200)
+        self.assertEqual(response.json['action'], 'redirect')
+        self.assertIn('openurl', response.json['link'])
+        
+        # GRAPHICS
+        response = self.client.get('/2020TEST.123..456T/GRAPHICS/new', headers=headers)
+        self.assertEqual(response._status_code, 200)
+        self.assertEqual(response.json['action'], 'redirect')
+        self.assertIn('graphics', response.json['link'])
+        
+        # METRICS
+        response = self.client.get('/2020TEST.123..456T/METRICS/new', headers=headers)
+        self.assertEqual(response._status_code, 200)
+        self.assertEqual(response.json['action'], 'redirect')
+        self.assertIn('metrics', response.json['link'])
+
+    def test_boolean_flags_false(self):
+        """
+        Test that boolean flags set to False result in on-the-fly links NOT appearing
+        """
+        headers = {'Content-type': 'application/json', 'Accept': 'text/plain'}
+        
+        # Create a record with all boolean flags set to False
+        document_record = {
+            "bibcode": "2020FALS.123..456F",
+            "identifier": ["2020FALS.123..456F"],
+            "links": {
+                "ABSTRACT": False,
+                "CITATIONS": False,
+                "REFERENCES": False,
+                "COREAD": False,
+                "TOC": False,
+                "OPENURL": False,
+                "GRAPHICS": False,
+                "METRICS": False
+            }
+        }
+        
+        # Insert the record
+        response = self.client.put('/update_new', data=json.dumps([document_record]), headers=headers)
+        self.assertEqual(response._status_code, 200)
+        
+        # Test each boolean flag individually - should return 404 (not found)
+        # CITATIONS
+        response = self.client.get('/2020FALS.123..456F/CITATIONS/new', headers=headers)
+        self.assertEqual(response._status_code, 404)
+        
+        # REFERENCES
+        response = self.client.get('/2020FALS.123..456F/REFERENCES/new', headers=headers)
+        self.assertEqual(response._status_code, 404)
+        
+        # COREAD
+        response = self.client.get('/2020FALS.123..456F/COREAD/new', headers=headers)
+        self.assertEqual(response._status_code, 404)
+        
+        # TOC
+        response = self.client.get('/2020FALS.123..456F/TOC/new', headers=headers)
+        self.assertEqual(response._status_code, 404)
+        
+        # OPENURL
+        response = self.client.get('/2020FALS.123..456F/OPENURL/new', headers=headers)
+        self.assertEqual(response._status_code, 404)
+        
+        # GRAPHICS
+        response = self.client.get('/2020FALS.123..456F/GRAPHICS/new', headers=headers)
+        self.assertEqual(response._status_code, 404)
+        
+        # METRICS
+        response = self.client.get('/2020FALS.123..456F/METRICS/new', headers=headers)
+        self.assertEqual(response._status_code, 404)
+
+    def test_boolean_flags_mixed(self):
+        """
+        Test mixed boolean flags - some True, some False
+        """
+        headers = {'Content-type': 'application/json', 'Accept': 'text/plain'}
+        
+        # Create a record with mixed boolean flags
+        document_record = {
+            "bibcode": "2020MIXD.123..456M",
+            "identifier": ["2020MIXD.123..456M"],
+            "links": {
+                "CITATIONS": True,
+                "REFERENCES": False,
+                "GRAPHICS": True,
+                "METRICS": False,
+                "TOC": True,
+                "COREAD": False
+            }
+        }
+        
+        # Insert the record
+        response = self.client.put('/update_new', data=json.dumps([document_record]), headers=headers)
+        self.assertEqual(response._status_code, 200)
+        
+        # Test True flags - should return 200
+        response = self.client.get('/2020MIXD.123..456M/CITATIONS/new', headers=headers)
+        self.assertEqual(response._status_code, 200)
+        
+        response = self.client.get('/2020MIXD.123..456M/GRAPHICS/new', headers=headers)
+        self.assertEqual(response._status_code, 200)
+        
+        response = self.client.get('/2020MIXD.123..456M/TOC/new', headers=headers)
+        self.assertEqual(response._status_code, 200)
+        
+        # Test False flags - should return 404
+        response = self.client.get('/2020MIXD.123..456M/REFERENCES/new', headers=headers)
+        self.assertEqual(response._status_code, 404)
+        
+        response = self.client.get('/2020MIXD.123..456M/METRICS/new', headers=headers)
+        self.assertEqual(response._status_code, 404)
+        
+        response = self.client.get('/2020MIXD.123..456M/COREAD/new', headers=headers)
+        self.assertEqual(response._status_code, 404)
+
+    def test_boolean_flags_in_all_links_response(self):
+        """
+        Test that boolean flags control which link types appear in 'all links' response
+        """
+        headers = {'Content-type': 'application/json', 'Accept': 'text/plain'}
+        
+        # Create a record with specific boolean flags
+        document_record = {
+            "bibcode": "2020ALLF.123..456A",
+            "identifier": ["2020ALLF.123..456A"],
+            "links": {
+                "CITATIONS": True,
+                "REFERENCES": True,
+                "GRAPHICS": False,
+                "METRICS": False,
+                "TOC": True
+            }
+        }
+        
+        # Insert the record
+        response = self.client.put('/update_new', data=json.dumps([document_record]), headers=headers)
+        self.assertEqual(response._status_code, 200)
+        
+        # Get all links for the bibcode
+        response = self.client.get('/2020ALLF.123..456A/new', headers=headers)
+        self.assertEqual(response._status_code, 200)
+        
+        # Extract link types from the response
+        link_types = [record['type'] for record in response.json['links']['records']]
+        
+        # True flags should appear
+        self.assertIn('citations', link_types)
+        self.assertIn('references', link_types)
+        self.assertIn('toc', link_types)
+        
+        # False flags should NOT appear
+        self.assertNotIn('graphics', link_types)
+        self.assertNotIn('metrics', link_types)
 
 
 if __name__ == '__main__':
