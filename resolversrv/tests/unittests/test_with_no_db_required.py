@@ -35,6 +35,20 @@ class TestWithNoDatabase(TestCase):
         self.assertEqual(status, False)
         self.assertEqual(text, 'unable to add records to the database')
 
+    def test_hssi_data_source(self):
+        """
+        HSSI is a known data source, with its own title and url, that resolves regardless of case
+        :return:
+        """
+        link_request = LinkRequest('2017zndo....240895I', 'DATA', self.current_app.config['RESOLVER_GATEWAY_URL'])
+        title, url = link_request._LinkRequest__get_data_source_title_url('HSSI', 'https://hssi.hsdcloud.org')
+        self.assertEqual(title, 'Heliophysics Software Search Interface')
+        self.assertEqual(url, 'https://hssi.hsdcloud.org/')
+        for link_type in ['HSSI', 'hssi', 'DATA|HSSI']:
+            link_request = LinkRequest('2017zndo....240895I', link_type, self.current_app.config['RESOLVER_GATEWAY_URL'])
+            self.assertEqual(link_request.link_type, 'DATA')
+            self.assertEqual(link_request.link_sub_type, 'HSSI')
+
     def test_process_request_no_bibcode_error(self):
         """
         return 400 for bibcode of length 0
