@@ -202,6 +202,10 @@ RESOLVER_DATA_SOURCES = {
       "name": "Herschel Science Center",
       "url": "https://www.cosmos.esa.int/web/herschel/home",
     },
+    "HSSI": {
+      "name": "Heliophysics Software Search Interface",
+      "url": "https://hssi.hsdcloud.org/",
+    },
     "IBVS": {
       "name": "Information Bulletin on Variable Stars",
       "url": "http://ibvs.konkoly.hu/IBVS/IBVS.html",
